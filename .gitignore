@@ -1,0 +1,24 @@
+# Environment files
+.env
+.env.local
+*.log
+
+# Backups & dumps
+*.sql.gz
+*.bak
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Keep folder structure but ignore uploaded files in git
+uploads/vouchers/*
+!uploads/vouchers/.gitkeep
+
