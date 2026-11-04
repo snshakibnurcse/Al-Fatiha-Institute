@@ -1,5 +1,7 @@
 <?php
 // One-Click Database & System Setup Script for AL FATIHA INSTITUTE (afidb)
+// Security Lock: Disabled in production to protect live database
+die("<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Setup is Locked</h2><p>For security reasons, the database setup installer has been disabled on the live server. Please delete or protect this file.</p><p><a href='index.php'>Return to Homepage</a></p></div>");
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

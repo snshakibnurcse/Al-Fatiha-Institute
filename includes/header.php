@@ -47,7 +47,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <?php else: ?>
           <a href="login.php" class="portal-link"><i class="fas fa-user-lock"></i> Login</a>
         <?php endif; ?>
-        <a href="setup.php" title="One Click Database Installer" style="color: var(--accent-gold); font-size: 0.8rem; font-weight: 700;"><i class="fas fa-database"></i> Setup DB</a>
       </div>
     </div>
   </div>
