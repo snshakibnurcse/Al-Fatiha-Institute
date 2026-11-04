@@ -32,9 +32,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <div class="top-bar">
     <div class="container">
       <div class="top-info">
-        <span><i class="fas fa-map-marker-alt" style="color: var(--accent-gold);"></i> Main Road, Cox's Bazar, Bangladesh</span>
-        <span><i class="fas fa-phone-alt" style="color: var(--accent-gold);"></i> +880 1800-000000</span>
-        <span><i class="fas fa-envelope" style="color: var(--accent-gold);"></i> info@alfatihainstitute.edu.bd</span>
+        <span><i class="fas fa-map-marker-alt" style="color: var(--accent-gold);"></i> Tekpara main road, Cox's Bazar</span>
+        <span><i class="fas fa-phone-alt" style="color: var(--accent-gold);"></i> 01611477441 / 01632550045</span>
+        <span><i class="fas fa-envelope" style="color: var(--accent-gold);"></i> alfatihacxb@gmail.com</span>
       </div>
       <div class="top-actions">
         <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>

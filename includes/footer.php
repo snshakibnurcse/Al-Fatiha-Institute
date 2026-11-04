@@ -43,15 +43,15 @@
           <ul class="contact-info-list">
             <li>
               <i class="fas fa-map-marker-alt"></i>
-              <span>Main Road, Near Central Mosque, Cox's Bazar, Bangladesh</span>
+              <span>Engg Edris building, Kalur Dokan, Tekpara main road, Cox's Bazar 4700.</span>
             </li>
             <li>
               <i class="fas fa-phone-alt"></i>
-              <span>+880 1800-000000 / +880 1700-000000</span>
+              <span>01611477441 / 01632550045</span>
             </li>
             <li>
               <i class="fas fa-envelope"></i>
-              <span>info@alfatihainstitute.edu.bd</span>
+              <span>alfatihacxb@gmail.com</span>
             </li>
             <li>
               <i class="fas fa-clock"></i>

@@ -55,7 +55,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div>
             <h4 style="color: var(--primary-dark); margin-bottom: 0.2rem;">Address</h4>
-            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">Main Road, Near Central Mosque, Cox's Bazar, Bangladesh</p>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">Engg Edris building, Kalur Dokan, Tekpara main road, Cox's Bazar 4700.</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div>
             <h4 style="color: var(--primary-dark); margin-bottom: 0.2rem;">Phone & WhatsApp</h4>
-            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">+880 1800-000000 / +880 1700-000000</p>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">01611477441 / 01632550045</p>
           </div>
         </div>
 
@@ -75,7 +75,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div>
             <h4 style="color: var(--primary-dark); margin-bottom: 0.2rem;">Email</h4>
-            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">info@alfatihainstitute.edu.bd</p>
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">alfatihacxb@gmail.com</p>
           </div>
         </div>
       </div>
