@@ -117,13 +117,16 @@ $user_name = get_current_user_name();
 <body class="dashboard-body">
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="../assets/images/logo.svg" alt="AFI Logo">
       <div>
         <strong>AL FATIHA</strong>
         <small style="color: #10b981; font-size: 0.75rem; display: block; font-weight: 800;">ACCOUNTS SECTION</small>
       </div>
+      <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <ul class="sidebar-menu">
@@ -165,22 +168,31 @@ $user_name = get_current_user_name();
     </ul>
   </aside>
 
+  <!-- Sidebar Backdrop for Mobile -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- Main Content Wrapper -->
-  <div class="main-content" style="margin-left: 260px !important; width: calc(100% - 260px) !important; flex: 1; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box;">
+  <div class="main-content">
     <!-- Topbar -->
     <header class="topbar">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <h2 style="font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.3rem; color: var(--admin-deep-navy);">
-          School Accounts & Finance System
+      <div class="top-nav-left" style="display: flex; align-items: center; gap: 0.85rem;">
+        <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h2 style="font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.25rem; color: var(--admin-deep-navy);">
+          School Accounts & Finance
         </h2>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 1.2rem;">
-        <span class="account-badge">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <span class="account-badge hide-mobile">
           <i class="fas fa-user-tie"></i> <?= htmlspecialchars($user_name) ?>
         </span>
-        <a href="../login.php?logout=1" class="btn btn-sm" style="background: #ef4444; color: #ffffff; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none;">
-          <i class="fas fa-power-off"></i> Logout
+        <a href="../index.php" target="_blank" class="btn btn-view-site" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-external-link-alt"></i> <span class="hide-mobile">Website</span>
+        </a>
+        <a href="../login.php?logout=1" class="btn btn-logout-mobile" title="Logout" style="background: #fee2e2; color: #dc2626; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">
+          <i class="fas fa-sign-out-alt"></i>
         </a>
       </div>
     </header>

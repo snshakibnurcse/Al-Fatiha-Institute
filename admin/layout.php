@@ -18,13 +18,16 @@ $user_name = get_current_user_name();
 <body class="dashboard-body">
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="../assets/images/logo.svg" alt="AFI Logo">
       <div>
         <strong>AL FATIHA</strong>
         <span>ADMIN SYSTEM</span>
       </div>
+      <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <ul class="sidebar-menu">
@@ -134,16 +137,27 @@ $user_name = get_current_user_name();
     </div>
   </aside>
 
+  <!-- Sidebar Backdrop for Mobile -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- Main Area -->
-  <div class="main-wrapper" style="margin-left: 260px !important; width: calc(100% - 260px) !important; flex: 1; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box;">
+  <div class="main-wrapper">
     <div class="top-nav">
-      <div class="page-title">
-        <h2>School Management System</h2>
+      <div class="top-nav-left">
+        <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="page-title">
+          <h2>School Management System</h2>
+        </div>
       </div>
 
       <div class="top-actions">
-        <a href="../index.php" target="_blank" class="btn" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 700;">
-          <i class="fas fa-external-link-alt"></i> View Public Website
+        <a href="../index.php" target="_blank" class="btn btn-view-site" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-external-link-alt"></i> <span class="hide-mobile">View Website</span>
+        </a>
+        <a href="logout.php" class="btn-logout-mobile" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
         </a>
       </div>
     </div>

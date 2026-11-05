@@ -14,7 +14,7 @@ $recentApps = $appsStmt->fetchAll();
 ?>
 
 <!-- Quick Finance & Academic Actions -->
-<div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+<div class="quick-action-bar">
   <a href="users.php" class="btn" style="background: #6366f1; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
     <i class="fas fa-users-cog"></i> User Management
   </a>
