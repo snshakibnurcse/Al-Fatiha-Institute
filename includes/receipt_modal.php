@@ -49,16 +49,18 @@
               </div>
             </div>
 
-            <!-- Student & Invoice Meta Grid -->
+            <!-- Student & Invoice Meta Grid (3-Row Layout with Multi-line Trx ID) -->
             <div class="receipt-meta-grid">
               <div class="meta-item"><span class="lbl">Student Name:</span> <strong class="val slip-student-name">--</strong></div>
-              <div class="meta-item"><span class="lbl">Receipt / Inv:</span> <strong class="val slip-inv-no monospace-text">--</strong></div>
               <div class="meta-item"><span class="lbl">Student ID:</span> <strong class="val slip-student-code monospace-text">--</strong></div>
-              <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Class &amp; Roll:</span> <span class="val"><strong class="slip-class-name">--</strong> (Roll: <strong class="slip-roll-no">--</strong>)</span></div>
+
+              <div class="meta-item"><span class="lbl">Receipt / Inv:</span> <strong class="val slip-inv-no monospace-text">--</strong></div>
+              <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Pay Method:</span> <span class="val slip-pay-method">Cash</span></div>
+
               <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">Session 2027</span></div>
-              <div class="meta-item"><span class="lbl">Trx Ref No:</span> <span class="val slip-ref-no">N/A</span></div>
+              <div class="meta-item meta-trx-item"><span class="lbl">Trx Ref No:</span> <strong class="val slip-ref-no monospace-text">N/A</strong></div>
             </div>
 
             <!-- Fee Particulars Table -->
@@ -147,16 +149,18 @@
               </div>
             </div>
 
-            <!-- Student & Invoice Meta Grid -->
+            <!-- Student & Invoice Meta Grid (3-Row Layout with Multi-line Trx ID) -->
             <div class="receipt-meta-grid">
               <div class="meta-item"><span class="lbl">Student Name:</span> <strong class="val slip-student-name">--</strong></div>
-              <div class="meta-item"><span class="lbl">Receipt / Inv:</span> <strong class="val slip-inv-no monospace-text">--</strong></div>
               <div class="meta-item"><span class="lbl">Student ID:</span> <strong class="val slip-student-code monospace-text">--</strong></div>
-              <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Class &amp; Roll:</span> <span class="val"><strong class="slip-class-name">--</strong> (Roll: <strong class="slip-roll-no">--</strong>)</span></div>
+
+              <div class="meta-item"><span class="lbl">Receipt / Inv:</span> <strong class="val slip-inv-no monospace-text">--</strong></div>
+              <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Pay Method:</span> <span class="val slip-pay-method">Cash</span></div>
+
               <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">Session 2027</span></div>
-              <div class="meta-item"><span class="lbl">Trx Ref No:</span> <span class="val slip-ref-no">N/A</span></div>
+              <div class="meta-item meta-trx-item"><span class="lbl">Trx Ref No:</span> <strong class="val slip-ref-no monospace-text">N/A</strong></div>
             </div>
 
             <!-- Fee Particulars Table -->
@@ -369,38 +373,56 @@
   color: #991b1b;
 }
 
-/* Metadata Grid - Column widths optimized to avoid wrapping */
+/* Metadata Grid - 3-Row Balanced Layout with Multi-line Trx ID Support */
 .receipt-meta-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1.35fr 1.15fr 0.95fr;
-  gap: 3px 10px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px 12px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 5px;
-  padding: 4px 8px;
+  padding: 5px 10px;
   margin-bottom: 5px;
-  font-size: 0.72rem;
-  line-height: 1.3;
+  font-size: 0.73rem;
+  line-height: 1.35;
 }
 
 .meta-item {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 5px;
+  min-width: 0;
 }
 
 .meta-item .lbl {
   color: #64748b;
   font-weight: 600;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .meta-item .val {
   color: #0f172a;
-  white-space: nowrap;
+  word-break: break-word;
+}
+
+/* Dedicated Multi-line Trx ID (Spans across 2 columns, wraps up to 2 lines without any clipping) */
+.meta-trx-item {
+  grid-column: span 2;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.meta-trx-item .val {
+  color: #0369a1 !important;
+  font-weight: 700;
+  word-break: break-all !important;
+  white-space: normal !important;
+  line-height: 1.3;
+  display: inline-block;
+  min-width: 0;
 }
 
 .monospace-text {
@@ -686,7 +708,16 @@ function openReceiptModal(data, monthName) {
   else if (/bank/i.test(payMethod)) payMethod = 'Bank Transfer';
   else if (/cash/i.test(payMethod)) payMethod = 'Cash';
 
-  var refNo = data.reference_no || 'N/A';
+  var refNo = data.reference_no || data.transaction_no || data.ref_no || data.trx_id || '';
+  if (!refNo || refNo === 'N/A') {
+    refNo = 'N/A';
+    if (data.notes) {
+      var trxMatch = data.notes.match(/(?:Trx\s*(?:ID|No)?|bKash\s*ID|Transaction\s*ID)\s*[:=-]\s*([A-Za-z0-9_-]+)/i);
+      if (trxMatch && trxMatch[1]) {
+        refNo = trxMatch[1];
+      }
+    }
+  }
   var periodStr = monthName || (data.fee_month ? data.fee_month : 'Session 2027');
 
   // Format currency helper - English with '৳' sign
