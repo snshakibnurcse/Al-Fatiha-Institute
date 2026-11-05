@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_promotion']))
                 $msg = "Successfully graduated <strong>$count</strong> student(s)!";
             } else {
                 $target_id = intval($tgt_id);
-                $updStmt = $db->prepare("UPDATE students SET class_id = ?, roll_no = ?, status = 'Active' WHERE id = ?");
+                $updStmt = $db->prepare("UPDATE students SET class_id = ?, roll_no = ?, student_id = ?, status = 'Active' WHERE id = ?");
                 
                 // Get starting roll number for target class
                 if (!$reassign_rolls) {
@@ -44,13 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_promotion']))
                 foreach ($selected_students as $st_id) {
                     $st_pk = intval($st_id);
                     $newRoll = $reassign_rolls ? $rollCounter : $rollCounter++;
-                    $updStmt->execute([$target_id, $newRoll, $st_pk]);
+                    $newStudentId = generate_student_id_for_class($target_id, $newRoll, $st_pk);
+                    $updStmt->execute([$target_id, $newRoll, $newStudentId, $st_pk]);
                     if ($reassign_rolls) $rollCounter++;
                     $count++;
                 }
                 
                 $targetClassName = $db->query("SELECT class_name FROM classes WHERE id = $target_id")->fetchColumn();
-                $msg = "Successfully promoted <strong>$count</strong> student(s) to <strong>" . htmlspecialchars($targetClassName) . "</strong>!";
+                $msg = "Successfully promoted <strong>$count</strong> student(s) to <strong>" . htmlspecialchars($targetClassName) . "</strong> with automatically updated Student IDs!";
             }
 
             $db->commit();

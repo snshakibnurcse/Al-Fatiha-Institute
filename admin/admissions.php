@@ -28,9 +28,9 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                 $parentStmt->execute([$parent_username, $parent_password_hash, $appData['email'] ?: 'parent@example.com', $appData['father_name'], $appData['phone']]);
                 $parent_user_id = $db->lastInsertId();
 
-                // 2. Generate Student ID (Specific Format: AFI-2027-XXX) & Sequential Roll No
-                $student_code = generate_next_student_id('2027');
+                // 2. Generate Roll No & Class-Based Fixed Student ID (Format: AFI-[CLASS_CODE]-[ROLL])
                 $roll_no = get_next_class_roll($appData['target_class_id']);
+                $student_code = generate_student_id_for_class($appData['target_class_id'], $roll_no);
 
                 // Split child name
                 $nameParts = explode(' ', trim($appData['child_name']), 2);

@@ -224,7 +224,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
           Add New Academic Class
         </h3>
         <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #64748b;">
-          Register a new class level (e.g. Year Three, Year Four, Hifz Section) for AL FATIHA.
+          Register a new class level (e.g. Class Three, Class Four, Class Five, Hifz Section) for AL FATIHA.
         </p>
       </div>
       <button style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('addClassModal')">&times;</button>
@@ -236,7 +236,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1.2rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Class Name *</label>
-          <input type="text" name="class_name" class="form-control" placeholder="e.g. Year Three, Year Four, Hifz A" required style="font-weight: 700;">
+          <input type="text" name="class_name" class="form-control" placeholder="e.g. Class Three, Class Four, Class Five, Hifz A" required style="font-weight: 700;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Section</label>

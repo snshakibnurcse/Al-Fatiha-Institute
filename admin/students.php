@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
         try {
             $db->beginTransaction();
 
-            // 1. Generate Next Sequential Student ID (Format: AFI-YYYY-XXX)
-            $student_id = generate_next_student_id($admission_session);
+            // 1. Generate Class-Based Fixed Student ID (Format: AFI-[CLASS_CODE]-[ROLL])
+            $student_id = generate_student_id_for_class($class_id, $roll_no);
 
             // 2. Parent Account Creation
             $parent_user_id = null;

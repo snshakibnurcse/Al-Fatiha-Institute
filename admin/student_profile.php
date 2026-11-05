@@ -16,6 +16,13 @@ if ($flash) {
     }
 }
 
+// Auto open receipt slip if redirected from payment
+$autoOpenReceipt = null;
+if (isset($_SESSION['flash_receipt_slip'])) {
+    $autoOpenReceipt = $_SESSION['flash_receipt_slip'];
+    unset($_SESSION['flash_receipt_slip']);
+}
+
 // Get Student ID from query parameter or POST
 $student_pk = intval($_GET['id'] ?? ($_POST['student_id'] ?? 0));
 
@@ -153,12 +160,38 @@ if (isset($_GET['delete_invoice'])) {
 }
 
 // --------------------------------------------------------
-// 5. Handle Mark Paid for an invoice
+// 5. Handle Full / Partial Payment for an invoice
 // --------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_collect_profile_payment'])) {
+    $fee_id = intval($_POST['fee_id'] ?? 0);
+    $payment_amount = floatval($_POST['payment_amount'] ?? 0);
+    $payment_method = sanitize($_POST['payment_method'] ?? 'Cash');
+    $paid_date = sanitize($_POST['paid_date'] ?? date('Y-m-d'));
+    $reference_no = sanitize($_POST['reference_no'] ?? '');
+
+    if ($fee_id > 0 && $payment_amount > 0) {
+        $res = record_fee_payment($fee_id, $payment_amount, $payment_method, $reference_no, $paid_date);
+        if ($res['success']) {
+            $_SESSION['flash_receipt_slip'] = $res['receipt'];
+            set_flash_msg($res['message'], 'success');
+        } else {
+            set_flash_msg($res['message'], 'danger');
+        }
+    } else {
+        set_flash_msg("Invalid invoice or payment amount.", 'danger');
+    }
+    redirect("student_profile.php?id=$student_pk");
+}
+
 if (isset($_GET['mark_paid'])) {
     $fee_id = intval($_GET['mark_paid']);
-    mark_fee_as_paid($fee_id, 'Cash / Admin');
-    set_flash_msg("Fee invoice marked as Paid and synced to Income Ledger!", 'success');
+    $res = record_fee_payment($fee_id, 999999, 'Cash / Admin');
+    if ($res['success']) {
+        $_SESSION['flash_receipt_slip'] = $res['receipt'];
+        set_flash_msg($res['message'], 'success');
+    } else {
+        set_flash_msg($res['message'], 'danger');
+    }
     redirect("student_profile.php?id=$student_pk");
 }
 
@@ -187,13 +220,20 @@ $fees = $feesStmt->fetchAll();
 
 $totalPaid = 0;
 $totalDue = 0;
-foreach ($fees as $f) {
-    if ($f['status'] === 'Paid') {
-        $totalPaid += $f['amount'];
-    } else {
-        $totalDue += $f['amount'];
+foreach ($fees as &$f) {
+    $t = floatval($f['amount']);
+    $p = floatval($f['paid_amount'] ?? 0);
+    if ($f['status'] === 'Paid' && $p <= 0) {
+        $p = $t;
     }
+    $d = max(0, $t - $p);
+    $f['calculated_paid'] = $p;
+    $f['calculated_due'] = $d;
+
+    $totalPaid += $p;
+    $totalDue += $d;
 }
+unset($f);
 
 // Fetch Exam Results
 $resultsStmt = $db->prepare("
@@ -372,12 +412,22 @@ require_once __DIR__ . '/layout.php';
                     <br><small style="color: #64748b; font-style: italic;"><i class="fas fa-info-circle"></i> <?= htmlspecialchars($f['notes']) ?></small>
                   <?php endif; ?>
                 </td>
-                <td><strong style="color: var(--admin-primary); font-size: 0.95rem;"><?= format_currency($f['amount']) ?></strong></td>
+                <td>
+                  <strong style="color: var(--admin-primary); font-size: 0.95rem;"><?= format_currency($f['amount']) ?></strong>
+                  <?php if (strtolower($f['status']) === 'partial'): ?>
+                    <br><small style="color: #059669; font-weight: 700;">Paid: <?= format_currency($f['calculated_paid']) ?></small>
+                    <br><small style="color: #dc2626; font-weight: 700;">Due: <?= format_currency($f['calculated_due']) ?></small>
+                  <?php endif; ?>
+                </td>
                 <td><?= format_date($f['due_date']) ?></td>
                 <td>
-                  <?php if ($f['status'] == 'Paid'): ?>
+                  <?php if (strtolower($f['status']) == 'paid'): ?>
                     <span class="badge badge-success" style="background: #d1fae5; color: #065f46; font-size: 0.78rem; padding: 3px 8px; font-weight: 700;">
                       <i class="fas fa-check-circle"></i> Paid
+                    </span>
+                  <?php elseif (strtolower($f['status']) == 'partial'): ?>
+                    <span class="badge" style="background: #fef3c7; color: #b45309; font-size: 0.78rem; padding: 3px 8px; font-weight: 700;">
+                      <i class="fas fa-adjust"></i> Partial
                     </span>
                   <?php else: ?>
                     <span class="badge badge-danger" style="background: #fee2e2; color: #991b1b; font-size: 0.78rem; padding: 3px 8px; font-weight: 700;">
@@ -386,7 +436,7 @@ require_once __DIR__ . '/layout.php';
                   <?php endif; ?>
                 </td>
                 <td>
-                  <?php if ($f['status'] == 'Paid'): ?>
+                  <?php if (strtolower($f['status']) == 'paid' || strtolower($f['status']) == 'partial'): ?>
                     <div style="font-size: 0.8rem; line-height: 1.35;">
                       <span style="color: #065f46; font-weight: 600;"><i class="fas fa-calendar-check"></i> <?= format_date($f['paid_date']) ?></span>
                       <br><small style="color: #64748b;">via <?= htmlspecialchars($f['payment_method'] ?: 'Cash') ?></small>
@@ -400,18 +450,21 @@ require_once __DIR__ . '/layout.php';
                 </td>
                 <td style="text-align: right;">
                   <div style="display: inline-flex; gap: 4px; align-items: center; justify-content: flex-end; flex-wrap: nowrap;">
-                    <?php if ($f['status'] == 'Unpaid'): ?>
-                      <a href="student_profile.php?id=<?= $student_pk ?>&mark_paid=<?= $f['id'] ?>" class="btn" style="background: #10b981; color: #ffffff; padding: 0.3rem 0.6rem; font-size: 0.76rem; border-radius: 6px; text-decoration: none; font-weight: 700; white-space: nowrap;" onclick="return confirm('Confirm payment received for invoice <?= htmlspecialchars($f['invoice_no']) ?>?')" title="Receive Payment">
+                    <?php if (strtolower($f['status']) == 'unpaid' || strtolower($f['status']) == 'partial'): ?>
+                      <button type="button" class="btn" style="background: #10b981; color: #ffffff; padding: 0.3rem 0.6rem; font-size: 0.76rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; white-space: nowrap;" onclick="openProfilePayModal(<?= htmlspecialchars(json_encode($f)) ?>)" title="Receive Full or Partial Payment">
                         <i class="fas fa-hand-holding-usd"></i> Pay
-                      </a>
-                      <button type="button" class="btn" style="background: #0284c7; color: #ffffff; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;" onclick="openEditInvoiceModal(<?= htmlspecialchars(json_encode($f)) ?>)" title="Edit Invoice Before Payment">
+                      </button>
+                      <button type="button" class="btn" style="background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; cursor: pointer; font-weight: 700;" onclick="openReceiptModal(<?= htmlspecialchars(json_encode($f)) ?>, '<?= htmlspecialchars($f['fee_month'] ? date('F Y', strtotime($f['fee_month'].'-01')) : date('F Y')) ?>')" title="Print Official Money Receipt">
+                        <i class="fas fa-receipt"></i> Slip
+                      </button>
+                      <button type="button" class="btn" style="background: #0284c7; color: #ffffff; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;" onclick="openEditInvoiceModal(<?= htmlspecialchars(json_encode($f)) ?>)" title="Edit Invoice Details">
                         <i class="fas fa-edit"></i> Edit
                       </button>
                       <a href="student_profile.php?id=<?= $student_pk ?>&delete_invoice=<?= $f['id'] ?>" class="btn" style="background: #ef4444; color: #ffffff; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; text-decoration: none; font-weight: 700;" onclick="return confirm('Are you sure you want to permanently delete Invoice #<?= htmlspecialchars($f['invoice_no']) ?>?')" title="Delete Invoice">
                         <i class="fas fa-trash-alt"></i>
                       </a>
                     <?php else: ?>
-                      <button type="button" class="btn" style="background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; cursor: pointer; font-weight: 700;" onclick="openProfileReceiptModal(<?= htmlspecialchars(json_encode($f)) ?>, '<?= htmlspecialchars($f['fee_month'] ? date('F Y', strtotime($f['fee_month'].'-01')) : date('F Y')) ?>')" title="Print Official Money Receipt">
+                      <button type="button" class="btn" style="background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 0.3rem 0.55rem; font-size: 0.76rem; border-radius: 6px; cursor: pointer; font-weight: 700;" onclick="openReceiptModal(<?= htmlspecialchars(json_encode($f)) ?>, '<?= htmlspecialchars($f['fee_month'] ? date('F Y', strtotime($f['fee_month'].'-01')) : date('F Y')) ?>')" title="Print Official Money Receipt">
                         <i class="fas fa-receipt"></i> Slip
                       </button>
                       <button type="button" class="btn" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; padding: 0.3rem 0.5rem; font-size: 0.76rem; border-radius: 6px; cursor: pointer;" onclick="openEditInvoiceModal(<?= htmlspecialchars(json_encode($f)) ?>)" title="Edit Invoice Details">
@@ -825,78 +878,113 @@ require_once __DIR__ . '/layout.php';
   </div>
 </div>
 
-<!-- Modal 4: Official Money Receipt Slip Modal (Profile View) -->
-<div id="profileReceiptModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1070; justify-content: center; align-items: center; padding: 1rem;">
-  <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 16px; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.35); max-height: 90vh; overflow-y: auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.8rem; margin-bottom: 1rem;">
-      <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); font-size: 1.25rem;">
-        <i class="fas fa-receipt" style="color: #f59e0b;"></i> Official Money Receipt Slip
-      </h3>
-      <button style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('profileReceiptModal')">&times;</button>
+<!-- ========================================================
+     MODAL: A4 DUAL MONEY RECEIPT SLIP MODAL (STUDENT & OFFICE COPY)
+     ======================================================== -->
+<?php require_once __DIR__ . '/../includes/receipt_modal.php'; ?>
+
+<!-- Modal: Collect Payment (Full / Partial) on Student Profile -->
+<div id="profilePayModal" class="admin-modal-wrap" style="display: none;">
+  <div class="admin-modal-box" style="max-width: 520px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem;">
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 800; color: #0284c7; letter-spacing: 0.08em;">RECEIVE BILL PAYMENT</span>
+        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.35rem;">
+          Collect Fee Payment
+        </h3>
+      </div>
+      <button style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('profilePayModal')">&times;</button>
     </div>
 
-    <div id="profilePrintSlipArea" style="background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 1.5rem;">
-      <div style="text-align: center; border-bottom: 2px solid #064878; padding-bottom: 0.8rem; margin-bottom: 1rem;">
-        <h3 style="margin: 0; color: #064878; font-family: 'Outfit', sans-serif; font-size: 1.35rem;">AL FATIHA INSTITUTE</h3>
-        <p style="margin: 2px 0; font-size: 0.78rem; color: #64748b;">Cambridge Curriculum &bull; Islamic Ethos &bull; Cox's Bazar</p>
-        <span style="display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 20px; margin-top: 4px;">
-          OFFICIAL MONEY RECEIPT / CASH MEMO
-        </span>
-      </div>
+    <form method="POST" action="student_profile.php?id=<?= $student_pk ?>">
+      <input type="hidden" name="action_collect_profile_payment" value="1">
+      <input type="hidden" name="student_id" value="<?= $student_pk ?>">
+      <input type="hidden" name="fee_id" id="profPayFeeId">
 
-      <table style="width: 100%; font-size: 0.88rem; line-height: 1.8; border-collapse: collapse;">
-        <tr>
-          <td style="color: #64748b; width: 40%;">Invoice No:</td>
-          <td><strong id="slipInvNo" style="font-family: monospace; color: #0284c7;">--</strong></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Student Name:</td>
-          <td><strong id="slipStudent"><?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></strong></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Student ID / Roll:</td>
-          <td><code><?= htmlspecialchars($student['student_id']) ?></code> &bull; Roll: #<?= $student['roll_no'] ?></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Class / Standard:</td>
-          <td><strong><?= htmlspecialchars($student['class_name']) ?></strong></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Description / Items:</td>
-          <td><strong id="slipItemTitle">--</strong></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Paid Date &amp; Method:</td>
-          <td><span id="slipPaidInfo">--</span></td>
-        </tr>
-        <tr>
-          <td style="color: #64748b;">Reference No:</td>
-          <td><span id="slipRef">--</span></td>
-        </tr>
-        <tr style="border-top: 2px solid #064878; border-bottom: 2px solid #064878;">
-          <td style="font-weight: 800; font-size: 1rem; color: #064878; padding: 6px 0;">Total Amount Paid:</td>
-          <td style="font-weight: 800; font-size: 1.25rem; color: #10b981; padding: 6px 0;"><span id="slipAmount">--</span></td>
-        </tr>
-      </table>
-
-      <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; font-size: 0.75rem; color: #64748b;">
-        <div style="text-align: center;">
-          <div style="width: 120px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px;"></div>
-          <span>Student / Guardian</span>
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.8rem; color: #64748b;">Invoice No:</span>
+          <strong id="profPayInvNo" style="font-family: monospace; color: #0284c7;">--</strong>
         </div>
-        <div style="text-align: center;">
-          <div style="width: 120px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px;"></div>
-          <span>Authorized Cashier</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.8rem; color: #64748b;">Item / Fee:</span>
+          <strong id="profPayFeeType" style="color: var(--admin-deep-navy);">--</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-bottom: 6px;">
+          <span style="font-size: 0.82rem; color: #64748b;">Total Bill:</span>
+          <strong id="profPayTotalBill" style="color: #1e293b;">৳ 0.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 0.82rem; color: #64748b;">Already Paid:</span>
+          <strong id="profPayAlreadyPaid" style="color: #059669;">৳ 0.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #cbd5e1; padding-top: 6px;">
+          <span style="font-size: 0.88rem; font-weight: 800; color: #334155;">Current Due:</span>
+          <strong id="profPayCurrentDue" style="font-size: 1.25rem; color: #dc2626;">৳ 0.00</strong>
         </div>
       </div>
-    </div>
 
-    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.2rem;">
-      <button type="button" class="btn" style="background: #e2e8f0; color: #334155; padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer;" onclick="closeModal('profileReceiptModal')">Close</button>
-      <button type="button" class="btn" style="background: #0284c7; color: #ffffff; padding: 0.5rem 1.4rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700;" onclick="printProfileSlip()">
-        <i class="fas fa-print"></i> Print Receipt
-      </button>
-    </div>
+      <!-- Payment Option Selection: Full vs Partial -->
+      <div style="margin-top: 1rem; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 10px;">
+        <label style="font-size: 0.82rem; font-weight: 800; color: var(--admin-deep-navy); display: block; margin-bottom: 6px;">
+          Payment Type (পরিশোধের ধরণ) *
+        </label>
+        <div style="display: flex; gap: 15px;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #065f46;">
+            <input type="radio" name="prof_payment_type_toggle" id="toggleProfFullPay" value="full" checked onchange="handleProfPaymentTypeChange()" style="accent-color: #10b981; transform: scale(1.15);">
+            <span>Full Payment (সম্পূর্ণ পরিশোধ)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #b45309;">
+            <input type="radio" name="prof_payment_type_toggle" id="toggleProfPartialPay" value="partial" onchange="handleProfPaymentTypeChange()" style="accent-color: #f59e0b; transform: scale(1.15);">
+            <span>Partial Payment (আংশিক পরিশোধ)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Amount to Pay Now -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <label style="font-weight: 800; color: var(--admin-deep-navy); font-size: 0.88rem;">
+          Amount to Pay Now (পরিশোধের পরিমাণ) *
+        </label>
+        <div style="position: relative;">
+          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: #0284c7; font-size: 1.1rem;">৳</span>
+          <input type="number" step="0.01" min="1" name="payment_amount" id="profPayAmount" class="form-control" required style="padding-left: 32px; font-weight: 800; font-size: 1.15rem; color: #065f46;" oninput="updateProfRemainingHelp()">
+        </div>
+        <small id="profPayRemainingHelp" style="color: #64748b; font-size: 0.78rem; margin-top: 4px; display: block;">
+          Remaining due balance after payment: <strong id="profPayRemainingDisplay">৳ 0.00</strong>
+        </small>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
+        <div class="form-group">
+          <label>Payment Method *</label>
+          <select name="payment_method" class="form-control" required>
+            <option value="Cash (নগদ)">Cash (নগদ)</option>
+            <option value="bKash">bKash (বিকাশ)</option>
+            <option value="Nagad">Nagad (নগদ অ্যাপ)</option>
+            <option value="Bank Transfer">Bank Transfer (ব্যাংক)</option>
+            <option value="Rocket">Rocket (রকেট)</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Paid Date *</label>
+          <input type="date" name="paid_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 0.8rem;">
+        <label>Deposit Slip / Transaction Ref (Optional)</label>
+        <input type="text" name="reference_no" class="form-control" placeholder="e.g. bKash TrxID or MR-102">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('profilePayModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="background: #10b981; color: #ffffff; font-weight: 800; padding: 0.65rem 1.4rem; border-radius: 8px;">
+          <i class="fas fa-check-circle"></i> Confirm Payment &amp; Print Slip
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -967,22 +1055,68 @@ require_once __DIR__ . '/layout.php';
     openModal('editInvoiceModal');
   }
 
-  function openProfileReceiptModal(f, monthName) {
-    document.getElementById('slipInvNo').innerText = f.invoice_no;
-    document.getElementById('slipItemTitle').innerText = f.fee_type;
-    document.getElementById('slipAmount').innerText = '৳ ' + parseFloat(f.amount).toLocaleString('en-US', {minimumFractionDigits: 2});
-    document.getElementById('slipPaidInfo').innerText = (f.paid_date || 'Paid') + ' (' + (f.payment_method || 'Cash') + ')';
-    document.getElementById('slipRef').innerText = f.reference_no || 'N/A';
-    openModal('profileReceiptModal');
+  var currentProfMaxDue = 0;
+
+  function openProfilePayModal(fee) {
+    document.getElementById('profPayFeeId').value = fee.id;
+    document.getElementById('profPayInvNo').innerText = fee.invoice_no;
+    document.getElementById('profPayFeeType').innerText = fee.fee_type;
+
+    var total = parseFloat(fee.amount || 0);
+    var paid = parseFloat(fee.paid_amount !== undefined ? fee.paid_amount : (fee.status === 'Paid' ? total : 0));
+    var due = Math.max(0, total - paid);
+    currentProfMaxDue = due;
+
+    function fmt(val) {
+      return '৳ ' + parseFloat(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    document.getElementById('profPayTotalBill').innerText = fmt(total);
+    document.getElementById('profPayAlreadyPaid').innerText = fmt(paid);
+    document.getElementById('profPayCurrentDue').innerText = fmt(due);
+
+    // Default to Full Payment
+    document.getElementById('toggleProfFullPay').checked = true;
+    var payInput = document.getElementById('profPayAmount');
+    payInput.value = due.toFixed(2);
+    payInput.max = due.toFixed(2);
+    payInput.readOnly = true;
+
+    updateProfRemainingHelp();
+    openModal('profilePayModal');
   }
 
-  function printProfileSlip() {
-    var printContent = document.getElementById('profilePrintSlipArea').innerHTML;
-    var origContent = document.body.innerHTML;
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = origContent;
-    window.location.reload();
+  function handleProfPaymentTypeChange() {
+    var isFull = document.getElementById('toggleProfFullPay').checked;
+    var payInput = document.getElementById('profPayAmount');
+    if (isFull) {
+      payInput.value = currentProfMaxDue.toFixed(2);
+      payInput.readOnly = true;
+    } else {
+      payInput.readOnly = false;
+      payInput.focus();
+      payInput.select();
+    }
+    updateProfRemainingHelp();
+  }
+
+  function updateProfRemainingHelp() {
+    var payInput = document.getElementById('profPayAmount');
+    var entered = parseFloat(payInput.value) || 0;
+    if (entered > currentProfMaxDue) {
+      entered = currentProfMaxDue;
+      payInput.value = currentProfMaxDue.toFixed(2);
+    }
+    var rem = Math.max(0, currentProfMaxDue - entered);
+    var disp = document.getElementById('profPayRemainingDisplay');
+    disp.innerText = '৳ ' + rem.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (rem <= 0.01) {
+      disp.style.color = '#059669';
+      disp.innerText += ' (Full Settlement)';
+    } else {
+      disp.style.color = '#dc2626';
+      disp.innerText += ' (Partial Balance Remaining)';
+    }
   }
 
   // Recalculate on load
@@ -990,5 +1124,13 @@ require_once __DIR__ . '/layout.php';
     recalcMultiTotal();
   });
 </script>
+
+<?php if ($autoOpenReceipt): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  openReceiptModal(<?= json_encode($autoOpenReceipt) ?>);
+});
+</script>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/layout_footer.php'; ?>

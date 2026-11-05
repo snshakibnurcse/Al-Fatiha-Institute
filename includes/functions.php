@@ -242,69 +242,152 @@ function generate_advance_fee_invoice($student_id, $start_year_month, $num_month
 }
 
 /**
- * Mark Fee Invoice as Paid & Auto-Sync to Accounts Income Ledger
+ * Record fee payment (supports Full and Partial payment)
+ * Updates fees.paid_amount, fees.status ('Paid' or 'Partial'), and syncs to accounts_transactions
  */
-function mark_fee_as_paid($fee_id, $payment_method = 'Cash', $ref_no = '', $paid_date = null) {
+function record_fee_payment($fee_id, $payment_amount, $payment_method = 'Cash', $ref_no = '', $paid_date = null) {
     try {
         $db = get_db_connection();
         $paidDate = $paid_date ?: date('Y-m-d');
+        $paymentAmount = round(floatval($payment_amount), 2);
         
-        // Fetch fee invoice details
+        if ($paymentAmount <= 0) {
+            return ['success' => false, 'message' => 'Payment amount must be greater than zero.'];
+        }
+        
         $stmt = $db->prepare("
-            SELECT f.*, s.first_name, s.last_name, s.roll_no, c.class_name 
+            SELECT f.*, s.first_name, s.last_name, s.student_id as student_code, s.roll_no, c.class_name 
             FROM fees f 
             JOIN students s ON f.student_id = s.id 
             JOIN classes c ON s.class_id = c.id 
             WHERE f.id = ? LIMIT 1
         ");
         $stmt->execute([$fee_id]);
-        $fee = $stmt->fetch();
-
-        if (!$fee) return false;
-
-        // Update fee invoice status to Paid and save reference_no
-        $upd = $db->prepare("UPDATE fees SET status = 'Paid', paid_date = ?, payment_method = ?, reference_no = ? WHERE id = ?");
-        $upd->execute([$paidDate, $payment_method, $ref_no, $fee_id]);
-
-        // Auto-Insert into accounts_transactions if not already synced
-        $txCheck = $db->prepare("SELECT id FROM accounts_transactions WHERE reference_no LIKE ? AND type = 'Income' LIMIT 1");
-        $txCheck->execute(['%' . $fee['invoice_no'] . '%']);
-        $existingTx = $txCheck->fetch();
-
-        if (!$existingTx) {
-            $studentName = $fee['first_name'] . ' ' . $fee['last_name'];
-            $title = $fee['fee_type'] . " - " . $studentName . " (" . $fee['class_name'] . ", Roll: " . $fee['roll_no'] . ")";
-            $ref = $ref_no ? ($fee['invoice_no'] . ' / ' . $ref_no) : $fee['invoice_no'];
-            $txnNo = 'TXN-INC-' . date('Ym') . '-' . sprintf('%03d', $fee_id);
-
-            // Determine appropriate income category
-            $incomeCategory = 'Student Tuition & Fees';
-            if (stripos($fee['fee_type'], 'khata') !== false || stripos($fee['fee_type'], 'book') !== false || stripos($fee['fee_type'], 'diary') !== false || stripos($fee['fee_type'], 'stationery') !== false || stripos($fee['fee_type'], 'uniform') !== false || stripos($fee['fee_type'], 'kit') !== false) {
-                $incomeCategory = 'Book & Uniform Sales';
-            } elseif (stripos($fee['fee_type'], 'exam') !== false) {
-                $incomeCategory = 'Event & Competition Fees';
-            } elseif (stripos($fee['fee_type'], 'admission') !== false || stripos($fee['fee_type'], 'registration') !== false) {
-                $incomeCategory = 'Admission Form & Registration';
-            }
-
-            $insTx = $db->prepare("
-                INSERT INTO accounts_transactions 
-                (transaction_no, type, category, title, amount, transaction_date, payment_method, reference_no, description, created_by) 
-                VALUES (?, 'Income', ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            $insTx->execute([
-                $txnNo,
-                $incomeCategory,
-                $title,
-                $fee['amount'],
-                $paidDate,
-                $payment_method,
-                $ref,
-                "Auto-synced income from Paid Invoice #" . $fee['invoice_no'] . " (" . $fee['fee_type'] . ")",
-                get_current_user_id()
-            ]);
+        $fee = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$fee) {
+            return ['success' => false, 'message' => 'Invoice not found.'];
         }
-        return true;
+        
+        $totalAmount = round(floatval($fee['amount']), 2);
+        $currentPaid = round(floatval($fee['paid_amount'] ?? 0), 2);
+        
+        // If already marked Paid in legacy DB without paid_amount, set currentPaid to totalAmount
+        if ($fee['status'] === 'Paid' && $currentPaid <= 0) {
+            $currentPaid = $totalAmount;
+        }
+        
+        $currentDue = round(max(0, $totalAmount - $currentPaid), 2);
+        
+        if ($currentDue <= 0.001) {
+            return ['success' => false, 'message' => 'Invoice #' . htmlspecialchars($fee['invoice_no']) . ' is already fully paid.'];
+        }
+        
+        // Cap payment at current due
+        if ($paymentAmount > $currentDue) {
+            $paymentAmount = $currentDue;
+        }
+        
+        $newTotalPaid = round($currentPaid + $paymentAmount, 2);
+        $newDue = round(max(0, $totalAmount - $newTotalPaid), 2);
+        $newStatus = ($newDue <= 0.001) ? 'Paid' : 'Partial';
+        
+        // Update fees table
+        $combinedRef = $ref_no ? ($fee['reference_no'] ? $fee['reference_no'] . ', ' . $ref_no : $ref_no) : $fee['reference_no'];
+        $upd = $db->prepare("
+            UPDATE fees 
+            SET paid_amount = ?, status = ?, paid_date = ?, payment_method = ?, reference_no = ? 
+            WHERE id = ?
+        ");
+        $upd->execute([$newTotalPaid, $newStatus, $paidDate, $payment_method, $combinedRef, $fee_id]);
+        
+        // Sync paid amount to accounts_transactions
+        $studentName = $fee['first_name'] . ' ' . $fee['last_name'];
+        $title = $fee['fee_type'] . " - " . $studentName . " (" . $fee['class_name'] . ", Roll: " . $fee['roll_no'] . ")";
+        $ref = $ref_no ? ($fee['invoice_no'] . ' / ' . $ref_no) : $fee['invoice_no'];
+        $txnNo = 'TXN-INC-' . date('Ym') . '-' . sprintf('%03d', $fee_id) . '-' . rand(10, 99);
+        
+        $incomeCategory = 'Student Tuition & Fees';
+        if (stripos($fee['fee_type'], 'khata') !== false || stripos($fee['fee_type'], 'book') !== false || stripos($fee['fee_type'], 'diary') !== false || stripos($fee['fee_type'], 'stationery') !== false || stripos($fee['fee_type'], 'uniform') !== false || stripos($fee['fee_type'], 'kit') !== false) {
+            $incomeCategory = 'Book & Uniform Sales';
+        } elseif (stripos($fee['fee_type'], 'exam') !== false) {
+            $incomeCategory = 'Event & Competition Fees';
+        } elseif (stripos($fee['fee_type'], 'admission') !== false || stripos($fee['fee_type'], 'registration') !== false) {
+            $incomeCategory = 'Admission Form & Registration';
+        }
+        
+        $paymentNote = ($newStatus === 'Paid') ? "Fully paid" : ("Partial payment (Due: ৳" . number_format($newDue, 2) . ")");
+        
+        $insTx = $db->prepare("
+            INSERT INTO accounts_transactions 
+            (transaction_no, type, category, title, amount, transaction_date, payment_method, reference_no, description, created_by) 
+            VALUES (?, 'Income', ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $insTx->execute([
+            $txnNo,
+            $incomeCategory,
+            $title,
+            $paymentAmount,
+            $paidDate,
+            $payment_method,
+            $ref,
+            "Received ৳" . number_format($paymentAmount, 2) . " for Invoice #" . $fee['invoice_no'] . " [$paymentNote]",
+            get_current_user_id()
+        ]);
+        
+        // Prepare receipt data
+        $receiptData = [
+            'id' => $fee['id'],
+            'invoice_no' => $fee['invoice_no'],
+            'student_id' => $fee['student_id'],
+            'student_code' => $fee['student_code'],
+            'first_name' => $fee['first_name'],
+            'last_name' => $fee['last_name'],
+            'class_name' => $fee['class_name'],
+            'roll_no' => $fee['roll_no'],
+            'fee_type' => $fee['fee_type'],
+            'notes' => $fee['notes'],
+            'fee_month' => $fee['fee_month'],
+            'total_amount' => $totalAmount,
+            'paid_amount_now' => $paymentAmount,
+            'paid_amount' => $newTotalPaid,
+            'due_amount' => $newDue,
+            'status' => $newStatus,
+            'paid_date' => $paidDate,
+            'payment_method' => $payment_method,
+            'reference_no' => $ref_no
+        ];
+        
+        return [
+            'success' => true,
+            'message' => ($newStatus === 'Paid')
+                ? "Full payment of <strong>৳" . number_format($paymentAmount, 2) . "</strong> received for Invoice <strong>" . htmlspecialchars($fee['invoice_no']) . "</strong>!"
+                : "Partial payment of <strong>৳" . number_format($paymentAmount, 2) . "</strong> received for Invoice <strong>" . htmlspecialchars($fee['invoice_no']) . "</strong>. Remaining due: <strong>৳" . number_format($newDue, 2) . "</strong>.",
+            'receipt' => $receiptData
+        ];
+    } catch (Exception $e) {
+        return ['success' => false, 'message' => 'Payment failed: ' . $e->getMessage()];
+    }
+}
+
+/**
+ * Mark Fee Invoice as Paid (Full Settlement) & Auto-Sync to Accounts Income Ledger
+ */
+function mark_fee_as_paid($fee_id, $payment_method = 'Cash', $ref_no = '', $paid_date = null) {
+    try {
+        $db = get_db_connection();
+        $stmt = $db->prepare("SELECT amount, paid_amount FROM fees WHERE id = ? LIMIT 1");
+        $stmt->execute([$fee_id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return false;
+        
+        $total = floatval($row['amount']);
+        $currentPaid = floatval($row['paid_amount'] ?? 0);
+        $due = max(0, $total - $currentPaid);
+        if ($due <= 0.001) $due = $total;
+        
+        $res = record_fee_payment($fee_id, $due, $payment_method, $ref_no, $paid_date);
+        return $res['success'] ?? false;
     } catch (Exception $e) {
         return false;
     }
@@ -321,10 +404,29 @@ function ensure_latest_db_schema() {
     try {
         $db = get_db_connection();
 
-        // Rename Year One & Year Two to Class One & Class Two
+        // Rename Year classes to Class One, Class Two, Class Three
         try {
             $db->exec("UPDATE `classes` SET `class_name` = 'Class One' WHERE id = 4 OR `class_name` = 'Year One';");
             $db->exec("UPDATE `classes` SET `class_name` = 'Class Two' WHERE id = 5 OR `class_name` = 'Year Two';");
+            $db->exec("UPDATE `classes` SET `class_name` = 'Class Three' WHERE id = 6 OR `class_name` LIKE 'Year Three%' OR `class_name` = 'Year 3';");
+        } catch (Exception $e) {}
+
+        // Standardize legacy student IDs to official format (AFI-C1-001, AFI-C2-001)
+        try {
+            $db->exec("UPDATE `students` SET `student_id` = 'AFI-C1-001' WHERE id = 1 AND `student_id` != 'AFI-C1-001';");
+            $db->exec("UPDATE `students` SET `student_id` = 'AFI-C1-002' WHERE id = 16 AND `student_id` != 'AFI-C1-002';");
+            $db->exec("UPDATE `students` SET `student_id` = 'AFI-C1-003' WHERE id = 17 AND `student_id` != 'AFI-C1-003';");
+            $db->exec("UPDATE `students` SET `student_id` = 'AFI-C2-001' WHERE id = 18 AND `student_id` != 'AFI-C2-001';");
+            $db->exec("UPDATE `students` SET `student_id` = 'AFI-C2-002' WHERE id = 19 AND `student_id` != 'AFI-C2-002';");
+        } catch (Exception $e) {}
+
+        // Add paid_amount column to fees table for partial payment support
+        try {
+            $hasPaidCol = $db->query("SHOW COLUMNS FROM `fees` LIKE 'paid_amount'")->fetch();
+            if (!$hasPaidCol) {
+                $db->exec("ALTER TABLE `fees` ADD COLUMN `paid_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER `amount`;");
+            }
+            $db->exec("UPDATE `fees` SET `paid_amount` = `amount` WHERE `status` = 'Paid' AND (`paid_amount` IS NULL OR `paid_amount` <= 0);");
         } catch (Exception $e) {}
 
         // Add extended student details to students table if missing
@@ -416,10 +518,141 @@ ensure_latest_db_schema();
 auto_generate_monthly_invoices();
 
 /**
- * Generate next sequential Student ID with specific format: AFI-YYYY-XXX
- * Example: AFI-2027-001, AFI-2027-002
+ * Map Class Name to official standard short code:
+ * Play Group -> PG
+ * Nursery -> NUR
+ * KG (Kindergarten) -> KG
+ * Class One -> C1
+ * Class Two -> C2
+ * Class Three -> C3
+ * Class Four -> C4
+ * Class Five -> C5
+ * Class Six -> C6
+ * Hifz / Quran -> HFZ
  */
-function generate_next_student_id($sessionYear = '2027') {
+function get_class_short_code($className) {
+    $name = trim($className ?? '');
+    $lower = strtolower($name);
+
+    if (strpos($lower, 'play') !== false || strpos($lower, 'pg') !== false) {
+        return 'PG';
+    }
+    if (strpos($lower, 'nurs') !== false || strpos($lower, 'nur') !== false) {
+        return 'NUR';
+    }
+    if (strpos($lower, 'kg') !== false || strpos($lower, 'kinder') !== false) {
+        return 'KG';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:one|1|i\b)/i', $name)) {
+        return 'C1';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:two|2|ii\b)/i', $name)) {
+        return 'C2';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:three|3|iii\b)/i', $name)) {
+        return 'C3';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:four|4|iv\b)/i', $name)) {
+        return 'C4';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:five|5|v\b)/i', $name)) {
+        return 'C5';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:six|6|vi\b)/i', $name)) {
+        return 'C6';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:seven|7|vii\b)/i', $name)) {
+        return 'C7';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:eight|8|viii\b)/i', $name)) {
+        return 'C8';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:nine|9|ix\b)/i', $name)) {
+        return 'C9';
+    }
+    if (preg_match('/(?:class|year|grade)\s*(?:ten|10|x\b)/i', $name)) {
+        return 'C10';
+    }
+    if (strpos($lower, 'hifz') !== false || strpos($lower, 'tahfeez') !== false || strpos($lower, 'quran') !== false) {
+        return 'HFZ';
+    }
+    
+    // Generic fallback: first letters or uppercase alphanumeric
+    $words = preg_split('/\s+/', preg_replace('/[^a-zA-Z0-9\s]/', '', $name));
+    $code = '';
+    foreach ($words as $w) {
+        if (!empty($w)) $code .= strtoupper($w[0]);
+    }
+    if (strlen($code) < 2) {
+        $code = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $name), 0, 3));
+    }
+    return !empty($code) ? substr($code, 0, 4) : 'GEN';
+}
+
+/**
+ * Generate Fixed Student ID by Class: AFI-[CODE]-[ROLL]
+ * Example: AFI-PG-001, AFI-NUR-002, AFI-KG-001, AFI-C1-001, AFI-C2-001, AFI-C3-001
+ */
+function generate_student_id_for_class($classIdOrName, $rollNo = null, $excludeStudentPk = null) {
+    $db = get_db_connection();
+    
+    // Resolve class name
+    $className = '';
+    if (is_numeric($classIdOrName)) {
+        $stmt = $db->prepare("SELECT class_name FROM classes WHERE id = ? LIMIT 1");
+        $stmt->execute([intval($classIdOrName)]);
+        $className = $stmt->fetchColumn() ?: 'Class One';
+    } else {
+        $className = (string)$classIdOrName;
+    }
+    
+    $code = get_class_short_code($className);
+    $prefix = "AFI-" . $code . "-";
+    
+    if ($rollNo !== null && intval($rollNo) > 0) {
+        $targetId = $prefix . str_pad(intval($rollNo), 3, '0', STR_PAD_LEFT);
+        // Verify uniqueness
+        $chkQuery = "SELECT id FROM students WHERE student_id = ?";
+        $chkParams = [$targetId];
+        if ($excludeStudentPk) {
+            $chkQuery .= " AND id != ?";
+            $chkParams[] = intval($excludeStudentPk);
+        }
+        $chkStmt = $db->prepare($chkQuery);
+        $chkStmt->execute($chkParams);
+        if (!$chkStmt->fetch()) {
+            return $targetId;
+        }
+    }
+    
+    // Find next available sequential number
+    $stmt = $db->prepare("SELECT student_id FROM students WHERE student_id LIKE ? ORDER BY student_id ASC");
+    $stmt->execute([$prefix . '%']);
+    $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $usedNumbers = [];
+    foreach ($existing as $sid) {
+        $part = substr($sid, strlen($prefix));
+        if (is_numeric($part)) {
+            $usedNumbers[intval($part)] = true;
+        }
+    }
+    
+    $candidate = ($rollNo && intval($rollNo) > 0) ? intval($rollNo) : 1;
+    while (isset($usedNumbers[$candidate])) {
+        $candidate++;
+    }
+    
+    return $prefix . str_pad($candidate, 3, '0', STR_PAD_LEFT);
+}
+
+/**
+ * Generate next sequential Student ID with specific format: AFI-YYYY-XXX or AFI-[CODE]-[ROLL]
+ */
+function generate_next_student_id($sessionYear = '2027', $classId = null) {
+    if ($classId !== null) {
+        return generate_student_id_for_class($classId);
+    }
     $db = get_db_connection();
     $prefix = "AFI-" . $sessionYear . "-";
     

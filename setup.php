@@ -206,8 +206,9 @@ if (isset($_POST['run_setup'])) {
         (1, 'Play Group', '2.5 - 3.5 Years', 'A', '101', 3500.00),
         (2, 'Nursery', '3.5 - 4.5 Years', 'A', '102', 3800.00),
         (3, 'KG (Kindergarten)', '4.5 - 5.5 Years', 'A', '103', 4000.00),
-        (4, 'Year One', '5.5 - 6.5 Years', 'A', '201', 4500.00),
-        (5, 'Year Two', '6.5 - 7.5 Years', 'A', '202', 4800.00);");
+        (4, 'Class One', '5.5 - 6.5 Years', 'A', '201', 4500.00),
+        (5, 'Class Two', '6.5 - 7.5 Years', 'A', '202', 4800.00),
+        (6, 'Class Three', '7.5 - 8.5 Years', 'A', '301', 5000.00);");
 
         // Seed Users (Admin, Teacher, Parent, Accountant)
         $adminPass = password_hash('admin123', PASSWORD_BCRYPT);
@@ -251,7 +252,7 @@ if (isset($_POST['run_setup'])) {
 
         // Seed Demo Student
         $pdo->exec("INSERT IGNORE INTO `students` (`id`, `student_id`, `first_name`, `last_name`, `gender`, `dob`, `class_id`, `roll_no`, `parent_user_id`, `father_name`, `mother_name`, `phone`, `address`, `status`, `admission_date`) VALUES
-        (1, 'AFI-2025-001', 'Abdullah', 'Al-Mamun', 'Male', '2019-05-12', 4, 1, 3, 'Mohammad Tariqul Islam', 'Fatima Khatun', '+880 1822-222222', 'Block-C, Main Road, Cox\'s Bazar', 'Active', '2025-01-10');");
+        (1, 'AFI-C1-001', 'Abdullah', 'Al-Mamun', 'Male', '2019-05-12', 4, 1, 3, 'Mohammad Tariqul Islam', 'Fatima Khatun', '+880 1822-222222', 'Block-C, Main Road, Cox\'s Bazar', 'Active', '2025-01-10');");
 
         // Seed Demo Attendance
         $pdo->exec("INSERT IGNORE INTO `attendance` (`id`, `student_id`, `class_id`, `attendance_date`, `status`, `remarks`) VALUES
