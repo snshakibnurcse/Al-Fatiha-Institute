@@ -8,7 +8,15 @@ Options -Indexes
 # 2. Set default character set
 AddDefaultCharset UTF-8
 
-# 3. Protect sensitive files from direct web access
+# 3. Security HTTP Response Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 4. Protect sensitive files from direct web access
 <FilesMatch "^(\.env|\.git|database\.sql|schema\.sql|composer\.(json|lock)|package\.(json|lock)|\.gitignore)$">
     <IfModule mod_authz_core.c>
         Require all denied
@@ -19,7 +27,7 @@ AddDefaultCharset UTF-8
     </IfModule>
 </FilesMatch>
 
-# 4. Protect config files
+# Protect config files
 <Files "db.php">
     <IfModule mod_authz_core.c>
         Require all denied
@@ -30,12 +38,29 @@ AddDefaultCharset UTF-8
     </IfModule>
 </Files>
 
-# 5. URL Rewriting & HTTPS Enforcement (Uncomment if needed)
+# ----------------------------------------------------------------------
+# 5. Clean URLs (Remove .php extension) & HTTPS Enforcement
+# ----------------------------------------------------------------------
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Redirect to HTTPS (Uncomment on live production with SSL)
-    # RewriteCond %{HTTPS} off
-    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-</IfModule>
+    # Prevent loop if already rewritten
+    RewriteCond %{ENV:REDIRECT_STATUS} 200
+    RewriteRule ^ - [L]
 
+    # A. Special: Redirect /index or /index.php to root directory /
+    RewriteCond %{REQUEST_METHOD} !POST
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s(.*)/index(?:\.php)?[\s\?] [NC]
+    RewriteRule ^ %1/ [R=301,L,NE]
+
+    # B. External 301 Redirect: redirect /page.php to /page (GET requests only)
+    RewriteCond %{REQUEST_METHOD} !POST
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ %1 [R=301,L,NE]
+
+    # C. Internal Rewrite: route extensionless URL /page to /page.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.*)$ $1.php [L,QSA]
+</IfModule>

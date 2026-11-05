@@ -3,9 +3,9 @@ require_once __DIR__ . '/../includes/functions.php';
 
 if (is_logged_in()) {
     $role = get_current_user_role();
-    if ($role === 'admin') redirect('dashboard.php');
-    if ($role === 'teacher') redirect('../teacher/dashboard.php');
-    if ($role === 'parent') redirect('../portal/dashboard.php');
+    if ($role === 'admin') redirect('dashboard');
+    if ($role === 'teacher') redirect('../teacher/dashboard');
+    if ($role === 'parent') redirect('../portal/dashboard');
 }
 
 $error = '';
@@ -27,13 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $_SESSION['user_name'] = $user['full_name'];
 
             if ($user['role'] === 'admin') {
-                redirect('dashboard.php');
+                redirect('dashboard');
             } elseif ($user['role'] === 'teacher') {
-                redirect('../teacher/dashboard.php');
+                redirect('../teacher/dashboard');
             } elseif ($user['role'] === 'parent') {
-                redirect('../portal/dashboard.php');
+                redirect('../portal/dashboard');
             } else {
-                redirect('../index.php');
+                redirect('../');
             }
         } else {
             $error = 'Invalid username or password.';
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
 <div class="auth-wrapper">
   <div class="auth-card">
-    <a href="../index.php">
+    <a href="../">
       <img src="../assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
     </a>
     <h2>Admin Management Panel</h2>
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     </form>
 
     <div style="margin-top: 1.8rem; font-size: 0.8rem; color: var(--admin-text-muted);">
-      <p><a href="../index.php" style="color: var(--admin-primary); text-decoration: none; font-weight: 700;"><i class="fas fa-arrow-left"></i> Back to School Website</a></p>
+      <p><a href="../" style="color: var(--admin-primary); text-decoration: none; font-weight: 700;"><i class="fas fa-arrow-left"></i> Back to School Website</a></p>
     </div>
   </div>
 </div>

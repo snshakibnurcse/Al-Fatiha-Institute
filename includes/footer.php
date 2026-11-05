@@ -18,23 +18,23 @@
         <div class="footer-col">
           <h4>Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="about.php"><i class="fas fa-chevron-right"></i> About Our School</a></li>
-            <li><a href="academics.php"><i class="fas fa-chevron-right"></i> Cambridge Curriculum</a></li>
-            <li><a href="islamic-values.php"><i class="fas fa-chevron-right"></i> Arabic & Islamic Values</a></li>
-            <li><a href="admissions.php"><i class="fas fa-chevron-right"></i> Admission Process</a></li>
-            <li><a href="notices.php"><i class="fas fa-chevron-right"></i> Public Notice Board</a></li>
-            <li><a href="contact.php"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
+            <li><a href="about"><i class="fas fa-chevron-right"></i> About Our School</a></li>
+            <li><a href="academics"><i class="fas fa-chevron-right"></i> Cambridge Curriculum</a></li>
+            <li><a href="islamic-values"><i class="fas fa-chevron-right"></i> Arabic & Islamic Values</a></li>
+            <li><a href="admissions"><i class="fas fa-chevron-right"></i> Admission Process</a></li>
+            <li><a href="notices"><i class="fas fa-chevron-right"></i> Public Notice Board</a></li>
+            <li><a href="contact"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4>Classes & Grades</h4>
           <ul class="footer-links">
-            <li><a href="academics.php#play"><i class="fas fa-shapes"></i> Play Group (2.5 - 3.5 Yrs)</a></li>
-            <li><a href="academics.php#nursery"><i class="fas fa-child"></i> Nursery (3.5 - 4.5 Yrs)</a></li>
-            <li><a href="academics.php#kg"><i class="fas fa-school"></i> Kindergarten / KG (4.5 - 5.5 Yrs)</a></li>
-            <li><a href="academics.php#class1"><i class="fas fa-book-reader"></i> Class One (5.5 - 6.5 Yrs)</a></li>
-            <li><a href="academics.php#class1"><i class="fas fa-graduation-cap"></i> Class Two (6.5 - 7.5 Yrs)</a></li>
+            <li><a href="academics#play"><i class="fas fa-shapes"></i> Play Group (2.5 - 3.5 Yrs)</a></li>
+            <li><a href="academics#nursery"><i class="fas fa-child"></i> Nursery (3.5 - 4.5 Yrs)</a></li>
+            <li><a href="academics#kg"><i class="fas fa-school"></i> Kindergarten / KG (4.5 - 5.5 Yrs)</a></li>
+            <li><a href="academics#class1"><i class="fas fa-book-reader"></i> Class One (5.5 - 6.5 Yrs)</a></li>
+            <li><a href="academics#class1"><i class="fas fa-graduation-cap"></i> Class Two (6.5 - 7.5 Yrs)</a></li>
           </ul>
         </div>
 

@@ -5,20 +5,20 @@ require_once __DIR__ . '/includes/functions.php';
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
-    redirect('login.php');
+    redirect('login');
 }
 
 // Redirect if already logged in
 if (is_logged_in()) {
     $role = get_current_user_role();
     if ($role === 'admin') {
-        redirect('admin/dashboard.php');
+        redirect('admin/dashboard');
     } elseif ($role === 'teacher') {
-        redirect('teacher/dashboard.php');
+        redirect('teacher/dashboard');
     } elseif ($role === 'parent') {
-        redirect('portal/dashboard.php');
+        redirect('portal/dashboard');
     } elseif ($role === 'accountant') {
-        redirect('accountant/dashboard.php');
+        redirect('accountant/dashboard');
     }
 }
 
@@ -41,15 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $_SESSION['user_name'] = $user['full_name'];
 
             if ($user['role'] === 'admin') {
-                redirect('admin/dashboard.php');
+                redirect('admin/dashboard');
             } elseif ($user['role'] === 'teacher') {
-                redirect('teacher/dashboard.php');
+                redirect('teacher/dashboard');
             } elseif ($user['role'] === 'parent') {
-                redirect('portal/dashboard.php');
+                redirect('portal/dashboard');
             } elseif ($user['role'] === 'accountant') {
-                redirect('accountant/dashboard.php');
+                redirect('accountant/dashboard');
             } else {
-                redirect('index.php');
+                redirect('./');
             }
         } else {
             $error = 'Invalid User ID / Username or Password. Please try again.';
@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <!-- Minimal Header -->
   <header style="background: rgba(255,255,255,0.08); padding: 1rem 0;">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-      <a href="index.php" style="color: #ffffff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
+      <a href="./" style="color: #ffffff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
         <i class="fas fa-arrow-left" style="color: #f3b527;"></i> Back to Website
       </a>
       <span style="color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 600;">
@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <!-- Auth Card Section -->
   <div class="auth-wrapper">
     <div class="unified-auth-card">
-      <a href="index.php">
+      <a href="./">
         <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
       </a>
       <h2>Portal Login</h2>
@@ -247,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="login.php">
+      <form method="POST" action="">
         <div class="form-group">
           <label for="username"><i class="fas fa-user" style="color: #0e73b9;"></i> User ID / Username</label>
           <input type="text" id="username" name="username" class="form-control" placeholder="Enter username or email" required autofocus value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
@@ -274,7 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       </div>
 
       <div style="margin-top: 1.5rem; font-size: 0.8rem; color: #94a3b8;">
-        <a href="index.php" style="color: #0e73b9; text-decoration: none; font-weight: 700;">
+        <a href="./" style="color: #0e73b9; text-decoration: none; font-weight: 700;">
           <i class="fas fa-home"></i> Return to Homepage
         </a>
       </div>
