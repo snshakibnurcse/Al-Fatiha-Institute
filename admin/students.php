@@ -5,6 +5,15 @@ $db = get_db_connection();
 $msg = '';
 $err = '';
 
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') {
+        $err = $flash['message'];
+    } else {
+        $msg = $flash['message'];
+    }
+}
+
 // Handle Add Student (Comprehensive Admission for Running / New Students)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
     $first_name = sanitize($_POST['first_name'] ?? '');
@@ -133,10 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
             ]);
 
             $db->commit();
-            $msg = "Running Student <strong>$first_name $last_name</strong> admitted successfully! Generated Student ID: <strong>$student_id</strong> (Roll: #$roll_no)$parent_info_msg";
+            set_flash_msg("Running Student <strong>$first_name $last_name</strong> admitted successfully! Generated Student ID: <strong>$student_id</strong> (Roll: #$roll_no)$parent_info_msg", 'success');
+            redirect('students.php');
         } catch (Exception $e) {
             $db->rollBack();
-            $err = "Failed to admit student: " . $e->getMessage();
+            set_flash_msg("Failed to admit student: " . $e->getMessage(), 'danger');
+            redirect('students.php');
         }
     }
 }
@@ -145,7 +156,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
 if (isset($_GET['delete'])) {
     $del_id = intval($_GET['delete']);
     $db->prepare("DELETE FROM students WHERE id = ?")->execute([$del_id]);
-    $msg = "Student deleted successfully.";
+    set_flash_msg("Student deleted successfully.", 'success');
+    redirect('students.php');
 }
 
 // Fetch Students with Class info

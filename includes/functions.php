@@ -429,3 +429,103 @@ function get_next_class_roll($classId) {
     $stmt->execute([intval($classId)]);
     return intval($stmt->fetchColumn()) ?: 1;
 }
+
+/**
+ * Flash Notification System for PRG (Post/Redirect/Get)
+ */
+function set_flash_msg($message, $type = 'success') {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $_SESSION['flash_notification'] = [
+        'message' => $message,
+        'type' => $type
+    ];
+}
+
+function get_flash_msg() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (isset($_SESSION['flash_notification'])) {
+        $flash = $_SESSION['flash_notification'];
+        unset($_SESSION['flash_notification']);
+        return $flash;
+    }
+    return null;
+}
+
+/**
+ * Delete Fee Invoice and clean up associated income ledger transaction
+ */
+function delete_fee_invoice($fee_id) {
+    try {
+        $db = get_db_connection();
+        $stmt = $db->prepare("SELECT * FROM fees WHERE id = ? LIMIT 1");
+        $stmt->execute([$fee_id]);
+        $fee = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$fee) {
+            return ['success' => false, 'message' => 'Invoice not found or already deleted.'];
+        }
+
+        // Delete from accounts_transactions if synced
+        if (!empty($fee['invoice_no'])) {
+            $db->prepare("DELETE FROM accounts_transactions WHERE reference_no LIKE ? AND type = 'Income'")
+               ->execute(['%' . $fee['invoice_no'] . '%']);
+        }
+
+        // Delete invoice
+        $del = $db->prepare("DELETE FROM fees WHERE id = ?");
+        $del->execute([$fee_id]);
+
+        return [
+            'success' => true,
+            'message' => "Invoice <strong>" . htmlspecialchars($fee['invoice_no']) . "</strong> (" . htmlspecialchars($fee['fee_type']) . ") deleted successfully.",
+            'student_id' => $fee['student_id']
+        ];
+    } catch (Exception $e) {
+        return ['success' => false, 'message' => 'Failed to delete invoice: ' . $e->getMessage()];
+    }
+}
+
+/**
+ * Update Fee Invoice details (title, amount, due_date, fee_month, notes)
+ */
+function update_fee_invoice($fee_id, $data) {
+    try {
+        $db = get_db_connection();
+        $stmt = $db->prepare("SELECT * FROM fees WHERE id = ? LIMIT 1");
+        $stmt->execute([$fee_id]);
+        $fee = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$fee) {
+            return ['success' => false, 'message' => 'Invoice not found.'];
+        }
+
+        $fee_type = sanitize($data['fee_type'] ?? $fee['fee_type']);
+        $amount = floatval($data['amount'] ?? $fee['amount']);
+        $due_date = sanitize($data['due_date'] ?? $fee['due_date']);
+        $fee_month = sanitize($data['fee_month'] ?? $fee['fee_month']);
+        $notes = sanitize($data['notes'] ?? $fee['notes']);
+
+        if ($amount <= 0 || empty($fee_type)) {
+            return ['success' => false, 'message' => 'Please provide valid fee title and amount.'];
+        }
+
+        $upd = $db->prepare("UPDATE fees SET fee_type = ?, amount = ?, due_date = ?, fee_month = ?, notes = ? WHERE id = ?");
+        $upd->execute([$fee_type, $amount, $due_date, $fee_month, $notes, $fee_id]);
+
+        // If paid, update income transaction amount and title
+        if ($fee['status'] === 'Paid' && !empty($fee['invoice_no'])) {
+            $db->prepare("UPDATE accounts_transactions SET amount = ?, title = ? WHERE reference_no LIKE ? AND type = 'Income'")
+               ->execute([$amount, "Fee: " . $fee_type, '%' . $fee['invoice_no'] . '%']);
+        }
+
+        return [
+            'success' => true,
+            'message' => "Invoice <strong>" . htmlspecialchars($fee['invoice_no']) . "</strong> updated successfully.",
+            'student_id' => $fee['student_id']
+        ];
+    } catch (Exception $e) {
+        return ['success' => false, 'message' => 'Failed to update invoice: ' . $e->getMessage()];
+    }
+}

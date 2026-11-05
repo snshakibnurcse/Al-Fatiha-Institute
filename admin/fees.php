@@ -6,6 +6,30 @@ $msg = '';
 $err = '';
 $autoOpenReceipt = null;
 
+// Read flash message from session (PRG Pattern)
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') {
+        $err = $flash['message'];
+    } else {
+        $msg = $flash['message'];
+    }
+}
+if (isset($_SESSION['flash_receipt_slip'])) {
+    $autoOpenReceipt = $_SESSION['flash_receipt_slip'];
+    unset($_SESSION['flash_receipt_slip']);
+}
+
+// ----------------------------------------------------
+// VIEW & FILTER PARAMETERS (Read early for redirects)
+// ----------------------------------------------------
+$activeView = sanitize($_GET['view'] ?? 'tracker'); // 'tracker' or 'invoices'
+
+$selected_month = sanitize($_GET['month'] ?? date('Y-m'));
+if (!preg_match('/^\d{4}-\d{2}$/', $selected_month)) {
+    $selected_month = date('Y-m');
+}
+
 // ========================================================
 // 1. POST HANDLER: ISSUE CUSTOM INVOICE (Khata, Books, Diary, Fees, etc.)
 // ========================================================
@@ -70,10 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_issue_custom_i
                     $stInfo['reference_no'] = $reference_no;
                     $stInfo['notes'] = $notes;
                     $stInfo['fee_month'] = $fee_month;
-                    $autoOpenReceipt = $stInfo;
+                    $_SESSION['flash_receipt_slip'] = $stInfo;
                 }
 
-                $msg = "Invoice <strong>$inv_no</strong> issued and payment of <strong>৳" . number_format($amount, 2) . "</strong> received successfully! Official receipt slip is ready.";
+                set_flash_msg("Invoice <strong>$inv_no</strong> issued and payment of <strong>৳" . number_format($amount, 2) . "</strong> received successfully! Official receipt slip is ready.", 'success');
             } else {
                 $stmt = $db->prepare("
                     INSERT INTO fees 
@@ -83,14 +107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_issue_custom_i
                 $stmt->execute([
                     $inv_no, $student_id, $fee_type, $fee_month, $amount, $due_date, $notes
                 ]);
-                $msg = "Invoice <strong>$inv_no</strong> issued as Due for <strong>৳" . number_format($amount, 2) . "</strong> (Due Date: " . format_date($due_date) . ").";
+                set_flash_msg("Invoice <strong>$inv_no</strong> issued as Due for <strong>৳" . number_format($amount, 2) . "</strong> (Due Date: " . format_date($due_date) . ").", 'success');
             }
         } catch (Exception $e) {
-            $err = "Error issuing invoice: " . $e->getMessage();
+            set_flash_msg("Error issuing invoice: " . $e->getMessage(), 'danger');
         }
     } else {
-        $err = "Please select a student and enter a valid positive amount.";
+        set_flash_msg("Please select a student and enter a valid positive amount.", 'danger');
     }
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
 
 // ========================================================
@@ -108,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_collect_unpaid
         $feeRecord = $chk->fetch(PDO::FETCH_ASSOC);
 
         if ($feeRecord && $feeRecord['status'] === 'Paid') {
-            $err = "Access Denied: Payment has already been received and locked for Invoice #" . htmlspecialchars($feeRecord['invoice_no']) . ".";
+            set_flash_msg("Access Denied: Payment has already been received and locked for Invoice #" . htmlspecialchars($feeRecord['invoice_no']) . ".", 'danger');
         } elseif ($feeRecord) {
             mark_fee_as_paid($fee_id, $payment_method, $reference_no, $paid_date);
 
@@ -125,14 +150,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_collect_unpaid
                 $stInfo['payment_method'] = $payment_method;
                 $stInfo['reference_no'] = $reference_no;
                 $stInfo['fee_month'] = $feeRecord['fee_month'];
-                $autoOpenReceipt = $stInfo;
+                $_SESSION['flash_receipt_slip'] = $stInfo;
             }
 
-            $msg = "Payment of <strong>৳" . number_format($feeRecord['amount'], 2) . "</strong> received for Invoice <strong>" . htmlspecialchars($feeRecord['invoice_no']) . "</strong> (" . htmlspecialchars($feeRecord['fee_type']) . ")!";
+            set_flash_msg("Payment of <strong>৳" . number_format($feeRecord['amount'], 2) . "</strong> received for Invoice <strong>" . htmlspecialchars($feeRecord['invoice_no']) . "</strong> (" . htmlspecialchars($feeRecord['fee_type']) . ")!", 'success');
         } else {
-            $err = "Invoice record not found.";
+            set_flash_msg("Invoice record not found.", 'danger');
         }
     }
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
 
 // ========================================================
@@ -156,13 +182,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_collect_monthl
             $monthName = date('F Y', $monthTimestamp);
 
             if ($existingFee && $existingFee['status'] === 'Paid') {
-                $err = "Access Denied: Payment has already been received and locked for <strong>$monthName</strong> (Invoice: " . htmlspecialchars($existingFee['invoice_no']) . "). Received payments cannot be modified or re-collected by Accountant without Principal Admin authorization.";
+                set_flash_msg("Access Denied: Payment has already been received and locked for <strong>$monthName</strong> (Invoice: " . htmlspecialchars($existingFee['invoice_no']) . "). Received payments cannot be modified or re-collected by Accountant without Principal Admin authorization.", 'danger');
             } elseif ($existingFee) {
                 $fee_id = $existingFee['id'];
                 $db->prepare("UPDATE fees SET status = 'Paid', amount = ?, paid_date = ?, payment_method = ?, fee_month = ?, reference_no = ? WHERE id = ?")
                    ->execute([$amount, $paid_date, $payment_method, $fee_month, $reference_no, $fee_id]);
                 mark_fee_as_paid($fee_id, $payment_method, $reference_no, $paid_date);
-                $msg = "Fee for <strong>$monthName</strong> collected successfully! (Invoice: " . htmlspecialchars($existingFee['invoice_no']) . ")";
+                set_flash_msg("Fee for <strong>$monthName</strong> collected successfully! (Invoice: " . htmlspecialchars($existingFee['invoice_no']) . ")", 'success');
             } else {
                 $inv_no = 'INV-' . date('Ym', $monthTimestamp) . '-' . rand(100, 999);
                 $fee_title = "Monthly Tuition Fee - " . $monthName;
@@ -170,26 +196,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_collect_monthl
                 $ins->execute([$inv_no, $student_id, $fee_title, $fee_month, $amount, $paid_date, $paid_date, $payment_method, $reference_no]);
                 $newFeeId = $db->lastInsertId();
                 mark_fee_as_paid($newFeeId, $payment_method, $reference_no, $paid_date);
-                $msg = "Payment of <strong>৳" . number_format($amount, 2) . "</strong> recorded for $monthName! Invoice: <strong>$inv_no</strong>";
+                set_flash_msg("Payment of <strong>৳" . number_format($amount, 2) . "</strong> recorded for $monthName! Invoice: <strong>$inv_no</strong>", 'success');
             }
         } catch (Exception $e) {
-            $err = "Error recording payment: " . $e->getMessage();
+            set_flash_msg("Error recording payment: " . $e->getMessage(), 'danger');
         }
     } else {
-        $err = "Invalid student or fee amount.";
+        set_flash_msg("Invalid student or fee amount.", 'danger');
     }
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
 
-// Handle Mark as Unpaid (Admin Authorization Granted)
+// ========================================================
+// 4. HANDLE MARK AS UNPAID (Admin Authorization Granted)
+// ========================================================
 if (isset($_GET['mark_unpaid'])) {
     $unpaidFeeId = intval($_GET['mark_unpaid']);
     if ($unpaidFeeId > 0) {
         $db->prepare("UPDATE fees SET status = 'Unpaid', paid_date = NULL, payment_method = NULL WHERE id = ?")->execute([$unpaidFeeId]);
-        $msg = "Invoice / Fee #<strong>$unpaidFeeId</strong> successfully marked as Unpaid!";
+        set_flash_msg("Invoice / Fee #<strong>$unpaidFeeId</strong> successfully marked as Unpaid!", 'success');
     }
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
 
-// Handle Advance Payment Submission
+// ========================================================
+// 5. POST HANDLER: ADVANCE PAYMENT SUBMISSION
+// ========================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_advance_payment'])) {
     $student_id = intval($_POST['student_id'] ?? 0);
     $start_month = sanitize($_POST['start_month'] ?? date('Y-m'));
@@ -200,10 +232,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_advance_payme
 
     $result = generate_advance_fee_invoice($student_id, $start_month, $num_months, $mark_paid, $payment_method, $ref_no);
     if ($result['success']) {
-        $msg = $result['message'];
+        set_flash_msg($result['message'], 'success');
     } else {
-        $err = $result['message'];
+        set_flash_msg($result['message'], 'danger');
     }
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
+}
+
+// ========================================================
+// 6. DELETE INVOICE HANDLER
+// ========================================================
+if (isset($_GET['delete_invoice'])) {
+    $delFeeId = intval($_GET['delete_invoice']);
+    $res = delete_fee_invoice($delFeeId);
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
+}
+
+// ========================================================
+// 7. UPDATE / EDIT INVOICE HANDLER
+// ========================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_invoice'])) {
+    $fee_id = intval($_POST['fee_id'] ?? 0);
+    $res = update_fee_invoice($fee_id, [
+        'fee_type' => $_POST['fee_type'] ?? '',
+        'amount' => $_POST['amount'] ?? 0,
+        'due_date' => $_POST['due_date'] ?? '',
+        'fee_month' => $_POST['fee_month'] ?? '',
+        'notes' => $_POST['notes'] ?? ''
+    ]);
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
 
 // ----------------------------------------------------
@@ -952,17 +1011,29 @@ foreach ($allInvoicesList as $iv) {
                   <?php endif; ?>
                 </td>
                 <td style="text-align: right;">
-                  <div style="display: inline-flex; gap: 6px; align-items: center;">
+                  <div style="display: inline-flex; gap: 4px; align-items: center; justify-content: flex-end; flex-wrap: nowrap;">
                     <?php if (strtolower($iv['status']) === 'unpaid'): ?>
-                      <button type="button" class="btn btn-quick-collect" onclick="openCollectUnpaidModal(<?= htmlspecialchars(json_encode($iv)) ?>)">
-                        <i class="fas fa-hand-holding-usd"></i> Receive Pay
+                      <button type="button" class="btn btn-quick-collect" onclick="openCollectUnpaidModal(<?= htmlspecialchars(json_encode($iv)) ?>)" title="Receive Payment">
+                        <i class="fas fa-hand-holding-usd"></i> Pay
                       </button>
+                      <button type="button" class="btn" style="background: #0284c7; color: #ffffff; padding: 4px 7px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.78rem; font-weight: 700;" onclick="openEditInvoiceModal(<?= htmlspecialchars(json_encode($iv)) ?>)" title="Edit Invoice Details">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <a href="fees.php?view=invoices&month=<?= $selected_month ?>&delete_invoice=<?= $iv['id'] ?>" class="btn" style="background: #ef4444; color: #ffffff; padding: 4px 7px; border-radius: 6px; text-decoration: none; font-size: 0.78rem; font-weight: 700;" onclick="return confirm('Are you sure you want to permanently delete Invoice #<?= htmlspecialchars($iv['invoice_no']) ?>?')" title="Delete Invoice">
+                        <i class="fas fa-trash-alt"></i>
+                      </a>
                     <?php else: ?>
-                      <button type="button" class="btn btn-receipt-view" onclick="openReceiptModal(<?= htmlspecialchars(json_encode($iv)) ?>, '<?= htmlspecialchars($iv['fee_month'] ? date('F Y', strtotime($iv['fee_month'].'-01')) : date('F Y')) ?>')">
+                      <button type="button" class="btn btn-receipt-view" onclick="openReceiptModal(<?= htmlspecialchars(json_encode($iv)) ?>, '<?= htmlspecialchars($iv['fee_month'] ? date('F Y', strtotime($iv['fee_month'].'-01')) : date('F Y')) ?>')" title="Print Money Receipt">
                         <i class="fas fa-receipt"></i> Slip
                       </button>
-                      <a href="fees.php?view=invoices&mark_unpaid=<?= $iv['id'] ?>" class="btn btn-sm" style="color: #ef4444; border: 1px solid #fca5a5; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; text-decoration: none;" onclick="return confirm('Are you sure you want to mark this invoice as Unpaid?')" title="Mark as Unpaid">
+                      <button type="button" class="btn" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;" onclick="openEditInvoiceModal(<?= htmlspecialchars(json_encode($iv)) ?>)" title="Edit Invoice Details">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <a href="fees.php?view=invoices&month=<?= $selected_month ?>&mark_unpaid=<?= $iv['id'] ?>" class="btn btn-sm" style="color: #d97706; border: 1px solid #fcd34d; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; text-decoration: none;" onclick="return confirm('Are you sure you want to mark this invoice as Unpaid?')" title="Mark as Unpaid">
                         <i class="fas fa-undo"></i>
+                      </a>
+                      <a href="fees.php?view=invoices&month=<?= $selected_month ?>&delete_invoice=<?= $iv['id'] ?>" class="btn" style="background: #fee2e2; color: #dc2626; padding: 3px 6px; border-radius: 6px; text-decoration: none; font-size: 0.75rem;" onclick="return confirm('Warning: This invoice is marked as Paid. Deleting it will also reverse its Income Ledger entry. Proceed?')" title="Delete Invoice">
+                        <i class="fas fa-trash-alt"></i>
                       </a>
                     <?php endif; ?>
                   </div>
@@ -1411,6 +1482,114 @@ foreach ($allInvoicesList as $iv) {
         </tr>
         <tr>
           <td style="color: #64748b;">Payment Method:</td>
+          <td><span id="slipMethod">--</span></td>
+        </tr>
+        <tr id="slipRefRow" style="display: none;">
+          <td style="color: #64748b;">Transaction Reference:</td>
+          <td><strong id="slipRefNo" style="font-family: monospace; color: #0284c7;">--</strong></td>
+        </tr>
+        <tr style="border-top: 2px solid #064878; border-bottom: 2px solid #064878;">
+          <td style="font-weight: 800; font-size: 1.05rem; color: #064878; padding: 6px 0;">Total Amount Paid:</td>
+          <td style="font-weight: 800; font-size: 1.3rem; color: #059669; padding: 6px 0;">৳ <span id="slipAmount">0.00</span></td>
+        </tr>
+      </table>
+
+      <div style="margin-top: 1.8rem; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.2rem; border-top: 1px dashed #cbd5e1; font-size: 0.75rem; color: #64748b;">
+        <div>
+          <small>System Generated Slip &bull; <?= date('Y-m-d H:i') ?></small>
+        </div>
+        <div style="text-align: center;">
+          <div style="border-bottom: 1px solid #94a3b8; width: 110px; margin-bottom: 2px;"></div>
+          <span>Authorized Cashier</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.2rem;">
+      <button class="btn btn-secondary" onclick="closeModal('receiptSlipModal')">Close</button>
+      <button class="btn btn-primary" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; font-weight: 700;">
+        <i class="fas fa-print"></i> Print Slip
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     MODAL 6: EDIT INVOICE MODAL
+     ======================================================== -->
+<div id="editInvoiceModal" class="admin-modal-wrap" style="display: none;">
+  <div class="admin-modal-box" style="max-width: 500px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+      <div>
+        <span style="font-size: 0.72rem; font-weight: 800; color: #0284c7; text-transform: uppercase;">
+          <i class="fas fa-edit"></i> INVOICE MANAGEMENT
+        </span>
+        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.3rem;">
+          Edit Fee Invoice Details
+        </h3>
+        <small style="color: var(--admin-text-muted);">Invoice No: <strong id="editInvoiceNoDisplay" style="color: #0284c7; font-family: monospace;">--</strong></small>
+      </div>
+      <button style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('editInvoiceModal')">&times;</button>
+    </div>
+
+    <form method="POST" action="fees.php?view=<?= $activeView ?>&month=<?= $selected_month ?>">
+      <input type="hidden" name="action_update_invoice" value="1">
+      <input type="hidden" name="fee_id" id="editFeeId" value="">
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Fee Title / Description *</label>
+        <input type="text" name="fee_type" id="editFeeType" class="form-control" required style="font-weight: 600;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Amount (BDT ৳) *</label>
+          <input type="number" name="amount" id="editAmount" step="10" min="10" class="form-control" required style="font-weight: 800; color: #065f46; font-size: 1.1rem;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Month</label>
+          <input type="month" name="fee_month" id="editFeeMonth" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Due Date *</label>
+        <input type="date" name="due_date" id="editDueDate" class="form-control" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.2rem;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Notes / Particulars (Optional)</label>
+        <textarea name="notes" id="editNotes" class="form-control" rows="2" placeholder="Item breakdown, remarks..."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editInvoiceModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="background: #0284c7; color: #ffffff; font-weight: 800; padding: 0.6rem 1.4rem; border-radius: 8px;">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+        </tr>
+        <tr>
+          <td style="color: #64748b;">Class:</td>
+          <td><strong id="slipClass">--</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #64748b;">Item / Fee Description:</td>
+          <td><strong id="slipFeeType" style="color: #064878;">--</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #64748b;">Period / Month:</td>
+          <td><span id="slipMonth">--</span></td>
+        </tr>
+        <tr>
+          <td style="color: #64748b;">Payment Date:</td>
+          <td><span id="slipPaidDate">--</span></td>
+        </tr>
+        <tr>
+          <td style="color: #64748b;">Payment Method:</td>
           <td><strong id="slipMethod" style="color: #059669;">--</strong></td>
         </tr>
         <tr id="slipRefRow" style="display: none;">
@@ -1581,6 +1760,19 @@ function openCollectUnpaidModal(iv) {
   document.getElementById('unpaidAmount').innerText = '৳ ' + parseFloat(iv.amount).toLocaleString('en-US', { minimumFractionDigits: 2 });
 
   openModal('collectUnpaidModal');
+}
+
+// Edit Fee Invoice Modal
+function openEditInvoiceModal(iv) {
+  document.getElementById('editFeeId').value = iv.id;
+  document.getElementById('editInvoiceNoDisplay').innerText = iv.invoice_no;
+  document.getElementById('editFeeType').value = iv.fee_type;
+  document.getElementById('editAmount').value = iv.amount;
+  document.getElementById('editFeeMonth').value = iv.fee_month || '';
+  document.getElementById('editDueDate').value = iv.due_date || '';
+  document.getElementById('editNotes').value = iv.notes || '';
+
+  openModal('editInvoiceModal');
 }
 
 // Receipt Slip Modal
