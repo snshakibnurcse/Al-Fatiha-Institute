@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_admin();
 $db = get_db_connection();
 
 $msg = '';
@@ -15,10 +16,11 @@ if ($flash) {
     }
 }
 
-// Get Student ID from query parameter
-$student_pk = intval($_GET['id'] ?? 0);
+// Get Student ID from query parameter or POST
+$student_pk = intval($_GET['id'] ?? ($_POST['student_id'] ?? 0));
 
 if (!$student_pk) {
+    require_once __DIR__ . '/layout.php';
     echo "<div class='alert-msg alert-danger'>Invalid student ID. <a href='students.php'>Back to Directory</a></div>";
     require_once __DIR__ . '/layout_footer.php';
     exit();
@@ -172,6 +174,7 @@ $stStmt->execute([$student_pk]);
 $student = $stStmt->fetch();
 
 if (!$student) {
+    require_once __DIR__ . '/layout.php';
     echo "<div class='alert-msg alert-danger'>Student record not found. <a href='students.php'>Back to Directory</a></div>";
     require_once __DIR__ . '/layout_footer.php';
     exit();
@@ -217,6 +220,9 @@ $overallGrade = calculate_grade($totalObtained, $totalMax ?: 100);
 $attTotal = $db->query("SELECT COUNT(*) FROM attendance WHERE student_id = $student_pk")->fetchColumn() ?: 0;
 $attPresent = $db->query("SELECT COUNT(*) FROM attendance WHERE student_id = $student_pk AND status IN ('Present', 'Late')")->fetchColumn() ?: 0;
 $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
+
+// Load Layout for HTML rendering
+require_once __DIR__ . '/layout.php';
 ?>
 
 <?php if ($msg): ?><div class="alert-msg alert-success"><i class="fas fa-check-circle"></i> <?= $msg ?></div><?php endif; ?>
@@ -555,7 +561,8 @@ $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
       <button style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('advancePaymentModal')">&times;</button>
     </div>
 
-    <form method="POST">
+    <form method="POST" action="student_profile.php?id=<?= $student_pk ?>">
+      <input type="hidden" name="student_id" value="<?= $student_pk ?>">
       <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 1rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.9rem; color: #047857;">
         <strong>Student:</strong> <?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?><br>
         <strong>Class Tuition Fee:</strong> <?= format_currency($student['tuition_fee']) ?> / month
@@ -662,7 +669,8 @@ $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
       </div>
     </div>
 
-    <form method="POST">
+    <form method="POST" action="student_profile.php?id=<?= $student_pk ?>">
+      <input type="hidden" name="student_id" value="<?= $student_pk ?>">
       <!-- Items Container Table -->
       <div style="margin-bottom: 1rem;">
         <label style="font-weight: 700; color: #1e293b; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">
@@ -776,7 +784,8 @@ $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
       <button style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('editInvoiceModal')">&times;</button>
     </div>
 
-    <form method="POST">
+    <form method="POST" action="student_profile.php?id=<?= $student_pk ?>">
+      <input type="hidden" name="student_id" value="<?= $student_pk ?>">
       <input type="hidden" name="action_update_invoice" value="1">
       <input type="hidden" name="fee_id" id="editFeeId" value="">
 

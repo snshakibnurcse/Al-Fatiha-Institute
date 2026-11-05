@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_admin();
 $db = get_db_connection();
 
 $msg = '';
@@ -163,6 +164,9 @@ if (isset($_GET['delete'])) {
 // Fetch Students with Class info
 $students = $db->query("SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id ORDER BY s.class_id ASC, s.roll_no ASC")->fetchAll();
 $classes = $db->query("SELECT * FROM classes ORDER BY id ASC")->fetchAll();
+
+// Load Layout for HTML Rendering
+require_once __DIR__ . '/layout.php';
 ?>
 
 <?php if ($msg): ?><div class="alert-msg alert-success"><i class="fas fa-check-circle"></i> <?= $msg ?></div><?php endif; ?>

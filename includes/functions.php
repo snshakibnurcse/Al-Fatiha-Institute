@@ -1,6 +1,11 @@
 <?php
 // Global Helper Functions and Authentication Logic
 
+// Start output buffering early to guarantee headers can always be modified/redirected cleanly
+if (!ob_get_level()) {
+    ob_start();
+}
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -15,9 +20,24 @@ function sanitize($data) {
     return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
 }
 
-// Redirect helper
+// Bulletproof Redirect helper (Supports standard header redirect and JS fallback)
 function redirect($url) {
-    header("Location: " . $url);
+    // 1. If buffer has content, clean it so no partial HTML is sent
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    // 2. If headers have not been sent yet, use fast native 302 HTTP header
+    if (!headers_sent()) {
+        header("Location: " . $url);
+        exit();
+    }
+
+    // 3. Fallback: If headers were already flushed to browser, redirect using JavaScript and HTML Meta
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Redirecting...</title>';
+    echo '<meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">';
+    echo '<script>window.location.replace(' . json_encode($url) . ');</script>';
+    echo '</head><body><p style="font-family:sans-serif;text-align:center;padding:2rem;">Redirecting to <a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($url) . '</a>...</p></body></html>';
     exit();
 }
 

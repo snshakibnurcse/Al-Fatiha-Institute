@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_admin();
 $db = get_db_connection();
 
 $msg = '';
@@ -473,6 +474,9 @@ foreach ($allInvoicesList as $iv) {
         $invDueAmount += floatval($iv['amount']);
     }
 }
+
+// Load layout for HTML rendering
+require_once __DIR__ . '/layout.php';
 ?>
 
 <?php if ($msg): ?>
