@@ -24,7 +24,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <link rel="stylesheet" href="assets/css/style.css">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/logo.png?v=2">
 </head>
 <body>
 
@@ -55,7 +55,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <header class="site-header">
     <div class="container navbar">
       <a href="index.php" class="brand-logo">
-        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo">
+        <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo">
         <div class="brand-text">
           <h1>AL FATIHA INSTITUTE</h1>
           <span>ESTD 2025 • COX'S BAZAR</span>

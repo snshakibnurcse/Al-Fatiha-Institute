@@ -39,7 +39,7 @@ include __DIR__ . '/includes/header.php';
       </div>
 
       <div style="text-align: center; background: #ffffff; padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
-        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Emblem" style="max-width: 200px; margin: 0 auto 1.5rem auto;">
+        <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Emblem" style="max-width: 200px; margin: 0 auto 1.5rem auto;">
         <h3 style="color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 0.4rem;">ESTABLISHED 2025</h3>
         <p style="color: var(--accent-gold-dark); font-weight: 700; font-size: 0.95rem; margin-bottom: 1.2rem;">COX'S BAZAR, BANGLADESH</p>
         <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">

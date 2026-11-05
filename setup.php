@@ -303,7 +303,7 @@ if (isset($_POST['run_setup'])) {
 <body>
 
   <div class="setup-card">
-    <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo">
+    <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo">
     <h1>AL FATIHA INSTITUTE</h1>
     <p>Database Installer & System Initializer (MySQL: <strong>afidb</strong>)</p>
 

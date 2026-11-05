@@ -27,7 +27,7 @@ $results = $db->query("SELECT r.*, sub.subject_name FROM results r JOIN subjects
   <!-- Official Report Card Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double var(--admin-primary); padding-bottom: 1.5rem; margin-bottom: 2rem;">
     <div style="display: flex; align-items: center; gap: 1rem;">
-      <img src="../assets/images/logo.png" alt="AFI Logo" style="height: 75px;">
+      <img src="../assets/images/logo.png?v=2" alt="AFI Logo" style="height: 75px;">
       <div>
         <h2 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0; font-size: 1.8rem;">AL FATIHA INSTITUTE</h2>
         <span style="color: var(--admin-gold-dark); font-weight: 800; font-size: 0.85rem; letter-spacing: 1px;">CAMBRIDGE CURRICULUM & ISLAMIC ETHOS SCHOOL</span>

@@ -51,14 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
-  <link rel="icon" type="image/svg+xml" href="../assets/images/logo.png">
+  <link rel="icon" type="image/png" href="../assets/images/logo.png?v=2">
 </head>
 <body>
 
 <div class="auth-wrapper">
   <div class="auth-card">
     <a href="../index.php">
-      <img src="../assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
+      <img src="../assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
     </a>
     <h2>Parent & Student Portal</h2>
     <p class="subtitle">AL FATIHA INSTITUTE • Academic Progress & Fees</p>

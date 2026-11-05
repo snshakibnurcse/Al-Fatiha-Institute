@@ -3,7 +3,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo">
+          <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo">
           <p>
             AL FATIHA INSTITUTE is an esteemed English medium kindergarten school in Cox's Bazar delivering Cambridge Early Years standards blended with authentic Islamic character building, Quranic Tajweed, and Arabic fluency for Play through Class 2.
           </p>

@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/admin.css">
-  <link rel="icon" type="image/svg+xml" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/logo.png?v=2">
   <style>
     body {
       background: linear-gradient(135deg, #032d4e 0%, #064878 100%);
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <div class="auth-wrapper">
     <div class="unified-auth-card">
       <a href="index.php">
-        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
+        <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="auth-logo">
       </a>
       <h2>Portal Login</h2>
       <p class="subtitle">Enter your User ID and Password to sign in</p>

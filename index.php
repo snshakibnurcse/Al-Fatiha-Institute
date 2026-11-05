@@ -43,7 +43,7 @@ include __DIR__ . '/includes/header.php';
 
     <div class="hero-card-preview">
       <div class="hero-image-wrap">
-        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo" class="logo-hero">
+        <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="logo-hero">
         <h3 style="color: #ffffff; font-size: 1.4rem; margin-bottom: 0.5rem;">AL FATIHA INSTITUTE</h3>
         <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 1rem;">Cox's Bazar • Established 2025</p>
         
