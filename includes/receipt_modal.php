@@ -4,7 +4,7 @@
 // Engineered to print on EXACTLY 1 single A4 portrait page with zero blank pages.
 ?>
 <div id="receiptSlipModal" class="admin-modal-wrap" style="display: none;">
-  <div class="admin-modal-box" style="max-width: 780px; width: 95%; max-height: 92vh; display: flex; flex-direction: column; padding: 1.1rem 1.4rem;">
+  <div class="admin-modal-box" style="max-width: 800px; width: 95%; max-height: 94vh; display: flex; flex-direction: column; padding: 1.1rem 1.4rem;">
     
     <!-- Modal Toolbar (Hidden on Print) -->
     <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 0.75rem; flex-shrink: 0;">
@@ -12,7 +12,7 @@
         <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy, #064878); font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-receipt" style="color: #f59e0b;"></i> Official Money Receipt (A4 Dual Copy)
         </h3>
-        <small style="color: #64748b;">Single A4 Page: Top half Student Copy &bull; Bottom half Office Copy with Perforation</small>
+        <small style="color: #64748b;">Single A4 Sheet: Top half Student Copy &bull; Bottom half Office Copy with Perforation</small>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button type="button" class="btn" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; padding: 0.45rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(2,132,199,0.25);">
@@ -65,7 +65,7 @@
             <table class="receipt-table">
               <thead>
                 <tr>
-                  <th style="width: 32px; text-align: center;">SL</th>
+                  <th style="width: 34px; text-align: center;">SL</th>
                   <th>Fee Particulars / Item Description</th>
                   <th style="width: 130px; text-align: center;">Month / Period</th>
                   <th style="width: 110px; text-align: right;">Amount (৳)</th>
@@ -97,16 +97,18 @@
               </div>
             </div>
 
-            <!-- Receipt Footer & Signatures -->
+            <!-- Receipt Footer & Signatures (With Dedicated Signing Clearance) -->
             <div class="receipt-footer-row">
               <div class="footer-note">
-                <i class="fas fa-check-circle" style="color: #059669;"></i> Official computer-generated receipt. Please preserve for records.
+                <i class="fas fa-check-circle" style="color: #059669;"></i> Official computer-generated receipt.<br>Please preserve for academic records.
               </div>
               <div class="signature-box">
+                <div class="sig-space"></div>
                 <div class="sig-line"></div>
                 <div class="sig-title">Student / Guardian</div>
               </div>
               <div class="signature-box">
+                <div class="sig-space"></div>
                 <div class="sig-line"></div>
                 <div class="sig-title">Authorized Cashier / Principal</div>
               </div>
@@ -161,7 +163,7 @@
             <table class="receipt-table">
               <thead>
                 <tr>
-                  <th style="width: 32px; text-align: center;">SL</th>
+                  <th style="width: 34px; text-align: center;">SL</th>
                   <th>Fee Particulars / Item Description</th>
                   <th style="width: 130px; text-align: center;">Month / Period</th>
                   <th style="width: 110px; text-align: right;">Amount (৳)</th>
@@ -193,16 +195,18 @@
               </div>
             </div>
 
-            <!-- Receipt Footer & Signatures -->
+            <!-- Receipt Footer & Signatures (With Dedicated Signing Clearance) -->
             <div class="receipt-footer-row">
               <div class="footer-note">
-                <i class="fas fa-university" style="color: #064878;"></i> Accounts &amp; Audit Copy &bull; Preserved in School Office Ledger.
+                <i class="fas fa-university" style="color: #064878;"></i> Accounts &amp; Audit Record.<br>Preserved in School Office Ledger.
               </div>
               <div class="signature-box">
+                <div class="sig-space"></div>
                 <div class="sig-line"></div>
                 <div class="sig-title">Depositor / Parent</div>
               </div>
               <div class="signature-box">
+                <div class="sig-space"></div>
                 <div class="sig-line"></div>
                 <div class="sig-title">Accounts Officer / Principal</div>
               </div>
@@ -232,7 +236,7 @@
 .a4-receipt-page {
   background: #ffffff;
   width: 100%;
-  max-width: 720px;
+  max-width: 740px;
   margin: 0 auto;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -268,8 +272,8 @@
   justify-content: space-between;
   gap: 10px;
   border-bottom: 1.5px solid #064878;
-  padding-bottom: 5px;
-  margin-bottom: 6px;
+  padding-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .receipt-logo-wrap {
@@ -365,27 +369,38 @@
   color: #991b1b;
 }
 
-/* Metadata Grid */
+/* Metadata Grid - Column widths optimized to avoid wrapping */
 .receipt-meta-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1.3fr 1fr;
-  gap: 3px 8px;
+  grid-template-columns: 1.2fr 1.35fr 1.15fr 0.95fr;
+  gap: 3px 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 5px;
-  padding: 5px 8px;
-  margin-bottom: 6px;
-  font-size: 0.73rem;
-  line-height: 1.25;
+  padding: 4px 8px;
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.meta-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .meta-item .lbl {
   color: #64748b;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .meta-item .val {
   color: #0f172a;
+  white-space: nowrap;
 }
 
 .monospace-text {
@@ -425,7 +440,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 5px;
   padding: 4px 10px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .total-box {
@@ -454,37 +469,47 @@
   color: #dc2626;
 }
 
-/* Receipt Footer & Signatures */
+/* Receipt Footer & Signatures (Dedicated signing height) */
 .receipt-footer-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding-top: 4px;
-  margin-top: 3px;
+  padding-top: 2px;
+  margin-top: 2px;
 }
 
 .footer-note {
-  font-size: 0.62rem;
+  font-size: 0.60rem;
   color: #64748b;
-  max-width: 50%;
+  max-width: 44%;
   line-height: 1.2;
+  padding-bottom: 2px;
 }
 
 .signature-box {
   text-align: center;
-  width: 125px;
+  width: 155px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.sig-space {
+  height: 38px; /* Dedicated empty area for manual pen signature and school seal stamp */
+  display: block;
 }
 
 .sig-line {
-  border-bottom: 1px dashed #64748b;
-  margin-bottom: 2px;
+  border-bottom: 1.2px dashed #475569;
+  margin-bottom: 3px;
   width: 100%;
 }
 
 .sig-title {
-  font-size: 0.62rem;
+  font-size: 0.63rem;
   font-weight: 700;
-  color: #475569;
+  color: #334155;
+  white-space: nowrap;
 }
 
 /* Middle Perforation Cut Line */
@@ -607,14 +632,52 @@ function openReceiptModal(data, monthName) {
     status = 'Paid';
   }
 
-  var studentName = ((data.first_name || '') + ' ' + (data.last_name || '')).trim() || data.student_name || 'Student';
-  var studentId = data.student_code || data.student_id || 'AFI-ST';
-  var className = data.class_name || 'N/A';
-  var rollNo = data.roll_no ? '#' + data.roll_no : '-';
+  // Robust Student ID Extraction:
+  // 1) First check student_code (e.g. AFI-PG-001, AFI-C1-001)
+  var studentId = data.student_code || '';
+  
+  // 2) If not in student_code, check if student_id is an alphanumeric code
+  if (!studentId && data.student_id && String(data.student_id).indexOf('AFI-') !== -1) {
+    studentId = String(data.student_id);
+  }
+  
+  // 3) If studentId is missing or purely numeric (e.g. database foreign key "20"), check window.currentStudentData
+  if ((!studentId || /^\d+$/.test(String(studentId).trim())) && window.currentStudentData && window.currentStudentData.student_id) {
+    studentId = window.currentStudentData.student_id;
+  }
+  
+  // 4) Fallback formatting if still numeric
+  if (!studentId) {
+    studentId = data.student_id ? ('AFI-ST-' + String(data.student_id).padStart(3, '0')) : 'AFI-ST';
+  } else if (/^\d+$/.test(String(studentId).trim())) {
+    studentId = 'AFI-ST-' + String(studentId).trim().padStart(3, '0');
+  }
+
+  // Student Full Name Resolution:
+  var studentName = ((data.first_name || '') + ' ' + (data.last_name || '')).trim() || data.student_name || '';
+  if ((!studentName || studentName.toLowerCase() === 'student') && window.currentStudentData && window.currentStudentData.first_name) {
+    studentName = ((window.currentStudentData.first_name || '') + ' ' + (window.currentStudentData.last_name || '')).trim();
+  }
+  if (!studentName) studentName = 'Student';
+
+  // Class Name Resolution:
+  var className = data.class_name || '';
+  if ((!className || className === 'N/A') && window.currentStudentData && window.currentStudentData.class_name) {
+    className = window.currentStudentData.class_name;
+  }
+  if (!className) className = 'N/A';
+
+  // Roll No Resolution:
+  var rawRoll = (data.roll_no !== undefined && data.roll_no !== null && data.roll_no !== '') ? data.roll_no : '';
+  if (!rawRoll && window.currentStudentData && window.currentStudentData.roll_no) {
+    rawRoll = window.currentStudentData.roll_no;
+  }
+  var rollNo = rawRoll ? '#' + rawRoll : '-';
+
   var invNo = data.invoice_no || 'INV-' + Math.floor(Math.random() * 9000 + 1000);
   var paidDate = data.paid_date || (new Date()).toISOString().split('T')[0];
   
-  // Clean payment method - strictly English (remove any Bengali like (নগদ))
+  // Clean payment method - strictly English
   var rawMethod = (data.payment_method || 'Cash').toString();
   var payMethod = rawMethod.replace(/[\u0980-\u09FF\(\)]/g, '').trim() || 'Cash';
   if (/bkash/i.test(payMethod)) payMethod = 'bKash';
@@ -670,28 +733,46 @@ function openReceiptModal(data, monthName) {
     }
   });
 
-  // Items Breakdown Table
+  // Items Breakdown Table (Robust pattern parsing, unaffected by thousands commas)
   var itemsHtml = '';
   var notes = data.notes || '';
   var itemsMatch = notes.match(/Items:\s*\[(.*?)\]/);
   
   if (itemsMatch && itemsMatch[1]) {
-    var rawItems = itemsMatch[1].split(',');
+    var content = itemsMatch[1];
+    var itemRegex = /([^:|\[\]]+?)\s*:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/g;
+    var match;
     var sl = 1;
-    rawItems.forEach(function(itemStr) {
-      var parts = itemStr.split(': ৳');
-      var itemTitle = parts[0] ? parts[0].trim() : 'Fee Item';
-      var itemCost = parts[1] ? parseFloat(parts[1].replace(/,/g, '')) : (totalAmt / rawItems.length);
-      itemsHtml += `
+    var parsedCount = 0;
+    while ((match = itemRegex.exec(content)) !== null) {
+      var itemTitle = match[1].trim().replace(/^[,\s\|]+|[,\s\|]+$/g, '');
+      var itemCost = parseFloat(match[2].replace(/,/g, '')) || 0;
+      if (itemTitle && itemCost > 0) {
+        itemsHtml += `
+          <tr>
+            <td style="text-align: center;">${sl < 10 ? '0' + sl : sl}</td>
+            <td><strong>${itemTitle}</strong></td>
+            <td style="text-align: center;">${periodStr}</td>
+            <td style="text-align: right;"><strong>${fmt(itemCost)}</strong></td>
+          </tr>
+        `;
+        sl++;
+        parsedCount++;
+      }
+    }
+    
+    // Fallback if parsing produced 0 rows
+    if (parsedCount === 0) {
+      var primaryTitle = data.fee_type || 'Monthly Tuition Fee';
+      itemsHtml = `
         <tr>
-          <td style="text-align: center;">${sl < 10 ? '0' + sl : sl}</td>
-          <td><strong>${itemTitle}</strong></td>
+          <td style="text-align: center;">01</td>
+          <td><strong>${primaryTitle}</strong></td>
           <td style="text-align: center;">${periodStr}</td>
-          <td style="text-align: right;"><strong>${fmt(itemCost)}</strong></td>
+          <td style="text-align: right;"><strong>${fmt(totalAmt)}</strong></td>
         </tr>
       `;
-      sl++;
-    });
+    }
   } else {
     var primaryTitle = data.fee_type || 'Monthly Tuition Fee';
     itemsHtml = `

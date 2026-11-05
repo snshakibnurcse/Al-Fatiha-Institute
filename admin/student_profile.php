@@ -115,7 +115,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue_multi_invoice']
             ]);
             $feeId = $db->lastInsertId();
             mark_fee_as_paid($feeId, $payment_method, $reference_no, $paid_date);
-            set_flash_msg("Invoice <strong>$inv_no</strong> created and payment of <strong>৳" . number_format($total_amount, 2) . "</strong> received successfully!", 'success');
+
+            $_SESSION['flash_receipt_slip'] = [
+                'id' => $feeId,
+                'invoice_no' => $inv_no,
+                'student_id' => $student_pk,
+                'student_code' => $student['student_id'],
+                'first_name' => $student['first_name'],
+                'last_name' => $student['last_name'],
+                'class_name' => $student['class_name'],
+                'roll_no' => $student['roll_no'],
+                'fee_type' => $primaryTitle,
+                'amount' => $total_amount,
+                'paid_amount' => $total_amount,
+                'due_date' => $paid_date,
+                'fee_month' => $fee_month,
+                'status' => 'Paid',
+                'paid_date' => $paid_date,
+                'payment_method' => $payment_method,
+                'reference_no' => $reference_no,
+                'notes' => $fullBreakdown
+            ];
+
+            set_flash_msg("Invoice <strong>$inv_no</strong> created and payment of <strong>৳" . number_format($total_amount, 2) . "</strong> received successfully! Official receipt slip is ready.", 'success');
         } else {
             $stmt = $db->prepare("
                 INSERT INTO fees (invoice_no, student_id, fee_type, amount, due_date, fee_month, status, notes) 
@@ -213,14 +235,40 @@ if (!$student) {
     exit();
 }
 
-// Fetch Fees & Payment History
-$feesStmt = $db->prepare("SELECT * FROM fees WHERE student_id = ? ORDER BY id DESC");
+// Fetch Fees & Payment History with full student and class details
+$feesStmt = $db->prepare("
+    SELECT f.*, 
+           s.student_id AS student_code, 
+           s.first_name, 
+           s.last_name, 
+           s.roll_no, 
+           c.class_name 
+    FROM fees f 
+    JOIN students s ON f.student_id = s.id 
+    LEFT JOIN classes c ON s.class_id = c.id 
+    WHERE f.student_id = ? 
+    ORDER BY f.id DESC
+");
 $feesStmt->execute([$student_pk]);
 $fees = $feesStmt->fetchAll();
 
 $totalPaid = 0;
 $totalDue = 0;
 foreach ($fees as &$f) {
+    if (empty($f['student_code'])) {
+        $f['student_code'] = $student['student_id'];
+    }
+    if (empty($f['first_name'])) {
+        $f['first_name'] = $student['first_name'];
+        $f['last_name'] = $student['last_name'];
+    }
+    if (empty($f['class_name'])) {
+        $f['class_name'] = $student['class_name'];
+    }
+    if (empty($f['roll_no'])) {
+        $f['roll_no'] = $student['roll_no'];
+    }
+
     $t = floatval($f['amount']);
     $p = floatval($f['paid_amount'] ?? 0);
     if ($f['status'] === 'Paid' && $p <= 0) {
@@ -1125,6 +1173,15 @@ require_once __DIR__ . '/layout.php';
   document.addEventListener('DOMContentLoaded', function() {
     recalcMultiTotal();
   });
+
+  // Current Student Context for Receipts and Print Slips
+  window.currentStudentData = <?= json_encode([
+    'student_id' => $student['student_id'],
+    'first_name' => $student['first_name'],
+    'last_name' => $student['last_name'],
+    'class_name' => $student['class_name'],
+    'roll_no' => $student['roll_no']
+  ]) ?>;
 </script>
 
 <?php if ($autoOpenReceipt): ?>
