@@ -1,21 +1,22 @@
 <?php
 // Unified A4 Split Money Receipt Modal (Student Copy & Office Copy)
-// Fits perfectly on a single A4 page with center cutting line.
+// Strictly English (with '৳' currency symbol only).
+// Engineered to print on EXACTLY 1 single A4 portrait page with zero blank pages.
 ?>
 <div id="receiptSlipModal" class="admin-modal-wrap" style="display: none;">
-  <div class="admin-modal-box" style="max-width: 780px; width: 95%; max-height: 92vh; display: flex; flex-direction: column; padding: 1.2rem 1.5rem;">
+  <div class="admin-modal-box" style="max-width: 780px; width: 95%; max-height: 92vh; display: flex; flex-direction: column; padding: 1.1rem 1.4rem;">
     
     <!-- Modal Toolbar (Hidden on Print) -->
-    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 0.8rem; flex-shrink: 0;">
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 0.75rem; flex-shrink: 0;">
       <div>
-        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy, #064878); font-size: 1.25rem;">
+        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy, #064878); font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-receipt" style="color: #f59e0b;"></i> Official Money Receipt (A4 Dual Copy)
         </h3>
-        <small style="color: #64748b;">A4 Split Page: Top half Student Copy &bull; Bottom half Office Copy with Perforation</small>
+        <small style="color: #64748b;">Single A4 Page: Top half Student Copy &bull; Bottom half Office Copy with Perforation</small>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button type="button" class="btn" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; padding: 0.45rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-          <i class="fas fa-print"></i> Print A4 Receipt
+        <button type="button" class="btn" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; padding: 0.45rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(2,132,199,0.25);">
+          <i class="fas fa-print"></i> Print Receipt (1 Page)
         </button>
         <button type="button" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #64748b; line-height: 1;" onclick="closeModal('receiptSlipModal')">&times;</button>
       </div>
@@ -24,7 +25,7 @@
     <!-- Scrollable Preview Container for Modal View -->
     <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
       
-      <!-- PRINTABLE DUAL RECEIPT AREA (Captures exact A4 Print) -->
+      <!-- PRINTABLE DUAL RECEIPT AREA (Captures exact 1 Page A4 Print) -->
       <div id="a4ReceiptSlipPrintArea" class="a4-receipt-page">
         
         <!-- ==============================================
@@ -40,10 +41,10 @@
               <div class="receipt-school-info">
                 <h2 class="receipt-school-name">AL FATIHA INSTITUTE</h2>
                 <div class="receipt-school-sub">An Islamic Cambridge Integrated Curriculum School</div>
-                <div class="receipt-school-addr">Engg. Edris Building, Kalur Dokan, Tekpara Main Road, Cox's Bazar &bull; ☎ 01611477441, 01632550045 &bull; ✉ alfatihacxb@gmail.com</div>
+                <div class="receipt-school-addr">Engg. Edris Building, Kalur Dokan, Tekpara Main Road, Cox's Bazar &bull; Phone: 01611477441, 01632550045 &bull; Email: alfatihacxb@gmail.com</div>
               </div>
               <div class="receipt-badge-col">
-                <span class="copy-tag student-tag">STUDENT COPY (ছাত্র কপি)</span>
+                <span class="copy-tag student-tag">STUDENT COPY</span>
                 <span class="status-pill slip-status-pill">PAID</span>
               </div>
             </div>
@@ -56,7 +57,7 @@
               <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Class &amp; Roll:</span> <span class="val"><strong class="slip-class-name">--</strong> (Roll: <strong class="slip-roll-no">--</strong>)</span></div>
               <div class="meta-item"><span class="lbl">Pay Method:</span> <span class="val slip-pay-method">Cash</span></div>
-              <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">2027</span></div>
+              <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">Session 2027</span></div>
               <div class="meta-item"><span class="lbl">Trx Ref No:</span> <span class="val slip-ref-no">N/A</span></div>
             </div>
 
@@ -66,7 +67,7 @@
                 <tr>
                   <th style="width: 32px; text-align: center;">SL</th>
                   <th>Fee Particulars / Item Description</th>
-                  <th style="width: 130px; text-align: center;">Month / Term</th>
+                  <th style="width: 130px; text-align: center;">Month / Period</th>
                   <th style="width: 110px; text-align: right;">Amount (৳)</th>
                 </tr>
               </thead>
@@ -75,7 +76,7 @@
                   <td style="text-align: center;">01</td>
                   <td><strong class="slip-item-title">Monthly Tuition Fee</strong></td>
                   <td style="text-align: center;" class="slip-item-period">November 2026</td>
-                  <td style="text-align: right;"><strong class="slip-item-amount">0.00</strong></td>
+                  <td style="text-align: right;"><strong class="slip-item-amount">৳ 0.00</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -99,7 +100,7 @@
             <!-- Receipt Footer & Signatures -->
             <div class="receipt-footer-row">
               <div class="footer-note">
-                <i class="fas fa-check-double" style="color: #059669;"></i> Valid computer-generated official receipt. Please preserve for records.
+                <i class="fas fa-check-circle" style="color: #059669;"></i> Official computer-generated receipt. Please preserve for records.
               </div>
               <div class="signature-box">
                 <div class="sig-line"></div>
@@ -119,7 +120,7 @@
         <div class="receipt-cut-line">
           <div class="cut-line-dash"></div>
           <span class="cut-line-badge">
-            ✂ &nbsp; CUT HERE / মাঝখানে কাটুন &nbsp; (▲ STUDENT COPY &nbsp;|&nbsp; OFFICE COPY ▼) &nbsp; ✂
+            ✂ &nbsp; CUT HERE &bull; (▲ STUDENT COPY &nbsp;|&nbsp; OFFICE COPY ▼) &nbsp; ✂
           </span>
         </div>
 
@@ -136,10 +137,10 @@
               <div class="receipt-school-info">
                 <h2 class="receipt-school-name">AL FATIHA INSTITUTE</h2>
                 <div class="receipt-school-sub">An Islamic Cambridge Integrated Curriculum School</div>
-                <div class="receipt-school-addr">Engg. Edris Building, Kalur Dokan, Tekpara Main Road, Cox's Bazar &bull; ☎ 01611477441, 01632550045 &bull; ✉ alfatihacxb@gmail.com</div>
+                <div class="receipt-school-addr">Engg. Edris Building, Kalur Dokan, Tekpara Main Road, Cox's Bazar &bull; Phone: 01611477441, 01632550045 &bull; Email: alfatihacxb@gmail.com</div>
               </div>
               <div class="receipt-badge-col">
-                <span class="copy-tag office-tag">OFFICE COPY (অফিস কপি)</span>
+                <span class="copy-tag office-tag">OFFICE COPY</span>
                 <span class="status-pill slip-status-pill">PAID</span>
               </div>
             </div>
@@ -152,7 +153,7 @@
               <div class="meta-item"><span class="lbl">Date:</span> <strong class="val slip-paid-date">--</strong></div>
               <div class="meta-item"><span class="lbl">Class &amp; Roll:</span> <span class="val"><strong class="slip-class-name">--</strong> (Roll: <strong class="slip-roll-no">--</strong>)</span></div>
               <div class="meta-item"><span class="lbl">Pay Method:</span> <span class="val slip-pay-method">Cash</span></div>
-              <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">2027</span></div>
+              <div class="meta-item"><span class="lbl">Session / Month:</span> <span class="val slip-fee-month">Session 2027</span></div>
               <div class="meta-item"><span class="lbl">Trx Ref No:</span> <span class="val slip-ref-no">N/A</span></div>
             </div>
 
@@ -162,7 +163,7 @@
                 <tr>
                   <th style="width: 32px; text-align: center;">SL</th>
                   <th>Fee Particulars / Item Description</th>
-                  <th style="width: 130px; text-align: center;">Month / Term</th>
+                  <th style="width: 130px; text-align: center;">Month / Period</th>
                   <th style="width: 110px; text-align: right;">Amount (৳)</th>
                 </tr>
               </thead>
@@ -171,7 +172,7 @@
                   <td style="text-align: center;">01</td>
                   <td><strong class="slip-item-title">Monthly Tuition Fee</strong></td>
                   <td style="text-align: center;" class="slip-item-period">November 2026</td>
-                  <td style="text-align: right;"><strong class="slip-item-amount">0.00</strong></td>
+                  <td style="text-align: right;"><strong class="slip-item-amount">৳ 0.00</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -195,7 +196,7 @@
             <!-- Receipt Footer & Signatures -->
             <div class="receipt-footer-row">
               <div class="footer-note">
-                <i class="fas fa-university" style="color: #064878;"></i> Accounts &amp; Audit Copy &bull; Preserved in School Ledger.
+                <i class="fas fa-university" style="color: #064878;"></i> Accounts &amp; Audit Copy &bull; Preserved in School Office Ledger.
               </div>
               <div class="signature-box">
                 <div class="sig-line"></div>
@@ -203,7 +204,7 @@
               </div>
               <div class="signature-box">
                 <div class="sig-line"></div>
-                <div class="sig-title">Accounts Officer Seal</div>
+                <div class="sig-title">Accounts Officer / Principal</div>
               </div>
             </div>
           </div>
@@ -213,10 +214,10 @@
     </div><!-- End Scroll Container -->
 
     <!-- Modal Footer Actions (Hidden on Print) -->
-    <div class="no-print" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 0.8rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; flex-shrink: 0;">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('receiptSlipModal')" style="padding: 0.5rem 1.2rem; border-radius: 8px;">Close</button>
-      <button type="button" class="btn btn-primary" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; font-weight: 700; padding: 0.5rem 1.4rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
-        <i class="fas fa-print"></i> Print Receipt Slip (A4)
+    <div class="no-print" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 0.75rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; flex-shrink: 0;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('receiptSlipModal')" style="padding: 0.45rem 1.2rem; border-radius: 8px;">Close</button>
+      <button type="button" class="btn btn-primary" onclick="printReceiptSlip()" style="background: #0284c7; color: #ffffff; font-weight: 700; padding: 0.45rem 1.4rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fas fa-print"></i> Print Receipt (1 Page)
       </button>
     </div>
 
@@ -226,8 +227,8 @@
 <!-- ========================================================
      A4 RECEIPT SLIP STYLING (ON-SCREEN & PRINT ENGINE)
      ======================================================== -->
-<style>
-/* Clean Base Styles for A4 Sheet Container */
+<style id="receiptModalPrintStyle">
+/* Base Styles for A4 Sheet Container */
 .a4-receipt-page {
   background: #ffffff;
   width: 100%;
@@ -242,18 +243,22 @@
 .receipt-half {
   background: #ffffff;
   border: 1.5px solid #064878;
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 6px;
+  padding: 8px 12px;
   box-sizing: border-box;
   position: relative;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .student-copy {
   border-color: #0284c7;
+  page-break-after: avoid !important;
 }
 
 .office-copy {
   border-color: #064878;
+  page-break-before: avoid !important;
 }
 
 /* Receipt Header */
@@ -263,8 +268,8 @@
   justify-content: space-between;
   gap: 10px;
   border-bottom: 1.5px solid #064878;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .receipt-logo-wrap {
@@ -272,8 +277,8 @@
 }
 
 .receipt-logo {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: contain;
   display: block;
@@ -289,36 +294,36 @@
   font-size: 1.15rem;
   font-weight: 800;
   color: #064878;
-  letter-spacing: 0.6px;
-  line-height: 1.2;
+  letter-spacing: 0.5px;
+  line-height: 1.15;
 }
 
 .receipt-school-sub {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: #0284c7;
   font-weight: 700;
   margin-top: 1px;
 }
 
 .receipt-school-addr {
-  font-size: 0.62rem;
+  font-size: 0.60rem;
   color: #64748b;
   margin-top: 1px;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .receipt-badge-col {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
 .copy-tag {
   display: inline-block;
   padding: 2px 7px;
-  font-size: 0.62rem;
+  font-size: 0.60rem;
   font-weight: 800;
   border-radius: 4px;
   text-transform: uppercase;
@@ -339,7 +344,7 @@
 .status-pill {
   display: inline-block;
   padding: 2px 7px;
-  font-size: 0.62rem;
+  font-size: 0.60rem;
   font-weight: 800;
   border-radius: 12px;
   text-transform: uppercase;
@@ -364,14 +369,14 @@
 .receipt-meta-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr 1.3fr 1fr;
-  gap: 4px 10px;
+  gap: 3px 8px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 6px 10px;
-  margin-bottom: 8px;
-  font-size: 0.76rem;
-  line-height: 1.3;
+  border-radius: 5px;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  font-size: 0.73rem;
+  line-height: 1.25;
 }
 
 .meta-item .lbl {
@@ -391,22 +396,22 @@
 .receipt-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.74rem;
-  margin-bottom: 6px;
+  font-size: 0.72rem;
+  margin-bottom: 5px;
 }
 
 .receipt-table th {
   background: #f1f5f9;
   color: #334155;
   font-weight: 700;
-  padding: 4px 6px;
+  padding: 3px 6px;
   border: 1px solid #cbd5e1;
-  font-size: 0.72rem;
+  font-size: 0.69rem;
   text-transform: uppercase;
 }
 
 .receipt-table td {
-  padding: 4px 6px;
+  padding: 3px 6px;
   border: 1px solid #e2e8f0;
   color: #1e293b;
 }
@@ -418,16 +423,16 @@
   gap: 12px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 5px 12px;
-  margin-bottom: 8px;
+  border-radius: 5px;
+  padding: 4px 10px;
+  margin-bottom: 6px;
 }
 
 .total-box {
   display: flex;
   align-items: baseline;
   gap: 5px;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
 }
 
 .total-box .t-lbl {
@@ -437,7 +442,7 @@
 
 .total-box .t-val {
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #0f172a;
 }
 
@@ -454,15 +459,15 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding-top: 6px;
-  margin-top: 4px;
+  padding-top: 4px;
+  margin-top: 3px;
 }
 
 .footer-note {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: #64748b;
   max-width: 50%;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .signature-box {
@@ -472,12 +477,12 @@
 
 .sig-line {
   border-bottom: 1px dashed #64748b;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   width: 100%;
 }
 
 .sig-title {
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: #475569;
 }
@@ -486,8 +491,10 @@
 .receipt-cut-line {
   position: relative;
   text-align: center;
-  margin: 10px 0;
-  height: 14px;
+  margin: 6px 0;
+  height: 12px;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .cut-line-dash {
@@ -503,60 +510,86 @@
   position: relative;
   z-index: 2;
   background: #ffffff;
-  padding: 0 12px;
-  font-size: 0.66rem;
+  padding: 0 10px;
+  font-size: 0.63rem;
   font-weight: 800;
   color: #475569;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-/* ========================================================
-   EXACT A4 PRINT ENGINE (NEVER BREAKS ACROSS PAGES)
-   ======================================================== */
+/* Native Print Fallback (if user presses Ctrl+P while modal is open) */
 @page {
   size: A4 portrait;
   margin: 6mm 8mm;
 }
 
 @media print {
-  /* Hide all dashboard chrome and active page elements when printing */
-  body.printing-receipt-slip * {
-    visibility: hidden !important;
+  html, body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
   }
 
-  body.printing-receipt-slip #a4ReceiptSlipPrintArea,
-  body.printing-receipt-slip #a4ReceiptSlipPrintArea * {
-    visibility: visible !important;
+  /* Hide entire page tree */
+  body > * {
+    display: none !important;
   }
 
-  body.printing-receipt-slip #a4ReceiptSlipPrintArea {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  /* Display only the modal and print area */
+  body > #receiptSlipModal,
+  #receiptSlipModal {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .admin-modal-box {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  #a4ReceiptSlipPrintArea {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-    border: none !important;
     display: block !important;
-  }
-
-  body.printing-receipt-slip .receipt-half {
-    border-width: 1.5px !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   .no-print {
     display: none !important;
   }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 </style>
 
 <!-- ========================================================
-     RECEIPT DATA POPULATION & PRINT SCRIPT
+     RECEIPT DATA POPULATION & DEDICATED IFRAME PRINT DRIVER
      ======================================================== -->
 <script>
 /**
@@ -580,11 +613,20 @@ function openReceiptModal(data, monthName) {
   var rollNo = data.roll_no ? '#' + data.roll_no : '-';
   var invNo = data.invoice_no || 'INV-' + Math.floor(Math.random() * 9000 + 1000);
   var paidDate = data.paid_date || (new Date()).toISOString().split('T')[0];
-  var payMethod = data.payment_method || 'Cash (নগদ)';
+  
+  // Clean payment method - strictly English (remove any Bengali like (নগদ))
+  var rawMethod = (data.payment_method || 'Cash').toString();
+  var payMethod = rawMethod.replace(/[\u0980-\u09FF\(\)]/g, '').trim() || 'Cash';
+  if (/bkash/i.test(payMethod)) payMethod = 'bKash';
+  else if (/nagad/i.test(payMethod)) payMethod = 'Nagad';
+  else if (/rocket/i.test(payMethod)) payMethod = 'Rocket';
+  else if (/bank/i.test(payMethod)) payMethod = 'Bank Transfer';
+  else if (/cash/i.test(payMethod)) payMethod = 'Cash';
+
   var refNo = data.reference_no || 'N/A';
   var periodStr = monthName || (data.fee_month ? data.fee_month : 'Session 2027');
 
-  // Format currency helper
+  // Format currency helper - English with '৳' sign
   function fmt(num) {
     return '৳ ' + parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
@@ -600,18 +642,18 @@ function openReceiptModal(data, monthName) {
   document.querySelectorAll('.slip-fee-month').forEach(el => el.innerText = periodStr);
   document.querySelectorAll('.slip-ref-no').forEach(el => el.innerText = refNo);
 
-  // Status Badge
+  // Status Badge - Strictly English
   document.querySelectorAll('.slip-status-pill').forEach(el => {
     el.className = 'status-pill slip-status-pill';
     if (status === 'Paid') {
       el.classList.add('status-paid');
-      el.innerText = 'PAID (পরিশোধিত)';
+      el.innerText = 'PAID';
     } else if (status === 'Partial') {
       el.classList.add('status-partial');
-      el.innerText = 'PARTIAL (আংশিক)';
+      el.innerText = 'PARTIAL';
     } else {
       el.classList.add('status-unpaid');
-      el.innerText = 'DUE (বকেয়া)';
+      el.innerText = 'DUE';
     }
   });
 
@@ -629,7 +671,6 @@ function openReceiptModal(data, monthName) {
   });
 
   // Items Breakdown Table
-  // Check if items list is serialized in notes or fee_type
   var itemsHtml = '';
   var notes = data.notes || '';
   var itemsMatch = notes.match(/Items:\s*\[(.*?)\]/);
@@ -652,7 +693,6 @@ function openReceiptModal(data, monthName) {
       sl++;
     });
   } else {
-    // Single fee item
     var primaryTitle = data.fee_type || 'Monthly Tuition Fee';
     itemsHtml = `
       <tr>
@@ -671,13 +711,94 @@ function openReceiptModal(data, monthName) {
 }
 
 /**
- * Native Print Driver: Prints only the dual A4 receipt area without modifying the DOM
+ * Isolated A4 Single-Page Print Driver:
+ * Clones ONLY the dual-receipt area into a clean, isolated hidden iframe.
+ * Absolutely eliminates parent page layout pollution and guarantees 1 single page with 0 blank pages.
  */
 function printReceiptSlip() {
-  document.body.classList.add('printing-receipt-slip');
-  window.print();
+  var printArea = document.getElementById('a4ReceiptSlipPrintArea');
+  if (!printArea) return;
+
+  // Retrieve or create print iframe
+  var iframe = document.getElementById('receiptPrintIframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'receiptPrintIframe';
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-9999px';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+  }
+
+  // Get current styles for the receipt
+  var styleTag = document.getElementById('receiptModalPrintStyle');
+  var cssRules = styleTag ? styleTag.innerHTML : '';
+
+  // Get absolute URL for the logo so it renders flawlessly inside iframe
+  var logoEl = document.querySelector('.receipt-logo');
+  var logoUrl = logoEl ? logoEl.src : '../assets/images/logo.png?v=2';
+
+  // Build isolated HTML document strictly sized for 1 A4 portrait page
+  var iframeDoc = iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Money Receipt - Al Fatiha Institute</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      height: auto !important;
+      min-height: 0 !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+    }
+    ${cssRules}
+    .a4-receipt-page {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  ${printArea.outerHTML}
+</body>
+</html>`);
+  iframeDoc.close();
+
+  // Replace any relative logo src inside the iframe with the absolute loaded src
+  var iframeLogos = iframeDoc.getElementsByTagName('img');
+  for (var i = 0; i < iframeLogos.length; i++) {
+    iframeLogos[i].src = logoUrl;
+  }
+
+  // Trigger print after iframe renders
   setTimeout(function() {
-    document.body.classList.remove('printing-receipt-slip');
-  }, 600);
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      console.error('Iframe print error fallback to window.print:', e);
+      window.print();
+    }
+  }, 250);
 }
 </script>

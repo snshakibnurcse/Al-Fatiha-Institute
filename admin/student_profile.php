@@ -798,9 +798,11 @@ require_once __DIR__ . '/layout.php';
           <div>
             <label style="font-size: 0.75rem; font-weight: 700; color: #065f46;">Payment Method</label>
             <select name="payment_method" class="form-control" style="padding: 0.45rem; font-size: 0.85rem;">
-              <option value="Cash">Cash (নগদ)</option>
-              <option value="bKash / Mobile Banking">bKash / Mobile</option>
+              <option value="Cash">Cash</option>
+              <option value="bKash">bKash</option>
+              <option value="Nagad">Nagad</option>
               <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
             </select>
           </div>
           <div>
@@ -959,11 +961,11 @@ require_once __DIR__ . '/layout.php';
         <div class="form-group">
           <label>Payment Method *</label>
           <select name="payment_method" class="form-control" required>
-            <option value="Cash (নগদ)">Cash (নগদ)</option>
-            <option value="bKash">bKash (বিকাশ)</option>
-            <option value="Nagad">Nagad (নগদ অ্যাপ)</option>
-            <option value="Bank Transfer">Bank Transfer (ব্যাংক)</option>
-            <option value="Rocket">Rocket (রকেট)</option>
+            <option value="Cash">Cash</option>
+            <option value="bKash">bKash</option>
+            <option value="Nagad">Nagad</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Rocket">Rocket</option>
             <option value="Cheque">Cheque</option>
           </select>
         </div>
