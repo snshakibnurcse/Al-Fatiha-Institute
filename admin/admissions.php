@@ -28,17 +28,42 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                 $parentStmt->execute([$parent_username, $parent_password_hash, $appData['email'] ?: 'parent@example.com', $appData['father_name'], $appData['phone']]);
                 $parent_user_id = $db->lastInsertId();
 
-                // 2. Generate Student ID & Roll No
-                $student_code = 'AFI-' . date('Y') . '-' . str_pad($app_id, 3, '0', STR_PAD_LEFT);
-                $roll_no = rand(1, 40);
+                // 2. Generate Student ID (Specific Format: AFI-2027-XXX) & Sequential Roll No
+                $student_code = generate_next_student_id('2027');
+                $roll_no = get_next_class_roll($appData['target_class_id']);
 
                 // Split child name
                 $nameParts = explode(' ', trim($appData['child_name']), 2);
                 $first_name = $nameParts[0];
-                $last_name = $nameParts[1] ?? 'Student';
+                $last_name = $nameParts[1] ?? '';
 
-                // 3. Insert Student Record
-                $studentStmt = $db->prepare("INSERT INTO students (student_id, first_name, last_name, gender, dob, class_id, roll_no, parent_user_id, father_name, mother_name, phone, address, status, admission_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active', CURRENT_DATE())");
+                // Extract medical notes
+                $medNotes = [];
+                if (!empty($appData['has_allergies']) && $appData['has_allergies'] === 'Yes') {
+                    $medNotes[] = "Allergies: " . ($appData['allergies_list'] ?? 'None');
+                }
+                if (!empty($appData['regular_medications'])) {
+                    $medNotes[] = "Meds: " . $appData['regular_medications'];
+                }
+                $medical_notes = !empty($medNotes) ? implode('; ', $medNotes) : null;
+
+                // 3. Insert Student Record with Full Profile Data
+                $studentStmt = $db->prepare("INSERT INTO students (
+                    student_id, first_name, last_name, gender, dob, class_id, roll_no, parent_user_id,
+                    father_name, mother_name, phone, address, status, admission_date,
+                    blood_group, religion, nationality, birth_reg_no, permanent_address,
+                    father_occupation, father_phone, father_nid, mother_occupation, mother_phone,
+                    emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
+                    previous_school, medical_notes, admission_session
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, 'Active', CURRENT_DATE(),
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?,
+                    ?, ?, '2027'
+                )");
+
                 $studentStmt->execute([
                     $student_code,
                     $first_name,
@@ -51,7 +76,22 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                     $appData['father_name'],
                     $appData['mother_name'],
                     $appData['phone'],
-                    $appData['address']
+                    $appData['address'],
+                    $appData['blood_group'] ?? null,
+                    $appData['religion'] ?? 'Islam',
+                    $appData['nationality'] ?? 'Bangladeshi',
+                    $appData['birth_reg_or_passport'] ?? null,
+                    $appData['permanent_address'] ?? $appData['address'],
+                    $appData['father_occupation'] ?? null,
+                    $appData['phone'],
+                    $appData['father_nid_passport'] ?? null,
+                    $appData['mother_occupation'] ?? null,
+                    $appData['mother_phone'] ?? null,
+                    $appData['emergency_name'] ?? $appData['father_name'],
+                    $appData['emergency_phone'] ?? $appData['phone'],
+                    $appData['emergency_relationship'] ?? 'Father',
+                    $appData['previous_school'] ?? null,
+                    $medical_notes
                 ]);
 
                 // 4. Update Admission Status

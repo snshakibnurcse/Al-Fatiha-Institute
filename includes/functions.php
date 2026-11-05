@@ -301,6 +301,37 @@ function ensure_latest_db_schema() {
     try {
         $db = get_db_connection();
 
+        // Rename Year One & Year Two to Class One & Class Two
+        try {
+            $db->exec("UPDATE `classes` SET `class_name` = 'Class One' WHERE id = 4 OR `class_name` = 'Year One';");
+            $db->exec("UPDATE `classes` SET `class_name` = 'Class Two' WHERE id = 5 OR `class_name` = 'Year Two';");
+        } catch (Exception $e) {}
+
+        // Add extended student details to students table if missing
+        $studentCols = [
+            "blood_group VARCHAR(10) DEFAULT NULL",
+            "religion VARCHAR(50) DEFAULT 'Islam'",
+            "nationality VARCHAR(50) DEFAULT 'Bangladeshi'",
+            "birth_reg_no VARCHAR(100) DEFAULT NULL",
+            "permanent_address TEXT DEFAULT NULL",
+            "father_occupation VARCHAR(100) DEFAULT NULL",
+            "father_phone VARCHAR(40) DEFAULT NULL",
+            "father_nid VARCHAR(100) DEFAULT NULL",
+            "mother_occupation VARCHAR(100) DEFAULT NULL",
+            "mother_phone VARCHAR(40) DEFAULT NULL",
+            "emergency_contact_name VARCHAR(100) DEFAULT NULL",
+            "emergency_contact_phone VARCHAR(40) DEFAULT NULL",
+            "emergency_contact_relation VARCHAR(50) DEFAULT NULL",
+            "previous_school VARCHAR(150) DEFAULT NULL",
+            "medical_notes TEXT DEFAULT NULL",
+            "admission_session VARCHAR(20) DEFAULT '2027'"
+        ];
+        foreach ($studentCols as $colDef) {
+            try {
+                $db->exec("ALTER TABLE `students` ADD COLUMN IF NOT EXISTS $colDef;");
+            } catch (Exception $e) {}
+        }
+
         // 1. Add primary_teacher_id & backup_teacher_id to classes table if missing
         try {
             $db->exec("ALTER TABLE `classes` ADD COLUMN `primary_teacher_id` INT DEFAULT NULL;");
@@ -310,7 +341,7 @@ function ensure_latest_db_schema() {
             $db->exec("ALTER TABLE `classes` ADD COLUMN `backup_teacher_id` INT DEFAULT NULL;");
         } catch (Exception $e) {}
 
-        // Auto-assign default primary teacher (Ustadh Ahmad Rahman = ID 1) to Year One (ID 4) if null
+        // Auto-assign default primary teacher (Ustadh Ahmad Rahman = ID 1) to Class One (ID 4) if null
         try {
             $db->exec("UPDATE `classes` SET `primary_teacher_id` = 1 WHERE `id` = 4 AND `primary_teacher_id` IS NULL;");
         } catch (Exception $e) {}
@@ -363,3 +394,38 @@ function ensure_latest_db_schema() {
 // Automatically trigger schema migration check & monthly invoice generation
 ensure_latest_db_schema();
 auto_generate_monthly_invoices();
+
+/**
+ * Generate next sequential Student ID with specific format: AFI-YYYY-XXX
+ * Example: AFI-2027-001, AFI-2027-002
+ */
+function generate_next_student_id($sessionYear = '2027') {
+    $db = get_db_connection();
+    $prefix = "AFI-" . $sessionYear . "-";
+    
+    // Find highest serial in that year
+    $stmt = $db->prepare("SELECT student_id FROM students WHERE student_id LIKE ? ORDER BY student_id DESC LIMIT 50");
+    $stmt->execute([$prefix . '%']);
+    $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $maxSerial = 0;
+    foreach ($rows as $sId) {
+        $numPart = intval(substr($sId, strlen($prefix)));
+        if ($numPart > $maxSerial) {
+            $maxSerial = $numPart;
+        }
+    }
+    
+    $nextSerial = $maxSerial + 1;
+    return $prefix . str_pad($nextSerial, 3, '0', STR_PAD_LEFT);
+}
+
+/**
+ * Get the next sequential roll number for a given class
+ */
+function get_next_class_roll($classId) {
+    $db = get_db_connection();
+    $stmt = $db->prepare("SELECT COALESCE(MAX(roll_no), 0) + 1 FROM students WHERE class_id = ?");
+    $stmt->execute([intval($classId)]);
+    return intval($stmt->fetchColumn()) ?: 1;
+}

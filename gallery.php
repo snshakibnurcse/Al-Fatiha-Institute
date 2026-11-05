@@ -45,7 +45,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div style="padding: 1.2rem;">
           <span style="font-size: 0.75rem; color: var(--sky-blue); font-weight: 800; text-transform: uppercase;">CAMBRIDGE ACADEMICS</span>
-          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Year 1 & 2 Primary Science Fair</h4>
+          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Class 1 & 2 Primary Science Fair</h4>
         </div>
       </div>
 

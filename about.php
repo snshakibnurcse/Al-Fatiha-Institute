@@ -22,7 +22,7 @@ include __DIR__ . '/includes/header.php';
         <span class="sub-badge"><i class="fas fa-bullseye"></i> Our Purpose</span>
         <h2 style="font-size: 2.2rem; margin-bottom: 1.2rem;">Building Intellectuals with Strong Faith</h2>
         <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.7;">
-          Founded in 2025 in Cox's Bazar, <strong>AL FATIHA INSTITUTE</strong> was created to bridge the gap between world-class international English education and authentic Islamic values. We nurture children during their most formative early years (Play Group to Year 2), equipping them with critical thinking, moral integrity, English language mastery, and love for Allah and His Messenger (ﷺ).
+          Founded in 2025 in Cox's Bazar, <strong>AL FATIHA INSTITUTE</strong> was created to bridge the gap between world-class international English education and authentic Islamic values. We nurture children during their most formative early years (Play Group to Class 2), equipping them with critical thinking, moral integrity, English language mastery, and love for Allah and His Messenger (ﷺ).
         </p>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
@@ -39,7 +39,7 @@ include __DIR__ . '/includes/header.php';
       </div>
 
       <div style="text-align: center; background: #ffffff; padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
-        <img src="assets/images/logo.svg" alt="AL FATIHA INSTITUTE Emblem" style="max-width: 200px; margin: 0 auto 1.5rem auto;">
+        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Emblem" style="max-width: 200px; margin: 0 auto 1.5rem auto;">
         <h3 style="color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 0.4rem;">ESTABLISHED 2025</h3>
         <p style="color: var(--accent-gold-dark); font-weight: 700; font-size: 0.95rem; margin-bottom: 1.2rem;">COX'S BAZAR, BANGLADESH</p>
         <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">

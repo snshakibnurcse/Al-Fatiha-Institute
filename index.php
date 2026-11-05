@@ -16,10 +16,10 @@ include __DIR__ . '/includes/header.php';
       <h2><i class="fas fa-star" style="color: var(--accent-gold);"></i> Premier Kindergarten & Early Primary</h2>
       <h1>Nurturing Young Minds with <span>Cambridge Excellence</span> & Islamic Values</h1>
       <p>
-        At <strong>AL FATIHA INSTITUTE</strong>, we provide a world-class Cambridge International curriculum foundation combined with authentic Islamic Tarbiyah, Quranic Tajweed, and Arabic language immersion for children in <strong>Play, Nursery, KG, Year 1, and Year 2</strong>.
+        At <strong>AL FATIHA INSTITUTE</strong>, we provide a world-class Cambridge International curriculum foundation combined with authentic Islamic Tarbiyah, Quranic Tajweed, and Arabic language immersion for children in <strong>Play, Nursery, KG, Class 1, and Class 2</strong>.
       </p>
       <div class="hero-buttons">
-        <a href="admissions.php" class="btn btn-gold"><i class="fas fa-user-plus"></i> Online Admission 2026</a>
+        <a href="admissions.php" class="btn btn-gold"><i class="fas fa-user-plus"></i> Online Admission 2027</a>
         <a href="academics.php" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.4);"><i class="fas fa-book-open"></i> Explore Curriculum</a>
       </div>
 
@@ -43,15 +43,15 @@ include __DIR__ . '/includes/header.php';
 
     <div class="hero-card-preview">
       <div class="hero-image-wrap">
-        <img src="assets/images/logo.svg" alt="AL FATIHA INSTITUTE Logo" class="logo-hero">
+        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo" class="logo-hero">
         <h3 style="color: #ffffff; font-size: 1.4rem; margin-bottom: 0.5rem;">AL FATIHA INSTITUTE</h3>
         <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 1rem;">Cox's Bazar • Established 2025</p>
         
         <div class="floating-pill">
           <i class="fas fa-award"></i>
           <span style="text-align: left;">
-            <strong style="display: block; font-size: 0.9rem;">Admissions Open</strong>
-            <small style="color: var(--text-muted); font-size: 0.75rem;">Play, Nursery, KG, Year 1 & Year 2</small>
+            <strong style="display: block; font-size: 0.9rem;">Admissions Open 2027</strong>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Play, Nursery, KG, Class 1 & Class 2</small>
           </span>
         </div>
       </div>
@@ -71,7 +71,7 @@ include __DIR__ . '/includes/header.php';
           </span>
         <?php endforeach; ?>
       <?php else: ?>
-        <span>Welcome to AL FATIHA INSTITUTE - Admission open for 2026 academic session!</span>
+        <span>Welcome to AL FATIHA INSTITUTE - Admission open for 2027 academic session!</span>
       <?php endif; ?>
     </div>
   </div>
@@ -120,7 +120,7 @@ include __DIR__ . '/includes/header.php';
     <div class="section-title-wrap">
       <span class="sub-badge gold"><i class="fas fa-layer-group"></i> Academic Structure</span>
       <h2 class="section-title">Our Kindergarten & Early Primary Classes</h2>
-      <p class="section-desc">Tailored developmental stages from toddler playgroup to primary Year Two.</p>
+      <p class="section-desc">Tailored developmental stages from toddler playgroup to primary Class Two.</p>
     </div>
 
     <div class="programs-grid">
@@ -175,12 +175,12 @@ include __DIR__ . '/includes/header.php';
         <a href="admissions.php?class=3" class="btn btn-outline btn-block"><i class="fas fa-paper-plane"></i> Apply for KG</a>
       </div>
 
-      <!-- Year One -->
+      <!-- Class One -->
       <div class="program-card">
         <span class="program-badge">Age 5.5 - 6.5 Yrs</span>
         <div class="program-header">
           <div class="program-icon"><i class="fas fa-book-reader"></i></div>
-          <h3>Year One</h3>
+          <h3>Class One</h3>
           <p class="program-age">Cambridge Primary Stage 1</p>
         </div>
         <ul class="program-features">
@@ -189,15 +189,15 @@ include __DIR__ . '/includes/header.php';
           <li><i class="fas fa-check-circle"></i> Quran Recitation with Tajweed</li>
           <li><i class="fas fa-check-circle"></i> Basic Conversational Arabic</li>
         </ul>
-        <a href="admissions.php?class=4" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Year 1</a>
+        <a href="admissions.php?class=4" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Class 1</a>
       </div>
 
-      <!-- Year Two -->
+      <!-- Class Two -->
       <div class="program-card">
         <span class="program-badge">Age 6.5 - 7.5 Yrs</span>
         <div class="program-header">
           <div class="program-icon"><i class="fas fa-graduation-cap"></i></div>
-          <h3>Year Two</h3>
+          <h3>Class Two</h3>
           <p class="program-age">Cambridge Primary Stage 2</p>
         </div>
         <ul class="program-features">
@@ -206,7 +206,7 @@ include __DIR__ . '/includes/header.php';
           <li><i class="fas fa-check-circle"></i> Juz Amma Hifz Progress</li>
           <li><i class="fas fa-check-circle"></i> Islamic Ethics & Leadership</li>
         </ul>
-        <a href="admissions.php?class=5" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Year 2</a>
+        <a href="admissions.php?class=5" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Class 2</a>
       </div>
     </div>
   </div>
@@ -362,7 +362,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <h2 style="color: #ffffff; font-size: 2.2rem; margin-bottom: 0.8rem;">Give Your Child the Best Start in Life</h2>
     <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 650px; margin: 0 auto 2rem auto;">
-      Apply online today for Play Group, Nursery, KG, Year 1, or Year 2 admissions at AL FATIHA INSTITUTE, Cox's Bazar.
+      Apply online today for Play Group, Nursery, KG, Class 1, or Class 2 admissions at AL FATIHA INSTITUTE, Cox's Bazar.
     </p>
     <a href="admissions.php" class="btn btn-gold" style="font-size: 1.1rem; padding: 1rem 2.2rem;">
       <i class="fas fa-edit"></i> Submit Admission Application

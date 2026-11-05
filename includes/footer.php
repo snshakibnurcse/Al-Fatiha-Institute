@@ -3,9 +3,9 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/images/logo.svg" alt="AL FATIHA INSTITUTE Logo">
+          <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo">
           <p>
-            AL FATIHA INSTITUTE is an esteemed English medium kindergarten school in Cox's Bazar delivering Cambridge Early Years standards blended with authentic Islamic character building, Quranic Tajweed, and Arabic fluency for Play through Year 2.
+            AL FATIHA INSTITUTE is an esteemed English medium kindergarten school in Cox's Bazar delivering Cambridge Early Years standards blended with authentic Islamic character building, Quranic Tajweed, and Arabic fluency for Play through Class 2.
           </p>
           <div class="social-links">
             <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -33,8 +33,8 @@
             <li><a href="academics.php#play"><i class="fas fa-shapes"></i> Play Group (2.5 - 3.5 Yrs)</a></li>
             <li><a href="academics.php#nursery"><i class="fas fa-child"></i> Nursery (3.5 - 4.5 Yrs)</a></li>
             <li><a href="academics.php#kg"><i class="fas fa-school"></i> Kindergarten / KG (4.5 - 5.5 Yrs)</a></li>
-            <li><a href="academics.php#year1"><i class="fas fa-book-reader"></i> Year One (5.5 - 6.5 Yrs)</a></li>
-            <li><a href="academics.php#year2"><i class="fas fa-graduation-cap"></i> Year Two (6.5 - 7.5 Yrs)</a></li>
+            <li><a href="academics.php#class1"><i class="fas fa-book-reader"></i> Class One (5.5 - 6.5 Yrs)</a></li>
+            <li><a href="academics.php#class1"><i class="fas fa-graduation-cap"></i> Class Two (6.5 - 7.5 Yrs)</a></li>
           </ul>
         </div>
 

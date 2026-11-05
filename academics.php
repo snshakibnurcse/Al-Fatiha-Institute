@@ -19,7 +19,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container">
     <div class="section-title-wrap">
       <span class="sub-badge"><i class="fas fa-book-open"></i> Grade-by-Grade Roadmap</span>
-      <h2 class="section-title">Educational Journey (Play to Year 2)</h2>
+      <h2 class="section-title">Educational Journey (Play to Class 2)</h2>
     </div>
 
     <!-- Play Group -->
@@ -112,14 +112,14 @@ include __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <!-- Year 1 & Year 2 -->
-    <div id="year1" style="background: #ffffff; padding: 2.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+    <!-- Class 1 & Class 2 -->
+    <div id="class1" style="background: #ffffff; padding: 2.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--bg-body); padding-bottom: 1rem;">
         <div>
           <span style="background: var(--sky-blue-light); color: var(--primary); font-weight: 800; padding: 0.35rem 0.9rem; border-radius: var(--radius-full); font-size: 0.8rem;">AGE: 5.5 - 7.5 YEARS</span>
-          <h2 style="font-size: 1.8rem; color: var(--primary-dark); margin-top: 0.4rem;">Year One & Year Two (Primary Stage 1-2)</h2>
+          <h2 style="font-size: 1.8rem; color: var(--primary-dark); margin-top: 0.4rem;">Class One & Class Two (Primary Stage 1-2)</h2>
         </div>
-        <a href="admissions.php?class=4" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Apply for Primary Years</a>
+        <a href="admissions.php?class=4" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Apply for Primary Classes</a>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">

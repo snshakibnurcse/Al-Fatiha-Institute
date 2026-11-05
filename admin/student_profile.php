@@ -208,19 +208,19 @@ $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
 </div>
 
 <!-- Detailed Sections -->
-<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+<div style="display: flex; flex-direction: column; gap: 2rem; width: 100%; min-width: 0; box-sizing: border-box;">
 
   <!-- 1. Fee Payments & Advance Statement Card -->
-  <div class="card-box">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="card-box" style="min-width: 0; max-width: 100%; overflow: hidden;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
       <h3 class="card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--admin-primary);"></i> Fee Payment Statements & Advance Invoices</h3>
-      <button class="btn" style="background: #10b981; color: #ffffff; padding: 0.4rem 0.8rem; font-size: 0.82rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700;" onclick="openModal('advancePaymentModal')">
+      <button class="btn" style="background: #10b981; color: #ffffff; padding: 0.5rem 1rem; font-size: 0.82rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" onclick="openModal('advancePaymentModal')">
         <i class="fas fa-plus"></i> Collect Advance Fee
       </button>
     </div>
 
-    <div class="table-responsive">
-      <table class="data-table">
+    <div class="table-responsive" style="width: 100%; max-width: 100%; overflow-x: auto; display: block; -webkit-overflow-scrolling: touch;">
+      <table class="data-table" style="min-width: 720px; width: 100%;">
         <thead>
           <tr>
             <th>Invoice No</th>
@@ -320,38 +320,76 @@ $attRate = $attTotal > 0 ? round(($attPresent / $attTotal) * 100, 1) : 100;
   </div>
 
   <!-- 3. Guardian & Personal Information Card -->
-  <div class="card-box">
+  <div class="card-box" style="min-width: 0; max-width: 100%; overflow: hidden;">
     <div class="card-header">
-      <h3 class="card-title"><i class="fas fa-id-card" style="color: var(--admin-primary);"></i> Student & Guardian Detailed Information</h3>
+      <h3 class="card-title"><i class="fas fa-id-card" style="color: var(--admin-primary);"></i> Student &amp; Guardian Detailed Information</h3>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; font-size: 0.95rem;">
-      <div style="background: #f8fafc; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--admin-border);">
-        <h4 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin-top: 0; border-bottom: 2px solid var(--admin-border); padding-bottom: 0.5rem;">
-          <i class="fas fa-user"></i> Student Personal Details
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; font-size: 0.92rem;">
+      <!-- Column 1: Student Identity & Academic Profile -->
+      <div style="background: #f8fafc; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--admin-border);">
+        <h4 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin-top: 0; border-bottom: 2px solid var(--admin-border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-user-graduate" style="color: var(--admin-primary);"></i> Student Identity &amp; Bio Data
         </h4>
-        <p><strong>First Name:</strong> <?= htmlspecialchars($student['first_name']) ?></p>
-        <p><strong>Last Name:</strong> <?= htmlspecialchars($student['last_name'] ?: 'N/A') ?></p>
-        <p><strong>Gender:</strong> <?= $student['gender'] ?></p>
-        <p><strong>Date of Birth:</strong> <?= format_date($student['dob']) ?></p>
-        <p><strong>Admission Date:</strong> <?= format_date($student['admission_date']) ?></p>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin-top: 0.75rem;">
+          <p style="margin: 0.2rem 0;"><strong>Full Name:</strong> <?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Student ID:</strong> <code><?= htmlspecialchars($student['student_id']) ?></code></p>
+          <p style="margin: 0.2rem 0;"><strong>Class / Standard:</strong> <span class="badge badge-info"><?= htmlspecialchars($student['class_name']) ?></span> (Roll: <strong>#<?= $student['roll_no'] ?></strong>)</p>
+          <p style="margin: 0.2rem 0;"><strong>Admission Session:</strong> <?= htmlspecialchars($student['admission_session'] ?? '2027') ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Gender:</strong> <?= $student['gender'] ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Date of Birth:</strong> <?= format_date($student['dob']) ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Blood Group:</strong> <span class="badge" style="background: #fee2e2; color: #dc2626; font-weight: 800;"><?= htmlspecialchars($student['blood_group'] ?: 'N/A') ?></span></p>
+          <p style="margin: 0.2rem 0;"><strong>Birth Reg. / Passport:</strong> <?= htmlspecialchars($student['birth_reg_no'] ?: 'N/A') ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Religion &amp; Nationality:</strong> <?= htmlspecialchars($student['religion'] ?? 'Islam') ?> &bull; <?= htmlspecialchars($student['nationality'] ?? 'Bangladeshi') ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Admission Date:</strong> <?= format_date($student['admission_date']) ?></p>
+          <?php if (!empty($student['previous_school'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Previous School:</strong> <?= htmlspecialchars($student['previous_school']) ?></p>
+          <?php endif; ?>
+          <?php if (!empty($student['medical_notes'])): ?>
+            <p style="margin: 0.2rem 0; color: #b45309;"><strong><i class="fas fa-heartbeat"></i> Medical Notes:</strong> <?= htmlspecialchars($student['medical_notes']) ?></p>
+          <?php endif; ?>
+        </div>
       </div>
 
-      <div style="background: #f8fafc; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--admin-border);">
-        <h4 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin-top: 0; border-bottom: 2px solid var(--admin-border); padding-bottom: 0.5rem;">
-          <i class="fas fa-users"></i> Guardian & Contact Info
+      <!-- Column 2: Guardian, Contact & Family Details -->
+      <div style="background: #f8fafc; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--admin-border);">
+        <h4 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin-top: 0; border-bottom: 2px solid var(--admin-border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-users" style="color: var(--admin-gold-dark);"></i> Parents, Guardian &amp; Address
         </h4>
-        <p><strong>Father's Name:</strong> <?= htmlspecialchars($student['father_name']) ?></p>
-        <p><strong>Mother's Name:</strong> <?= htmlspecialchars($student['mother_name'] ?: 'N/A') ?></p>
-        <p><strong>Guardian Phone:</strong> <?= htmlspecialchars($student['phone']) ?></p>
-        <p><strong>Address:</strong> <?= htmlspecialchars($student['address']) ?></p>
-        <p><strong>Parent Portal Account:</strong> 
-          <?php if ($student['parent_username']): ?>
-            <code><?= htmlspecialchars($student['parent_username']) ?></code> (<?= htmlspecialchars($student['parent_email']) ?>)
-          <?php else: ?>
-            <span style="color: var(--admin-text-muted);">Default Parent Account</span>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin-top: 0.75rem;">
+          <p style="margin: 0.2rem 0;"><strong>Father's Name:</strong> <?= htmlspecialchars($student['father_name']) ?></p>
+          <p style="margin: 0.2rem 0;"><strong>Father's Mobile (SMS):</strong> <a href="tel:<?= htmlspecialchars($student['phone']) ?>" style="color: var(--admin-primary); font-weight: 700; text-decoration: none;"><?= htmlspecialchars($student['phone']) ?></a></p>
+          <?php if (!empty($student['father_occupation'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Father's Occupation:</strong> <?= htmlspecialchars($student['father_occupation']) ?></p>
           <?php endif; ?>
-        </p>
+          <?php if (!empty($student['father_nid'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Father's NID / Passport:</strong> <?= htmlspecialchars($student['father_nid']) ?></p>
+          <?php endif; ?>
+          <p style="margin: 0.2rem 0;"><strong>Mother's Name:</strong> <?= htmlspecialchars($student['mother_name'] ?: 'N/A') ?></p>
+          <?php if (!empty($student['mother_phone'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Mother's Mobile:</strong> <?= htmlspecialchars($student['mother_phone']) ?></p>
+          <?php endif; ?>
+          <?php if (!empty($student['mother_occupation'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Mother's Occupation:</strong> <?= htmlspecialchars($student['mother_occupation']) ?></p>
+          <?php endif; ?>
+          <p style="margin: 0.2rem 0;"><strong>Present Address:</strong> <?= htmlspecialchars($student['address']) ?></p>
+          <?php if (!empty($student['permanent_address'])): ?>
+            <p style="margin: 0.2rem 0;"><strong>Permanent Address:</strong> <?= htmlspecialchars($student['permanent_address']) ?></p>
+          <?php endif; ?>
+          <?php if (!empty($student['emergency_contact_name'])): ?>
+            <p style="margin: 0.2rem 0; border-top: 1px dashed var(--admin-border); padding-top: 0.4rem;">
+              <strong>Emergency Contact:</strong> <?= htmlspecialchars($student['emergency_contact_name']) ?> (<?= htmlspecialchars($student['emergency_contact_relation'] ?? 'Guardian') ?>) &bull; <?= htmlspecialchars($student['emergency_contact_phone'] ?? 'N/A') ?>
+            </p>
+          <?php endif; ?>
+          <p style="margin: 0.2rem 0; border-top: 1px dashed var(--admin-border); padding-top: 0.4rem;">
+            <strong>Parent Portal Login:</strong> 
+            <?php if ($student['parent_username']): ?>
+              <code><?= htmlspecialchars($student['parent_username']) ?></code> (<?= htmlspecialchars($student['parent_email']) ?>)
+            <?php else: ?>
+              <span style="color: var(--admin-text-muted);">Default Account Linked</span>
+            <?php endif; ?>
+          </p>
+        </div>
       </div>
     </div>
   </div>

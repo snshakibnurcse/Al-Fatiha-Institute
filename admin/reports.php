@@ -157,7 +157,7 @@ $allTransactions = $stmtAll->fetchAll();
   
   <!-- Printable Header -->
   <div style="text-align: center; border-bottom: 2px solid #032d4e; padding-bottom: 1rem; margin-bottom: 1.5rem;">
-    <img src="../assets/images/logo.svg" alt="School Logo" style="height: 65px; margin: 0 auto 0.5rem auto;">
+    <img src="../assets/images/logo.png" alt="School Logo" style="height: 65px; margin: 0 auto 0.5rem auto;">
     <h2 style="font-family: 'Outfit', sans-serif; color: #032d4e; margin: 0; font-size: 1.6rem;">AL FATIHA INSTITUTE</h2>
     <p style="margin: 0.2rem 0 0 0; color: #64748b; font-size: 0.85rem;">Cambridge Curriculum & Islamic Ethos Kindergarten • Cox's Bazar</p>
     <h3 style="font-family: 'Outfit', sans-serif; color: #0e73b9; margin: 0.8rem 0 0 0; font-size: 1.3rem; text-transform: uppercase;">

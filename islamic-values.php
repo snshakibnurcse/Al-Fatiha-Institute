@@ -26,7 +26,7 @@ include __DIR__ . '/includes/header.php';
       <div class="pillar-card">
         <div class="pillar-icon" style="background: var(--accent-gold-light); color: var(--accent-gold-dark);"><i class="fas fa-quran"></i></div>
         <h3>Quran Recitation & Tajweed</h3>
-        <p>Children are taught correct Arabic phonetics (Makharij) from day one. By Year 1, students recite short Surahs with proper Tajweed rules including Gunnah and Madd.</p>
+        <p>Children are taught correct Arabic phonetics (Makharij) from day one. By Class 1, students recite short Surahs with proper Tajweed rules including Gunnah and Madd.</p>
       </div>
 
       <div class="pillar-card">

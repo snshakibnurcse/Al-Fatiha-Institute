@@ -79,7 +79,7 @@ foreach ($slots as $s) {
   <!-- Header Banner -->
   <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double var(--admin-primary); padding-bottom: 1.5rem; margin-bottom: 2rem;">
     <div style="display: flex; align-items: center; gap: 1rem;">
-      <img src="../assets/images/logo.svg" alt="AFI Logo" style="height: 70px;">
+      <img src="../assets/images/logo.png" alt="AFI Logo" style="height: 70px;">
       <div>
         <h2 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0; font-size: 1.7rem;">AL FATIHA INSTITUTE</h2>
         <span style="color: var(--admin-gold-dark); font-weight: 800; font-size: 0.85rem; letter-spacing: 1px;">OFFICIAL CLASS TIMETABLE & ROUTINE</span>

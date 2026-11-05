@@ -10,7 +10,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AL FATIHA INSTITUTE | Cambridge Curriculum & Islamic Ethos Kindergarten</title>
-  <meta name="description" content="AL FATIHA INSTITUTE is a premier English medium Cambridge curriculum kindergarten school in Cox's Bazar prioritizing Islamic values, Tajweed, Arabic language, Play, Nursery, KG, Year 1 and Year 2.">
+  <meta name="description" content="AL FATIHA INSTITUTE is a premier English medium Cambridge curriculum kindergarten school in Cox's Bazar prioritizing Islamic values, Tajweed, Arabic language, Play, Nursery, KG, Class 1 and Class 2.">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <link rel="stylesheet" href="assets/css/style.css">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.png">
 </head>
 <body>
 
@@ -55,7 +55,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <header class="site-header">
     <div class="container navbar">
       <a href="index.php" class="brand-logo">
-        <img src="assets/images/logo.svg" alt="AL FATIHA INSTITUTE Logo">
+        <img src="assets/images/logo.png" alt="AL FATIHA INSTITUTE Logo">
         <div class="brand-text">
           <h1>AL FATIHA INSTITUTE</h1>
           <span>ESTD 2025 • COX'S BAZAR</span>
