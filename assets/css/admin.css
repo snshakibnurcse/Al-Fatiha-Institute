@@ -752,12 +752,6 @@ body.dashboard-body {
   .sidebar-footer {
     padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 14px)) 1.25rem !important;
   }
-    background: #fee2e2;
-    color: #dc2626;
-    font-size: 0.9rem;
-    text-decoration: none;
-    border: none;
-  }
 
   /* Content Spacing */
   .content-area,
@@ -944,16 +938,21 @@ body.dashboard-body {
   background: linear-gradient(135deg, #032d4e 0%, #064878 50%, #0e73b9 100%);
   border-radius: 18px;
   padding: 1.6rem 2rem;
-  color: #ffffff;
+  color: #ffffff !important;
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1.25rem;
-  box-shadow: 0 10px 25px rgba(6, 72, 120, 0.12);
+  box-shadow: 0 10px 25px rgba(6, 72, 120, 0.18);
   position: relative;
   overflow: hidden;
+}
+
+.dash-welcome-card.principal-theme {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%) !important;
+  box-shadow: 0 10px 25px rgba(30, 27, 75, 0.22);
 }
 
 .welcome-left {
@@ -965,13 +964,14 @@ body.dashboard-body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(8px);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.4px;
+  color: #ffffff !important;
   margin-bottom: 0.6rem;
 }
 
@@ -984,12 +984,13 @@ body.dashboard-body {
   font-size: 1.7rem;
   font-weight: 800;
   margin: 0 0 0.35rem 0;
-  color: #ffffff;
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.35);
 }
 
 .welcome-sub {
   margin: 0;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.92) !important;
   font-size: 0.9rem;
 }
 

@@ -25,16 +25,37 @@ $flash = function_exists('get_flash_msg') ? get_flash_msg() : null;
   </div>
 <?php endif; ?>
 
+<?php
+$isSuperAdmin = is_super_admin();
+$isPrincipal = is_principal();
+$bannerBg = $isSuperAdmin 
+    ? 'linear-gradient(135deg, #032d4e 0%, #064878 50%, #0e73b9 100%)' 
+    : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)';
+$roleTag = $isSuperAdmin ? 'Super Administrator' : ($isPrincipal ? 'Principal / Head of School' : 'Administrator');
+$roleBadgeBg = $isSuperAdmin ? '#f59e0b' : '#a855f7';
+$roleBadgeText = $isSuperAdmin ? '#032d4e' : '#ffffff';
+$roleIcon = $isSuperAdmin ? 'fa-crown' : 'fa-user-shield';
+?>
+
 <!-- Executive Welcome Banner -->
-<div class="dash-welcome-card">
-  <div class="welcome-left">
-    <div class="date-badge">
-      <i class="fas fa-calendar-day"></i> <?= date('l, d F Y') ?>
+<div class="dash-welcome-card <?= $isPrincipal ? 'principal-theme' : '' ?>" style="background: <?= $bannerBg ?> !important; border-radius: 18px; padding: 1.6rem 2rem; color: #ffffff !important; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; box-shadow: 0 10px 25px rgba(0,0,0,0.18); position: relative; overflow: hidden;">
+  <div class="welcome-left" style="position: relative; z-index: 2;">
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 0.6rem;">
+      <div class="date-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.16); color: #ffffff !important; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.3px;">
+        <i class="fas fa-calendar-day" style="color: #f3b527;"></i> <?= date('l, d F Y') ?>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 5px; background: <?= $roleBadgeBg ?>; color: <?= $roleBadgeText ?>; padding: 3px 10px; border-radius: 20px; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.3px;">
+        <i class="fas <?= $roleIcon ?>"></i> <?= $roleTag ?>
+      </span>
     </div>
-    <h2 class="welcome-title">Welcome, <?= htmlspecialchars($user_name) ?></h2>
-    <p class="welcome-sub">AL FATIHA INSTITUTE <?= is_super_admin() ? 'Super Administrative' : (is_principal() ? 'Principal' : 'Administrative') ?> Overview</p>
+    <h2 class="welcome-title" style="font-family: 'Outfit', sans-serif; font-size: 1.85rem; font-weight: 800; margin: 0 0 0.4rem 0; color: #ffffff !important; line-height: 1.25; text-shadow: 0 2px 4px rgba(0,0,0,0.35);">
+      <span style="color: #f3b527;">Welcome,</span> <span style="color: #ffffff !important;"><?= htmlspecialchars($user_name) ?></span>
+    </h2>
+    <p class="welcome-sub" style="margin: 0; color: rgba(255, 255, 255, 0.92) !important; font-size: 0.95rem; font-weight: 500;">
+      AL FATIHA INSTITUTE &bull; <?= $isSuperAdmin ? 'Super Administrative' : ($isPrincipal ? 'Principal Executive' : 'Administrative') ?> Portal Overview
+    </p>
   </div>
-  <div class="welcome-actions">
+  <div class="welcome-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap; position: relative; z-index: 2;">
     <a href="fees.php?action=issue_invoice" class="btn btn-welcome-primary">
       <i class="fas fa-plus-circle"></i> Issue Invoice
     </a>

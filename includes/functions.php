@@ -60,7 +60,11 @@ function get_current_user_id() {
 }
 
 function get_current_user_name() {
-    return $_SESSION['user_name'] ?? 'User';
+    $name = trim($_SESSION['user_name'] ?? '');
+    if ($name !== '') {
+        return $name;
+    }
+    return !empty($_SESSION['username']) ? $_SESSION['username'] : 'User';
 }
 
 // Auth Role Requirements
