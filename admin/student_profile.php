@@ -746,13 +746,13 @@ require_once __DIR__ . '/layout.php';
         <i class="fas fa-magic" style="color: #f59e0b;"></i> 1-Click Fast Add Items:
       </label>
       <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Admission Fee (ভর্তি ফি)', 5000)">
+        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Admission Fee', 5000)">
           🎓 Admission Fee (৳5000)
         </button>
-        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Khata &amp; Exercise Books (খাতা)', 1500)">
+        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Khata &amp; Exercise Books', 1500)">
           📚 Khata &amp; Books (৳1500)
         </button>
-        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Official School Diary (ডায়েরি)', 250)">
+        <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Official School Diary', 250)">
           📓 School Diary (৳250)
         </button>
         <button type="button" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" onclick="quickAddPreset('Monthly Tuition Fee - <?= date('F Y') ?>', <?= $student['tuition_fee'] ?: 2000 ?>)">
@@ -977,16 +977,16 @@ require_once __DIR__ . '/layout.php';
       <!-- Payment Option Selection: Full vs Partial -->
       <div style="margin-top: 1rem; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 10px;">
         <label style="font-size: 0.82rem; font-weight: 800; color: var(--admin-deep-navy); display: block; margin-bottom: 6px;">
-          Payment Type (পরিশোধের ধরণ) *
+          Payment Type *
         </label>
         <div style="display: flex; gap: 15px;">
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #065f46;">
             <input type="radio" name="prof_payment_type_toggle" id="toggleProfFullPay" value="full" checked onchange="handleProfPaymentTypeChange()" style="accent-color: #10b981; transform: scale(1.15);">
-            <span>Full Payment (সম্পূর্ণ পরিশোধ)</span>
+            <span>Full Payment</span>
           </label>
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #b45309;">
             <input type="radio" name="prof_payment_type_toggle" id="toggleProfPartialPay" value="partial" onchange="handleProfPaymentTypeChange()" style="accent-color: #f59e0b; transform: scale(1.15);">
-            <span>Partial Payment (আংশিক পরিশোধ)</span>
+            <span>Partial Payment</span>
           </label>
         </div>
       </div>
@@ -994,7 +994,7 @@ require_once __DIR__ . '/layout.php';
       <!-- Amount to Pay Now -->
       <div class="form-group" style="margin-top: 1rem;">
         <label style="font-weight: 800; color: var(--admin-deep-navy); font-size: 0.88rem;">
-          Amount to Pay Now (পরিশোধের পরিমাণ) *
+          Amount to Pay Now *
         </label>
         <div style="position: relative;">
           <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: #0284c7; font-size: 1.1rem;">৳</span>

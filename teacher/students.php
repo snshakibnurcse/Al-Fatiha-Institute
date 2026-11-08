@@ -27,7 +27,7 @@ if ($selected_class_id > 0) {
 
     <form method="GET" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
       <select name="class_id" class="form-control" onchange="this.form.submit()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 8px;">
-        <option value="0">-- All Classes (সমস্ত ক্লাস) --</option>
+        <option value="0">-- All Classes --</option>
         <?php foreach ($allClasses as $c): ?>
           <option value="<?= $c['id'] ?>" <?= ($selected_class_id == $c['id']) ? 'selected' : '' ?>>
             <?= htmlspecialchars($c['class_name']) ?>

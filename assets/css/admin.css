@@ -878,6 +878,278 @@ body.dashboard-body {
   }
 }
 
+/* ==========================================================================
+   Modern Dashboard Executive Components
+   ========================================================================== */
+.dash-welcome-card {
+  background: linear-gradient(135deg, #032d4e 0%, #064878 50%, #0e73b9 100%);
+  border-radius: 18px;
+  padding: 1.6rem 2rem;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-shadow: 0 10px 25px rgba(6, 72, 120, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-left {
+  position: relative;
+  z-index: 2;
+}
+
+.date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.6rem;
+}
+
+.date-badge i {
+  color: #f3b527;
+}
+
+.welcome-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem 0;
+  color: #ffffff;
+}
+
+.welcome-sub {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.btn-welcome-primary {
+  background: #f3b527;
+  color: #032d4e;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  padding: 0.65rem 1.2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 14px rgba(243, 181, 39, 0.35);
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-welcome-primary:hover {
+  background: #e2a51e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(243, 181, 39, 0.45);
+}
+
+.btn-welcome-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  padding: 0.65rem 1.2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.btn-welcome-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Quick Action Strip */
+.dash-quick-strip {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  margin-bottom: 1.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dash-quick-strip::-webkit-scrollbar {
+  height: 4px;
+}
+.dash-quick-strip::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.quick-chip {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 0.6rem 1.1rem;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.quick-chip i {
+  color: var(--admin-primary);
+  font-size: 0.95rem;
+}
+
+.quick-chip:hover {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 115, 185, 0.1);
+}
+
+.quick-chip.chip-pending {
+  border-color: #fca5a5;
+  background: #fff5f5;
+  color: #b91c1c;
+}
+
+.quick-chip.chip-pending i {
+  color: #ef4444;
+}
+
+.chip-badge {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 2px;
+}
+
+/* ==========================================================================
+   Mobile Bottom App Navigation Bar (Native App Style)
+   ========================================================================== */
+.mobile-bottom-app-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-app-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9998;
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 600;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 2px;
+    transition: color 0.15s ease, transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-item i {
+    font-size: 1.15rem;
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--admin-primary);
+    font-weight: 700;
+  }
+
+  .mobile-nav-item.active i {
+    transform: translateY(-2px);
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-nav-item.mobile-menu-tab i {
+    color: #475569;
+  }
+
+  /* Ensure content is never obstructed by bottom bar */
+  .content-area,
+  .main-content .page-body,
+  .main-wrapper > .content-area {
+    padding-bottom: 84px !important;
+  }
+
+  .dash-welcome-card {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .welcome-title {
+    font-size: 1.35rem !important;
+  }
+
+  .welcome-actions {
+    width: 100%;
+  }
+
+  .welcome-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 /* Extra Small Mobile Screens (Below 400px) */
 @media (max-width: 400px) {
   .quick-action-bar {
@@ -896,7 +1168,7 @@ body.dashboard-body {
 
 /* Print Rules */
 @media print {
-  .sidebar, .top-nav, .topbar, .mobile-menu-toggle, .sidebar-backdrop, .no-print {
+  .sidebar, .top-nav, .topbar, .mobile-menu-toggle, .sidebar-backdrop, .no-print, .mobile-bottom-app-bar {
     display: none !important;
   }
   .main-wrapper, .main-content {

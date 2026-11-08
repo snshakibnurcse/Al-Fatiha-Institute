@@ -116,7 +116,7 @@ $studentsTaughtCount = $totalStudentsTaught->fetchColumn();
     <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1); color: #2563eb;"><i class="fas fa-book-bookmark"></i></div>
     <div class="kpi-data">
       <h3><?= $totalAssignedCount ?></h3>
-      <p>Assigned Subjects (আমার বিষয়সমূহ)</p>
+      <p>Assigned Subjects</p>
     </div>
   </div>
 
@@ -124,7 +124,7 @@ $studentsTaughtCount = $totalStudentsTaught->fetchColumn();
     <div class="kpi-icon gold"><i class="fas fa-chalkboard"></i></div>
     <div class="kpi-data">
       <h3><?= count($myClasses) ?></h3>
-      <p>Classes Taught (পাঠদান ক্লাসসমূহ)</p>
+      <p>Classes Taught</p>
     </div>
   </div>
 
@@ -178,7 +178,7 @@ $studentsTaughtCount = $totalStudentsTaught->fetchColumn();
 <div class="card-box" style="background: #ffffff; border-radius: 14px; border: 1px solid var(--admin-border); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
   <div class="card-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <h3 class="card-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--admin-deep-navy); display: flex; align-items: center; gap: 0.6rem;">
-      <i class="fas fa-graduation-cap" style="color: var(--admin-primary);"></i> Assigned Subjects Roster (বিষয় তালিকা)
+      <i class="fas fa-graduation-cap" style="color: var(--admin-primary);"></i> Assigned Subjects Roster
       <span class="badge badge-info" style="font-size: 0.8rem;"><?= count($assignedSubjects) ?> Subjects</span>
     </h3>
   </div>

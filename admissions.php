@@ -267,35 +267,35 @@ include __DIR__ . '/includes/header.php';
             <span class="tab-bubble"><i class="fas fa-user-graduate"></i></span>
             <span class="tab-meta">
               <strong>1. Student Info</strong>
-              <small>Q 1 &ndash; 11</small>
+              <small>Personal details</small>
             </span>
           </button>
           <button type="button" class="nav-step-tab" data-step="2">
             <span class="tab-bubble"><i class="fas fa-users"></i></span>
             <span class="tab-meta">
               <strong>2. Guardians</strong>
-              <small>Q 12 &ndash; 31</small>
+              <small>Parents &amp; family</small>
             </span>
           </button>
           <button type="button" class="nav-step-tab" data-step="3">
             <span class="tab-bubble"><i class="fas fa-phone-alt"></i></span>
             <span class="tab-meta">
               <strong>3. Emergency</strong>
-              <small>Q 32 &ndash; 34</small>
+              <small>Secondary contact</small>
             </span>
           </button>
           <button type="button" class="nav-step-tab" data-step="4">
             <span class="tab-bubble"><i class="fas fa-heartbeat"></i></span>
             <span class="tab-meta">
               <strong>4. Health &amp; Transit</strong>
-              <small>Q 35 &ndash; 43</small>
+              <small>Medical &amp; commute</small>
             </span>
           </button>
           <button type="button" class="nav-step-tab" data-step="5">
             <span class="tab-bubble"><i class="fas fa-file-contract"></i></span>
             <span class="tab-meta">
               <strong>5. Declaration</strong>
-              <small>Q 44 &amp; Docs</small>
+              <small>Review &amp; submit</small>
             </span>
           </button>
         </nav>
@@ -358,38 +358,36 @@ include __DIR__ . '/includes/header.php';
       <form method="POST" action="admissions.php#apply-form" id="smartAdmissionForm" novalidate autocomplete="on">
 
         <!-- ========================================================
-             STEP 1: STUDENT INFORMATION (Q 1 - 11)
+             STEP 1: STUDENT INFORMATION
              ======================================================== -->
         <section class="wizard-step-panel active" id="step-panel-1" data-panel="1">
           <div class="section-banner">
-            <div class="banner-pill">PART 1</div>
+            <div class="banner-pill">STEP 1</div>
             <div class="banner-text">
-              <h3>Student Personal &amp; Demographic Profile</h3>
-              <p>Questions 1 to 11 &bull; Enter as registered on the child's government birth certificate.</p>
+              <h3>Student Personal Details</h3>
+              <p>Enter information as registered on the student's birth certificate</p>
             </div>
           </div>
 
           <!-- Name & Class Selection Grid -->
           <div class="form-grid col-2">
-            <!-- 1. Name (Block Letter) -->
+            <!-- Name (Block Letter) -->
             <div class="form-group">
               <label for="child_name" class="field-label">
-                <span class="q-tag">1</span> Student Full Name (Block Letter) <span class="req">*</span>
-                <span class="auto-badge"><i class="fas fa-font"></i> AUTO UPPERCASE</span>
+                Student Full Name <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-user-graduate shell-icon"></i>
                 <input type="text" name="child_name" id="child_name" class="field-input uppercase-field" 
-                       placeholder="e.g. RAYHAN CHOWDHURY" required 
+                       placeholder="Student Full Name" required 
                        value="<?= htmlspecialchars($_POST['child_name'] ?? '') ?>" autocomplete="name">
               </div>
-              <small class="field-help"><i class="fas fa-info-circle"></i> English Capital letters as written in online birth certificate.</small>
             </div>
 
             <!-- Applying for Class -->
             <div class="form-group">
               <label for="target_class_id" class="field-label">
-                <span class="q-tag"><i class="fas fa-school"></i></span> Applying for Class / Standard <span class="req">*</span>
+                Class / Grade <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-layer-group shell-icon"></i>
@@ -401,43 +399,40 @@ include __DIR__ . '/includes/header.php';
                   <?php endforeach; ?>
                 </select>
               </div>
-              <small class="field-help">Choose the grade based on child's age group.</small>
             </div>
           </div>
 
           <!-- Birth Reg, DOB, Age Calculator Grid -->
           <div class="form-grid col-3">
-            <!-- 2. Birth Registration / Passport Number -->
+            <!-- Birth Registration / Passport Number -->
             <div class="form-group">
               <label for="birth_reg_or_passport" class="field-label">
-                <span class="q-tag">2</span> Birth Reg. / Passport No. <span class="req">*</span>
+                Birth Reg. / Passport No. <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-id-card shell-icon"></i>
                 <input type="text" name="birth_reg_or_passport" id="birth_reg_or_passport" class="field-input" 
-                       placeholder="17-digit Birth Reg. No." required 
+                       placeholder="17-Digit Birth Reg. No." required 
                        value="<?= htmlspecialchars($_POST['birth_reg_or_passport'] ?? '') ?>" maxlength="30">
               </div>
-              <small class="field-help">17-digit online birth certificate number.</small>
             </div>
 
-            <!-- 3. Date of Birth -->
+            <!-- Date of Birth -->
             <div class="form-group">
               <label for="dob" class="field-label">
-                <span class="q-tag">3</span> Date of Birth <span class="req">*</span>
+                Date of Birth <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-calendar-day shell-icon"></i>
                 <input type="date" name="dob" id="dob" class="field-input" required 
                        max="<?= date('Y-m-d') ?>" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>">
               </div>
-              <small class="field-help">Select to auto-calculate official age.</small>
             </div>
 
-            <!-- 4. Age (as of 1st January) -->
+            <!-- Age (as of 1st January) -->
             <div class="form-group">
               <label for="age_jan_1" class="field-label">
-                <span class="q-tag">4</span> Age (as of 1st Jan <?= date('Y') ?>)
+                Age (as of 1st Jan <?= date('Y') ?>)
               </label>
               <div class="input-shell readonly-shell">
                 <i class="fas fa-calculator shell-icon text-gold"></i>
@@ -445,18 +440,16 @@ include __DIR__ . '/includes/header.php';
                        placeholder="Auto-calculated" readonly 
                        value="<?= htmlspecialchars($_POST['age_jan_1'] ?? '') ?>">
               </div>
-              <small class="field-help text-success" id="ageCalculatorNote">
-                <i class="fas fa-sparkles"></i> Auto-computed instantly when DOB is picked.
-              </small>
+              <span id="ageCalculatorNote" style="display:none;"></span>
             </div>
           </div>
 
           <!-- Blood Group, Nationality, Religion, Gender Grid -->
           <div class="form-grid col-4">
-            <!-- 5. Blood Group -->
+            <!-- Blood Group -->
             <div class="form-group">
               <label for="blood_group" class="field-label">
-                <span class="q-tag">5</span> Blood Group <span class="req">*</span>
+                Blood Group <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-tint shell-icon text-danger"></i>
@@ -469,10 +462,10 @@ include __DIR__ . '/includes/header.php';
               </div>
             </div>
 
-            <!-- 6. Nationality -->
+            <!-- Nationality -->
             <div class="form-group">
               <label for="nationality" class="field-label">
-                <span class="q-tag">6</span> Nationality <span class="req">*</span>
+                Nationality <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-flag shell-icon"></i>
@@ -481,10 +474,10 @@ include __DIR__ . '/includes/header.php';
               </div>
             </div>
 
-            <!-- 7. Religion -->
+            <!-- Religion -->
             <div class="form-group">
               <label for="religion" class="field-label">
-                <span class="q-tag">7</span> Religion <span class="req">*</span>
+                Religion <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-mosque shell-icon"></i>
@@ -496,10 +489,10 @@ include __DIR__ . '/includes/header.php';
               </div>
             </div>
 
-            <!-- 8. Gender (Card Segment) -->
+            <!-- Gender (Card Segment) -->
             <div class="form-group">
               <label class="field-label">
-                <span class="q-tag">8</span> Gender <span class="req">*</span>
+                Gender <span class="req">*</span>
               </label>
               <div class="gender-segmented-cards">
                 <label class="gender-card <?= (($_POST['gender'] ?? 'Male') === 'Male') ? 'selected' : '' ?>">
@@ -516,38 +509,36 @@ include __DIR__ . '/includes/header.php';
             </div>
           </div>
 
-          <!-- 9. Previous School -->
+          <!-- Previous School -->
           <div class="form-group" style="margin-top: 1.2rem;">
             <label for="previous_school" class="field-label">
-              <span class="q-tag">9</span> Previous School / Madrasah (if any)
+              Previous School (if any)
             </label>
             <div class="input-shell">
               <i class="fas fa-school shell-icon"></i>
               <input type="text" name="previous_school" id="previous_school" class="field-input" 
-                     placeholder="Previous school name (optional)" 
+                     placeholder="Previous School Name" 
                      value="<?= htmlspecialchars($_POST['previous_school'] ?? '') ?>">
             </div>
-            <small class="field-help">If child hasn't attended school before, leave this empty.</small>
           </div>
 
-          <!-- 10. Present Address -->
+          <!-- Present Address -->
           <div class="form-group" style="margin-top: 1.2rem;">
             <label for="present_address" class="field-label">
-              <span class="q-tag">10</span> Present Residential Address <span class="req">*</span>
+              Present Residential Address <span class="req">*</span>
             </label>
             <div class="input-shell textarea-shell">
               <i class="fas fa-map-marker-alt shell-icon"></i>
               <textarea name="address" id="present_address" class="field-textarea" rows="2" 
-                        placeholder="House/Road, Area, District" required><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
+                        placeholder="House / Road, Area, District" required><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
             </div>
-            <small class="field-help">Current residence where student lives with family.</small>
           </div>
 
-          <!-- 11. Permanent Address with One-Click Copy -->
+          <!-- Permanent Address with One-Click Copy -->
           <div class="form-group" style="margin-top: 1.2rem;">
             <div class="label-action-row">
               <label for="permanent_address" class="field-label" style="margin-bottom: 0;">
-                <span class="q-tag">11</span> Permanent Home Address <span class="req">*</span>
+                Permanent Address <span class="req">*</span>
               </label>
               <label class="copy-address-toggle">
                 <input type="checkbox" id="sameAddressCheck">
@@ -573,14 +564,14 @@ include __DIR__ . '/includes/header.php';
         </section>
 
         <!-- ========================================================
-             STEP 2: GUARDIAN INFORMATION (Q 12 - 31)
+             STEP 2: GUARDIAN INFORMATION
              ======================================================== -->
         <section class="wizard-step-panel" id="step-panel-2" data-panel="2">
           <div class="section-banner">
-            <div class="banner-pill">PART 2</div>
+            <div class="banner-pill">STEP 2</div>
             <div class="banner-text">
-              <h3>Guardian &amp; Parental Records</h3>
-              <p>Questions 12 to 31 &bull; Father, Mother, and designated Legal Guardian profiles.</p>
+              <h3>Parent &amp; Guardian Information</h3>
+              <p>Father, Mother, and designated Legal Guardian profiles</p>
             </div>
           </div>
 
@@ -591,75 +582,74 @@ include __DIR__ . '/includes/header.php';
                 <span class="avatar-ring father-ring"><i class="fas fa-male"></i></span>
                 <div>
                   <h4>Father's Information</h4>
-                  <span class="profile-range">Questions 12 &ndash; 18</span>
                 </div>
               </div>
               <button type="button" class="btn-quick-chip" id="copyStudentToFather">
-                <i class="fas fa-map-pin"></i> Use Student's Present Address
+                <i class="fas fa-map-pin"></i> Use Student's Address
               </button>
             </div>
 
             <div class="form-grid col-2">
-              <!-- 12. Father's Name -->
+              <!-- Father's Name -->
               <div class="form-group">
                 <label for="father_name" class="field-label">
-                  <span class="q-tag">12</span> Father's Full Name <span class="req">*</span>
+                  Father's Full Name <span class="req">*</span>
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-user shell-icon"></i>
                   <input type="text" name="father_name" id="father_name" class="field-input" 
-                         placeholder="Father's full name" required 
+                         placeholder="Father's Full Name" required 
                          value="<?= htmlspecialchars($_POST['father_name'] ?? '') ?>" autocomplete="name">
                 </div>
               </div>
 
-              <!-- 13. Father's Occupation -->
+              <!-- Father's Occupation -->
               <div class="form-group">
                 <label for="father_occupation" class="field-label">
-                  <span class="q-tag">13</span> Father's Occupation
+                  Father's Occupation
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-briefcase shell-icon"></i>
                   <input type="text" name="father_occupation" id="father_occupation" class="field-input" 
-                         placeholder="e.g. Businessman, Teacher" 
+                         placeholder="Occupation" 
                          value="<?= htmlspecialchars($_POST['father_occupation'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
             <div class="form-grid col-2" style="margin-top: 1rem;">
-              <!-- 14. Organization -->
+              <!-- Organization -->
               <div class="form-group">
                 <label for="father_organization" class="field-label">
-                  <span class="q-tag">14</span> Organization / Workplace
+                  Organization / Workplace
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-building shell-icon"></i>
                   <input type="text" name="father_organization" id="father_organization" class="field-input" 
-                         placeholder="Company / Organization" 
+                         placeholder="Organization Name" 
                          value="<?= htmlspecialchars($_POST['father_organization'] ?? '') ?>">
                 </div>
               </div>
 
-              <!-- 15. Location -->
+              <!-- Location -->
               <div class="form-group">
                 <label for="father_location" class="field-label">
-                  <span class="q-tag">15</span> Workplace Location
+                  Workplace Location
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-map-marked-alt shell-icon"></i>
                   <input type="text" name="father_location" id="father_location" class="field-input" 
-                         placeholder="City / Location" 
+                         placeholder="Workplace Location" 
                          value="<?= htmlspecialchars($_POST['father_location'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
             <div class="form-grid col-2" style="margin-top: 1rem;">
-              <!-- 16. Phone Number -->
+              <!-- Phone Number -->
               <div class="form-group">
                 <label for="father_phone" class="field-label">
-                  <span class="q-tag">16</span> Father's Mobile Number <span class="req">*</span>
+                  Father's Mobile Number <span class="req">*</span>
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-phone-alt shell-icon"></i>
@@ -667,32 +657,31 @@ include __DIR__ . '/includes/header.php';
                          placeholder="01XXXXXXXXX" required 
                          value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" autocomplete="tel">
                 </div>
-                <small class="field-help">Primary mobile number for SMS notifications.</small>
               </div>
 
-              <!-- 17. NID / Passport Number -->
+              <!-- NID / Passport Number -->
               <div class="form-group">
                 <label for="father_nid_passport" class="field-label">
-                  <span class="q-tag">17</span> Father's NID / Passport Number
+                  Father's NID / Passport Number
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-id-badge shell-icon"></i>
                   <input type="text" name="father_nid_passport" id="father_nid_passport" class="field-input" 
-                         placeholder="NID or Passport number" 
+                         placeholder="NID or Passport Number" 
                          value="<?= htmlspecialchars($_POST['father_nid_passport'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
-            <!-- 18. Present Address -->
+            <!-- Present Address -->
             <div class="form-group" style="margin-top: 1rem;">
               <label for="father_present_address" class="field-label">
-                <span class="q-tag">18</span> Father's Present Living Address
+                Father's Present Address
               </label>
               <div class="input-shell">
                 <i class="fas fa-location-arrow shell-icon"></i>
                 <input type="text" name="father_present_address" id="father_present_address" class="field-input" 
-                       placeholder="Father's present address" 
+                       placeholder="Present Address" 
                        value="<?= htmlspecialchars($_POST['father_present_address'] ?? '') ?>">
               </div>
             </div>
@@ -705,75 +694,74 @@ include __DIR__ . '/includes/header.php';
                 <span class="avatar-ring mother-ring"><i class="fas fa-female"></i></span>
                 <div>
                   <h4>Mother's Information</h4>
-                  <span class="profile-range">Questions 19 &ndash; 25</span>
                 </div>
               </div>
               <button type="button" class="btn-quick-chip" id="copyStudentToMother">
-                <i class="fas fa-map-pin"></i> Use Student's Present Address
+                <i class="fas fa-map-pin"></i> Use Student's Address
               </button>
             </div>
 
             <div class="form-grid col-2">
-              <!-- 19. Mother's Name -->
+              <!-- Mother's Name -->
               <div class="form-group">
                 <label for="mother_name" class="field-label">
-                  <span class="q-tag">19</span> Mother's Full Name <span class="req">*</span>
+                  Mother's Full Name <span class="req">*</span>
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-user shell-icon"></i>
                   <input type="text" name="mother_name" id="mother_name" class="field-input" 
-                         placeholder="Mother's full name" required 
+                         placeholder="Mother's Full Name" required 
                          value="<?= htmlspecialchars($_POST['mother_name'] ?? '') ?>" autocomplete="name">
                 </div>
               </div>
 
-              <!-- 20. Mother's Occupation -->
+              <!-- Mother's Occupation -->
               <div class="form-group">
                 <label for="mother_occupation" class="field-label">
-                  <span class="q-tag">20</span> Mother's Occupation
+                  Mother's Occupation
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-briefcase shell-icon"></i>
                   <input type="text" name="mother_occupation" id="mother_occupation" class="field-input" 
-                         placeholder="e.g. Homemaker, Service" 
+                         placeholder="Occupation" 
                          value="<?= htmlspecialchars($_POST['mother_occupation'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
             <div class="form-grid col-2" style="margin-top: 1rem;">
-              <!-- 21. Organization -->
+              <!-- Organization -->
               <div class="form-group">
                 <label for="mother_organization" class="field-label">
-                  <span class="q-tag">21</span> Organization / Workplace
+                  Organization / Workplace
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-building shell-icon"></i>
                   <input type="text" name="mother_organization" id="mother_organization" class="field-input" 
-                         placeholder="Organization (if employed)" 
+                         placeholder="Organization Name" 
                          value="<?= htmlspecialchars($_POST['mother_organization'] ?? '') ?>">
                 </div>
               </div>
 
-              <!-- 22. Location -->
+              <!-- Location -->
               <div class="form-group">
                 <label for="mother_location" class="field-label">
-                  <span class="q-tag">22</span> Workplace Location
+                  Workplace Location
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-map-marked-alt shell-icon"></i>
                   <input type="text" name="mother_location" id="mother_location" class="field-input" 
-                         placeholder="City / Location" 
+                         placeholder="Workplace Location" 
                          value="<?= htmlspecialchars($_POST['mother_location'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
             <div class="form-grid col-2" style="margin-top: 1rem;">
-              <!-- 23. Phone Number -->
+              <!-- Phone Number -->
               <div class="form-group">
                 <label for="mother_phone" class="field-label">
-                  <span class="q-tag">23</span> Mother's Phone Number
+                  Mother's Phone Number
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-phone-alt shell-icon"></i>
@@ -783,29 +771,29 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </div>
 
-              <!-- 24. NID / Passport Number -->
+              <!-- NID / Passport Number -->
               <div class="form-group">
                 <label for="mother_nid_passport" class="field-label">
-                  <span class="q-tag">24</span> Mother's NID / Passport Number
+                  Mother's NID / Passport Number
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-id-badge shell-icon"></i>
                   <input type="text" name="mother_nid_passport" id="mother_nid_passport" class="field-input" 
-                         placeholder="NID or Passport number" 
+                         placeholder="NID or Passport Number" 
                          value="<?= htmlspecialchars($_POST['mother_nid_passport'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
-            <!-- 25. Present Address -->
+            <!-- Present Address -->
             <div class="form-group" style="margin-top: 1rem;">
               <label for="mother_present_address" class="field-label">
-                <span class="q-tag">25</span> Mother's Present Living Address
+                Mother's Present Address
               </label>
               <div class="input-shell">
                 <i class="fas fa-location-arrow shell-icon"></i>
                 <input type="text" name="mother_present_address" id="mother_present_address" class="field-input" 
-                       placeholder="Mother's present address" 
+                       placeholder="Present Address" 
                        value="<?= htmlspecialchars($_POST['mother_present_address'] ?? '') ?>">
               </div>
             </div>
@@ -818,7 +806,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <div class="email-card-body">
               <label for="parent_email" class="field-label" style="margin-bottom: 4px;">
-                <strong>Official Notification Email (for Application Updates &amp; Reference Slip)</strong>
+                <strong>Notification Email</strong>
               </label>
               <div class="input-shell">
                 <i class="fas fa-at shell-icon"></i>
@@ -826,7 +814,6 @@ include __DIR__ . '/includes/header.php';
                        placeholder="example@mail.com" 
                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" autocomplete="email">
               </div>
-              <small class="field-help">Interview schedule, results, and admission confirmation will be delivered here.</small>
             </div>
           </div>
 
@@ -837,44 +824,43 @@ include __DIR__ . '/includes/header.php';
               <span class="switch-slider"></span>
               <span class="switch-content">
                 <strong>Legal Guardian Information (if student resides with someone other than parents)</strong>
-                <small>Check if applicant is under legal custody of an uncle, grandparent, or guardian &bull; Questions 26 &ndash; 31</small>
               </span>
             </label>
 
             <div id="otherGuardianSection" class="animated-collapse-box" style="display: <?= !empty($_POST['guardian_is_other']) ? 'block' : 'none' ?>; margin-top: 1.2rem;">
               <div class="form-grid col-2">
-                <!-- 26. Guardian Name -->
+                <!-- Guardian Name -->
                 <div class="form-group">
                   <label for="other_guardian_name" class="field-label">
-                    <span class="q-tag">26</span> Guardian Name (if not parents)
+                    Guardian Name
                   </label>
                   <div class="input-shell">
                     <i class="fas fa-user-shield shell-icon"></i>
                     <input type="text" name="other_guardian_name" id="other_guardian_name" class="field-input" 
-                           placeholder="Guardian's full name" 
+                           placeholder="Guardian's Full Name" 
                            value="<?= htmlspecialchars($_POST['other_guardian_name'] ?? '') ?>">
                   </div>
                 </div>
 
-                <!-- 27. Relationship -->
+                <!-- Relationship -->
                 <div class="form-group">
                   <label for="other_guardian_relationship" class="field-label">
-                    <span class="q-tag">27</span> Relationship to Student
+                    Relationship to Student
                   </label>
                   <div class="input-shell">
                     <i class="fas fa-link shell-icon"></i>
                     <input type="text" name="other_guardian_relationship" id="other_guardian_relationship" class="field-input" 
-                           placeholder="e.g. Uncle, Grandparent" 
+                           placeholder="Relationship (e.g. Uncle, Grandparent)" 
                            value="<?= htmlspecialchars($_POST['other_guardian_relationship'] ?? '') ?>">
                   </div>
                 </div>
               </div>
 
               <div class="form-grid col-2" style="margin-top: 1rem;">
-                <!-- 28. Phone Number -->
+                <!-- Phone Number -->
                 <div class="form-group">
                   <label for="other_guardian_phone" class="field-label">
-                    <span class="q-tag">28</span> Guardian Phone Number
+                    Guardian Phone Number
                   </label>
                   <div class="input-shell">
                     <i class="fas fa-phone-alt shell-icon"></i>
@@ -884,10 +870,10 @@ include __DIR__ . '/includes/header.php';
                   </div>
                 </div>
 
-                <!-- 29. Email Address -->
+                <!-- Email Address -->
                 <div class="form-group">
                   <label for="other_guardian_email" class="field-label">
-                    <span class="q-tag">29</span> Guardian Email Address
+                    Guardian Email Address
                   </label>
                   <div class="input-shell">
                     <i class="fas fa-envelope shell-icon"></i>
@@ -898,28 +884,28 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </div>
 
-              <!-- 30. Present Address -->
+              <!-- Present Address -->
               <div class="form-group" style="margin-top: 1rem;">
                 <label for="other_guardian_present_address" class="field-label">
-                  <span class="q-tag">30</span> Guardian Present Living Address
+                  Guardian Present Address
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-map-marker-alt shell-icon"></i>
                   <input type="text" name="other_guardian_present_address" id="other_guardian_present_address" class="field-input" 
-                         placeholder="Guardian present address" 
+                         placeholder="Present Address" 
                          value="<?= htmlspecialchars($_POST['other_guardian_present_address'] ?? '') ?>">
                 </div>
               </div>
 
-              <!-- 31. Permanent Address -->
+              <!-- Permanent Address -->
               <div class="form-group" style="margin-top: 1rem;">
                 <label for="other_guardian_permanent_address" class="field-label">
-                  <span class="q-tag">31</span> Guardian Permanent Address
+                  Guardian Permanent Address
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-home shell-icon"></i>
                   <input type="text" name="other_guardian_permanent_address" id="other_guardian_permanent_address" class="field-input" 
-                         placeholder="Guardian permanent address" 
+                         placeholder="Permanent Address" 
                          value="<?= htmlspecialchars($_POST['other_guardian_permanent_address'] ?? '') ?>">
                 </div>
               </div>
@@ -940,14 +926,14 @@ include __DIR__ . '/includes/header.php';
         </section>
 
         <!-- ========================================================
-             STEP 3: EMERGENCY CONTACT (Q 32 - 34)
+             STEP 3: EMERGENCY CONTACT
              ======================================================== -->
         <section class="wizard-step-panel" id="step-panel-3" data-panel="3">
           <div class="section-banner">
-            <div class="banner-pill">PART 3</div>
+            <div class="banner-pill">STEP 3</div>
             <div class="banner-text">
-              <h3>Designated Emergency Contact</h3>
-              <p>Questions 32 to 34 &bull; Person to contact immediately if primary parents are unavailable.</p>
+              <h3>Emergency Contact</h3>
+              <p>Person to contact immediately if parents are unreachable</p>
             </div>
           </div>
 
@@ -955,8 +941,8 @@ include __DIR__ . '/includes/header.php';
           <div class="quick-fill-card">
             <div class="quick-fill-icon"><i class="fas fa-bolt"></i></div>
             <div class="quick-fill-info">
-              <strong>1-Click Emergency Contact Quick-Fill:</strong>
-              <span>Save time by copying father's or mother's information directly.</span>
+              <strong>Quick-Fill Emergency Contact:</strong>
+              <span>Save time by copying father's or mother's details.</span>
             </div>
             <div class="quick-fill-actions">
               <button type="button" class="btn-fill-pill" id="btnCopyFatherToEmergency">
@@ -969,36 +955,36 @@ include __DIR__ . '/includes/header.php';
           </div>
 
           <div class="form-grid col-3" style="margin-top: 1.5rem;">
-            <!-- 32. Emergency Contact Name -->
+            <!-- Emergency Contact Name -->
             <div class="form-group">
               <label for="emergency_name" class="field-label">
-                <span class="q-tag">32</span> Contact Person Full Name <span class="req">*</span>
+                Contact Person Name <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-user-shield shell-icon"></i>
                 <input type="text" name="emergency_name" id="emergency_name" class="field-input" 
-                       placeholder="Contact person name" required 
+                       placeholder="Full Name" required 
                        value="<?= htmlspecialchars($_POST['emergency_name'] ?? '') ?>">
               </div>
             </div>
 
-            <!-- 33. Relationship -->
+            <!-- Relationship -->
             <div class="form-group">
               <label for="emergency_relationship" class="field-label">
-                <span class="q-tag">33</span> Relationship to Student <span class="req">*</span>
+                Relationship <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-users shell-icon"></i>
                 <input type="text" name="emergency_relationship" id="emergency_relationship" class="field-input" 
-                       placeholder="e.g. Father, Uncle" required 
+                       placeholder="Relationship (e.g. Uncle)" required 
                        value="<?= htmlspecialchars($_POST['emergency_relationship'] ?? '') ?>">
               </div>
             </div>
 
-            <!-- 34. Phone Number -->
+            <!-- Phone Number -->
             <div class="form-group">
               <label for="emergency_phone" class="field-label">
-                <span class="q-tag">34</span> Emergency Phone Number <span class="req">*</span>
+                Emergency Phone Number <span class="req">*</span>
               </label>
               <div class="input-shell">
                 <i class="fas fa-phone-volume shell-icon text-danger"></i>
@@ -1023,32 +1009,31 @@ include __DIR__ . '/includes/header.php';
         </section>
 
         <!-- ========================================================
-             STEP 4: HEALTH & TRANSPORTATION (Q 35 - 43)
+             STEP 4: HEALTH & TRANSPORTATION
              ======================================================== -->
         <section class="wizard-step-panel" id="step-panel-4" data-panel="4">
           <div class="section-banner">
-            <div class="banner-pill">PART 4</div>
+            <div class="banner-pill">STEP 4</div>
             <div class="banner-text">
-              <h3>Health Care, Medical Profile &amp; Transportation</h3>
-              <p>Questions 35 to 43 &bull; Safeguarding child wellbeing and organizing daily commute.</p>
+              <h3>Health Care &amp; Transportation</h3>
+              <p>Medical profile, allergies, and daily commute preferences</p>
             </div>
           </div>
 
-          <!-- MEDICAL SECTION (Q 35 - 40) -->
+          <!-- MEDICAL SECTION -->
           <div class="smart-subcard">
             <div class="subcard-title-bar">
               <span class="subcard-badge medical-badge"><i class="fas fa-stethoscope"></i></span>
               <div>
-                <h4>4. Medical &amp; Health Information</h4>
-                <small>Questions 35 &ndash; 40</small>
+                <h4>Medical &amp; Health Information</h4>
               </div>
             </div>
 
-            <!-- 35 & 36 Allergies -->
+            <!-- Allergies -->
             <div class="form-grid col-2" style="margin-top: 1rem;">
               <div class="form-group">
                 <label class="field-label">
-                  <span class="q-tag">35</span> Does the student have any allergies? <span class="req">*</span>
+                  Does the student have any allergies? <span class="req">*</span>
                 </label>
                 <div class="toggle-segmented-wrap">
                   <label class="toggle-choice-pill <?= (($_POST['has_allergies'] ?? 'No') === 'No') ? 'selected' : '' ?>">
@@ -1064,38 +1049,38 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </div>
 
-              <!-- 36. Allergies List -->
+              <!-- Allergies List -->
               <div class="form-group" id="allergyDetailsGroup" style="display: <?= (($_POST['has_allergies'] ?? 'No') === 'Yes') ? 'block' : 'none' ?>;">
                 <label for="allergies_list" class="field-label">
-                  <span class="q-tag">36</span> If yes, please list allergies:
+                  If yes, please list allergies:
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-notes-medical shell-icon"></i>
                   <input type="text" name="allergies_list" id="allergies_list" class="field-input" 
-                         placeholder="e.g. None or Peanuts, Dust" 
+                         placeholder="List allergies (e.g. Peanuts, Dust)" 
                          value="<?= htmlspecialchars($_POST['allergies_list'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
-            <!-- 37. Regular Medication -->
+            <!-- Regular Medication -->
             <div class="form-group" style="margin-top: 1.2rem;">
               <label for="regular_medications" class="field-label">
-                <span class="q-tag">37</span> Regular medication (if any):
+                Regular medication (if any):
               </label>
               <div class="input-shell">
                 <i class="fas fa-pills shell-icon"></i>
                 <input type="text" name="regular_medications" id="regular_medications" class="field-input" 
-                       placeholder="e.g. None or regular medicines" 
+                       placeholder="Regular medication name (optional)" 
                        value="<?= htmlspecialchars($_POST['regular_medications'] ?? '') ?>">
               </div>
             </div>
 
-            <!-- 38 & 39 Medical Conditions -->
+            <!-- Medical Conditions -->
             <div class="form-grid col-2" style="margin-top: 1.2rem;">
               <div class="form-group">
                 <label class="field-label">
-                  <span class="q-tag">38</span> Medical conditions we should be aware of? <span class="req">*</span>
+                  Medical conditions we should be aware of? <span class="req">*</span>
                 </label>
                 <div class="toggle-segmented-wrap">
                   <label class="toggle-choice-pill <?= (($_POST['has_medical_conditions'] ?? 'No') === 'No') ? 'selected' : '' ?>">
@@ -1111,48 +1096,47 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </div>
 
-              <!-- 39. Medical Details -->
+              <!-- Medical Details -->
               <div class="form-group" id="conditionDetailsGroup" style="display: <?= (($_POST['has_medical_conditions'] ?? 'No') === 'Yes') ? 'block' : 'none' ?>;">
                 <label for="medical_conditions_details" class="field-label">
-                  <span class="q-tag">39</span> If yes, please specify condition:
+                  If yes, please specify condition:
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-file-medical-alt shell-icon"></i>
                   <input type="text" name="medical_conditions_details" id="medical_conditions_details" class="field-input" 
-                         placeholder="e.g. None or Asthma" 
+                         placeholder="Medical condition details (e.g. Asthma)" 
                          value="<?= htmlspecialchars($_POST['medical_conditions_details'] ?? '') ?>">
                 </div>
               </div>
             </div>
 
-            <!-- 40. Preferred Hospital -->
+            <!-- Preferred Hospital -->
             <div class="form-group" style="margin-top: 1.2rem;">
               <label for="preferred_hospital" class="field-label">
-                <span class="q-tag">40</span> Preferred Hospital (in an emergency):
+                Preferred Hospital (in emergency):
               </label>
               <div class="input-shell">
                 <i class="fas fa-hospital-alt shell-icon text-danger"></i>
                 <input type="text" name="preferred_hospital" id="preferred_hospital" class="field-input" 
-                       placeholder="e.g. Cox's Bazar Sadar Hospital" 
+                       placeholder="Preferred Hospital Name (optional)" 
                        value="<?= htmlspecialchars($_POST['preferred_hospital'] ?? '') ?>">
               </div>
             </div>
           </div>
 
-          <!-- TRANSPORTATION SECTION (Q 41 - 43) -->
+          <!-- TRANSPORTATION SECTION -->
           <div class="smart-subcard transport-subcard" style="margin-top: 1.5rem;">
             <div class="subcard-title-bar">
               <span class="subcard-badge transport-badge"><i class="fas fa-bus-alt"></i></span>
               <div>
-                <h4>5. Transportation Arrangements</h4>
-                <small>Questions 41 &ndash; 43</small>
+                <h4>Transportation Arrangements</h4>
               </div>
             </div>
 
-            <!-- 41. Transportation Type Cards -->
+            <!-- Transportation Type Cards -->
             <div class="form-group" style="margin-top: 1rem;">
               <label class="field-label">
-                <span class="q-tag">41</span> Transportation Type <span class="req">*</span>
+                Transportation Type <span class="req">*</span>
               </label>
               <div class="vehicle-card-grid">
                 <label class="vehicle-card <?= (($_POST['transportation_type'] ?? '') === 'School Bus') ? 'selected' : '' ?>">
@@ -1160,7 +1144,7 @@ include __DIR__ . '/includes/header.php';
                   <span class="vehicle-icon"><i class="fas fa-bus-school"></i></span>
                   <div class="vehicle-meta">
                     <strong>School Bus</strong>
-                    <small>Official institute route pickup</small>
+                    <small>Official route service</small>
                   </div>
                   <span class="vehicle-check"><i class="fas fa-circle-check"></i></span>
                 </label>
@@ -1170,7 +1154,7 @@ include __DIR__ . '/includes/header.php';
                   <span class="vehicle-icon"><i class="fas fa-car-side"></i></span>
                   <div class="vehicle-meta">
                     <strong>Own Transport</strong>
-                    <small>Car, Motorbike, or Rickshaw</small>
+                    <small>Personal commute</small>
                   </div>
                   <span class="vehicle-check"><i class="fas fa-circle-check"></i></span>
                 </label>
@@ -1180,7 +1164,7 @@ include __DIR__ . '/includes/header.php';
                   <span class="vehicle-icon"><i class="fas fa-person-walking"></i></span>
                   <div class="vehicle-meta">
                     <strong>Walking</strong>
-                    <small>Residence within walking distance</small>
+                    <small>Nearby residence</small>
                   </div>
                   <span class="vehicle-check"><i class="fas fa-circle-check"></i></span>
                 </label>
@@ -1188,23 +1172,23 @@ include __DIR__ . '/includes/header.php';
             </div>
 
             <div class="form-grid col-2" style="margin-top: 1.2rem;">
-              <!-- 42. Pick-up Point -->
+              <!-- Pick-up Point -->
               <div class="form-group">
                 <label for="pickup_point" class="field-label">
-                  <span class="q-tag">42</span> Pick-up Point (Morning)
+                  Pick-up Point (Morning)
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-map-pin shell-icon"></i>
                   <input type="text" name="pickup_point" id="pickup_point" class="field-input" 
-                         placeholder="Morning pickup point" 
+                         placeholder="Morning pick-up point" 
                          value="<?= htmlspecialchars($_POST['pickup_point'] ?? '') ?>">
                 </div>
               </div>
 
-              <!-- 43. Drop-off Point -->
+              <!-- Drop-off Point -->
               <div class="form-group">
                 <label for="dropoff_point" class="field-label">
-                  <span class="q-tag">43</span> Drop-off Point (Afternoon)
+                  Drop-off Point (Afternoon)
                 </label>
                 <div class="input-shell">
                   <i class="fas fa-map-pin shell-icon"></i>
@@ -1230,24 +1214,24 @@ include __DIR__ . '/includes/header.php';
         </section>
 
         <!-- ========================================================
-             STEP 5: DOCUMENTS, REVIEW & CONSENT (Q 44)
+             STEP 5: DOCUMENTS, REVIEW & CONSENT
              ======================================================== -->
         <section class="wizard-step-panel" id="step-panel-5" data-panel="5">
           <div class="section-banner">
-            <div class="banner-pill">PART 5</div>
+            <div class="banner-pill">STEP 5</div>
             <div class="banner-text">
-              <h3>Documents Checklist &amp; Legal Consent</h3>
-              <p>Question 44 &bull; Review your inputs, select submitted documents, and certify the declaration.</p>
+              <h3>Documents Checklist &amp; Declaration</h3>
+              <p>Verify information, select ready documents, and submit application</p>
             </div>
           </div>
 
-          <!-- 6. DOCUMENTS SUBMITTED CHECKLIST -->
+          <!-- DOCUMENTS SUBMITTED CHECKLIST -->
           <div class="smart-subcard" style="margin-bottom: 1.8rem;">
             <div class="subcard-title-bar">
               <span class="subcard-badge doc-badge"><i class="fas fa-folder-open"></i></span>
               <div>
-                <h4>6. Documents Submitted Checklist</h4>
-                <small>Select the documents you have ready for verification day</small>
+                <h4>Documents Checklist</h4>
+                <small>Select the documents you have ready for verification</small>
               </div>
             </div>
 
@@ -1256,7 +1240,7 @@ include __DIR__ . '/includes/header.php';
                 <input type="checkbox" name="documents_submitted[]" value="Student Online Birth Certificate Copy (17 Digits)" checked>
                 <span class="doc-icon"><i class="fas fa-id-card"></i></span>
                 <span class="doc-details">
-                  <strong>Student Online Birth Certificate Copy</strong>
+                  <strong>Student Birth Certificate Copy</strong>
                   <small>17-Digit Online Verified Copy</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
@@ -1267,7 +1251,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-passport"></i></span>
                 <span class="doc-details">
                   <strong>Student Passport Copy</strong>
-                  <small>If applicable for international travel</small>
+                  <small>If applicable</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1277,7 +1261,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-camera"></i></span>
                 <span class="doc-details">
                   <strong>4 Passport Color Photographs</strong>
-                  <small>Recent passport-size photo of child</small>
+                  <small>Recent passport-size photo</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1287,7 +1271,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-id-badge"></i></span>
                 <span class="doc-details">
                   <strong>Father's NID / Passport Copy</strong>
-                  <small>National Identity Card copy</small>
+                  <small>Identity Card copy</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1297,7 +1281,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-id-badge"></i></span>
                 <span class="doc-details">
                   <strong>Mother's NID / Passport Copy</strong>
-                  <small>National Identity Card copy</small>
+                  <small>Identity Card copy</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1307,7 +1291,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-file-invoice"></i></span>
                 <span class="doc-details">
                   <strong>Transfer Certificate (TC)</strong>
-                  <small>From previous kindergarten or school</small>
+                  <small>From previous school (if any)</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1317,7 +1301,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-graduation-cap"></i></span>
                 <span class="doc-details">
                   <strong>Academic Progress Report</strong>
-                  <small>Last academic term evaluation card</small>
+                  <small>Previous marksheet (if any)</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1327,7 +1311,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="doc-icon"><i class="fas fa-syringe"></i></span>
                 <span class="doc-details">
                   <strong>Immunization / Vaccine Card</strong>
-                  <small>Vaccination health record copy</small>
+                  <small>Health record copy</small>
                 </span>
                 <span class="doc-check-box"><i class="fas fa-check"></i></span>
               </label>
@@ -1341,7 +1325,7 @@ include __DIR__ . '/includes/header.php';
               <div class="input-shell">
                 <i class="fas fa-paperclip shell-icon"></i>
                 <input type="text" name="documents_other" id="documents_other" class="field-input" 
-                       placeholder="e.g. Certificates, awards (optional)" 
+                       placeholder="Other documents (optional)" 
                        value="<?= htmlspecialchars($_POST['documents_other'] ?? '') ?>">
               </div>
             </div>
@@ -1384,13 +1368,13 @@ include __DIR__ . '/includes/header.php';
             </div>
           </div>
 
-          <!-- 7. CONSENT & AGREEMENT (QUESTION 44) -->
+          <!-- CONSENT & AGREEMENT -->
           <div class="smart-seal-box" style="margin-top: 1.5rem;">
             <div class="seal-icon-wrap">
               <i class="fas fa-stamp"></i>
             </div>
             <div class="seal-content">
-              <h4>Institutional Declaration by Parent / Legal Guardian</h4>
+              <h4>Institutional Declaration by Parent / Guardian</h4>
               <p class="seal-quote">
                 &ldquo;In the name of Allah, the Most Gracious, the Most Merciful.&rdquo;
               </p>
@@ -1401,15 +1385,14 @@ include __DIR__ . '/includes/header.php';
                 I pledge to respect and uphold the Islamic values, Cambridge curriculum discipline, and institutional regulations of Al Fatiha Institute.
               </p>
 
-              <!-- Question 44 Interactive Affirmation -->
+              <!-- Interactive Affirmation -->
               <div class="q44-affirmation-row">
                 <label class="q44-custom-control" for="consent_agreed">
                   <input type="checkbox" name="consent_agreed" id="consent_agreed" value="1" required 
                          <?= !empty($_POST['consent_agreed']) ? 'checked' : '' ?>>
                   <span class="q44-checkbox-box"></span>
                   <span class="q44-label-text">
-                    <strong>44. I certify that the above information is correct to the best of my knowledge. *</strong>
-                    <small>Tick this box to digitally sign and authorize this application.</small>
+                    <strong>I certify that the above information is correct to the best of my knowledge. *</strong>
                   </span>
                 </label>
               </div>

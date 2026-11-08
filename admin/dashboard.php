@@ -13,59 +13,91 @@ $appsStmt = $db->query("SELECT a.*, c.class_name FROM admissions a JOIN classes 
 $recentApps = $appsStmt->fetchAll();
 ?>
 
-<!-- Quick Finance & Academic Actions -->
-<div class="quick-action-bar">
-  <a href="users.php" class="btn" style="background: #6366f1; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
-    <i class="fas fa-users-cog"></i> User Management
+<!-- Executive Welcome Banner -->
+<div class="dash-welcome-card">
+  <div class="welcome-left">
+    <div class="date-badge">
+      <i class="fas fa-calendar-day"></i> <?= date('l, d F Y') ?>
+    </div>
+    <h2 class="welcome-title">Welcome, <?= htmlspecialchars($user_name) ?></h2>
+    <p class="welcome-sub">AL FATIHA INSTITUTE Central Administrative Overview</p>
+  </div>
+  <div class="welcome-actions">
+    <a href="fees.php?action=issue_invoice" class="btn btn-welcome-primary">
+      <i class="fas fa-plus-circle"></i> Issue Invoice
+    </a>
+    <a href="students.php" class="btn btn-welcome-secondary">
+      <i class="fas fa-user-graduate"></i> Students Directory
+    </a>
+  </div>
+</div>
+
+<!-- Modern Quick Action Strip -->
+<div class="dash-quick-strip">
+  <a href="admissions.php" class="quick-chip <?= ($pendingApps > 0) ? 'chip-pending' : '' ?>">
+    <i class="fas fa-file-signature"></i>
+    <span>Applications</span>
+    <?php if ($pendingApps > 0): ?>
+      <span class="chip-badge"><?= $pendingApps ?></span>
+    <?php endif; ?>
   </a>
-  <a href="fees.php?action=issue_invoice" class="btn" style="background: #2563eb; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
-    <i class="fas fa-file-invoice"></i> Issue Invoice (Khata/Book/Fees)
+  <a href="fees.php?view=tracker" class="quick-chip">
+    <i class="fas fa-calendar-check"></i>
+    <span>Due Tracker</span>
   </a>
-  <a href="fees.php?view=tracker" class="btn" style="background: #0284c7; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-    <i class="fas fa-calendar-alt"></i> Monthly Tuition &amp; Due Tracker
+  <a href="expenses.php" class="quick-chip">
+    <i class="fas fa-receipt"></i>
+    <span>Expenses</span>
   </a>
-  <a href="expenses.php" class="btn" style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #334155; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-    <i class="fas fa-receipt"></i> Expenses &amp; Vouchers
+  <a href="income.php" class="quick-chip">
+    <i class="fas fa-hand-holding-usd"></i>
+    <span>Income</span>
   </a>
-  <a href="subjects.php" class="btn" style="background: #0f766e; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(15,118,110,0.25);">
-    <i class="fas fa-book-open"></i> Subjects &amp; Teacher Assign
+  <a href="promotions.php" class="quick-chip">
+    <i class="fas fa-level-up-alt"></i>
+    <span>Promotions</span>
   </a>
-  <a href="classes.php" class="btn" style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #334155; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-    <i class="fas fa-school"></i> Classes &amp; Fees
+  <a href="subjects.php" class="quick-chip">
+    <i class="fas fa-book-open"></i>
+    <span>Subjects</span>
+  </a>
+  <a href="users.php" class="quick-chip">
+    <i class="fas fa-users-cog"></i>
+    <span>Users</span>
   </a>
 </div>
 
 <!-- KPI Stat Cards Grid -->
 <div class="stats-grid">
-  <div class="kpi-card">
+  <a href="students.php" class="kpi-card" style="text-decoration: none; color: inherit;">
     <div class="kpi-icon"><i class="fas fa-user-graduate"></i></div>
     <div class="kpi-data">
-      <h3><?= $totalStudents ?></h3>
+      <h3><?= number_format($totalStudents) ?></h3>
       <p>Active Students</p>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card">
+  <a href="teachers.php" class="kpi-card" style="text-decoration: none; color: inherit;">
     <div class="kpi-icon gold"><i class="fas fa-chalkboard-teacher"></i></div>
     <div class="kpi-data">
-      <h3><?= $totalTeachers ?></h3>
-      <p>Teaching Staff</p>
+      <h3><?= number_format($totalTeachers) ?></h3>
+      <p>Faculty Teachers</p>
     </div>
-  </div>
+  </a>
 
-  <div class="kpi-card">
+  <a href="admissions.php" class="kpi-card" style="text-decoration: none; color: inherit;">
     <div class="kpi-icon purple"><i class="fas fa-file-signature"></i></div>
     <div class="kpi-data">
-      <h3><?= $pendingApps ?></h3>
+      <h3><?= number_format($pendingApps) ?></h3>
       <p>Pending Admissions</p>
     </div>
-  </div>
+  </a>
 
-  <a href="fees.php" class="kpi-card" style="text-decoration: none; color: inherit; cursor: pointer; transition: transform 0.2s;" title="Click to view Monthly Fees & Due Tracker">
+  <a href="fees.php" class="kpi-card" style="text-decoration: none; color: inherit;" title="View Fees & Due Tracker">
     <div class="kpi-icon green"><i class="fas fa-money-bill-wave"></i></div>
     <div class="kpi-data">
       <h3><?= format_currency($totalFeesCollected) ?></h3>
-      <p>Total Revenue Collected &bull; <span style="color: var(--admin-primary); font-weight: 700; font-size: 0.78rem;">Tracker &rarr;</span></p>
+      <p>Total Revenue Paid</p>
     </div>
   </a>
 </div>
@@ -73,16 +105,16 @@ $recentApps = $appsStmt->fetchAll();
 <!-- Recent Applications Card -->
 <div class="card-box">
   <div class="card-header">
-    <h3 class="card-title"><i class="fas fa-clock" style="color: var(--admin-primary);"></i> Recent Online Admission Applications</h3>
-    <a href="admissions.php" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.4rem 0.8rem; font-size: 0.82rem; border-radius: 6px; text-decoration: none;">View All Applications</a>
+    <h3 class="card-title"><i class="fas fa-clock" style="color: var(--admin-primary);"></i> Recent Online Applications</h3>
+    <a href="admissions.php" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.4rem 0.85rem; font-size: 0.82rem; border-radius: 8px; text-decoration: none; font-weight: 700;">View All</a>
   </div>
 
   <div class="table-responsive">
     <table class="data-table">
       <thead>
         <tr>
-          <th>App Ref No</th>
-          <th>Child Name</th>
+          <th>App Ref</th>
+          <th>Student Name</th>
           <th>Target Class</th>
           <th>Parent / Phone</th>
           <th>Applied Date</th>
@@ -95,7 +127,7 @@ $recentApps = $appsStmt->fetchAll();
           <?php foreach ($recentApps as $app): ?>
             <tr>
               <td><code><?= htmlspecialchars($app['application_no']) ?></code></td>
-              <td><strong><?= htmlspecialchars($app['child_name']) ?></strong> (<?= $app['gender'] ?>)</td>
+              <td><strong><?= htmlspecialchars($app['child_name']) ?></strong> (<?= htmlspecialchars($app['gender']) ?>)</td>
               <td><span class="badge badge-info"><?= htmlspecialchars($app['class_name']) ?></span></td>
               <td><?= htmlspecialchars($app['father_name']) ?><br><small style="color: var(--admin-text-muted);"><?= htmlspecialchars($app['phone']) ?></small></td>
               <td><?= format_date($app['applied_at']) ?></td>
@@ -109,15 +141,21 @@ $recentApps = $appsStmt->fetchAll();
                 <?php endif; ?>
               </td>
               <td>
-                <a href="admissions.php?id=<?= $app['id'] ?>" class="btn" style="background: #e2e8f0; color: var(--admin-text); padding: 0.25rem 0.6rem; font-size: 0.78rem; border-radius: 6px; text-decoration: none;">Review</a>
+                <a href="admissions.php?id=<?= $app['id'] ?>" class="btn" style="background: #e2e8f0; color: var(--admin-text); padding: 0.3rem 0.75rem; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600;">Review</a>
               </td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="7" style="text-align: center; color: var(--admin-text-muted);">No admission applications received yet.</td>
+            <td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 2rem;">No admission applications received yet.</td>
           </tr>
         <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<?php require_once __DIR__ . '/layout_footer.php'; ?>
       </tbody>
     </table>
   </div>

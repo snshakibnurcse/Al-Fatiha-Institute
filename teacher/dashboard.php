@@ -62,7 +62,7 @@ $myClassesCount = $classesTaughtCount->fetchColumn();
     <div class="kpi-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;"><i class="fas fa-book-bookmark"></i></div>
     <div class="kpi-data">
       <h3><?= count($assignedSubjects) ?></h3>
-      <p>My Assigned Subjects (নির্ধারিত বিষয়)</p>
+      <p>My Assigned Subjects</p>
     </div>
   </div>
 
@@ -70,7 +70,7 @@ $myClassesCount = $classesTaughtCount->fetchColumn();
     <div class="kpi-icon gold"><i class="fas fa-school"></i></div>
     <div class="kpi-data">
       <h3><?= $myClassesCount ?> <span style="font-size: 0.9rem; font-weight: 400; color: var(--admin-text-muted);">/ <?= $classesCount ?></span></h3>
-      <p>Classes Assigned (পাঠদান ক্লাস)</p>
+      <p>Classes Assigned</p>
     </div>
   </div>
 
@@ -88,7 +88,7 @@ $myClassesCount = $classesTaughtCount->fetchColumn();
   <div class="card-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h3 class="card-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--admin-deep-navy); display: flex; align-items: center; gap: 0.5rem;">
-        <i class="fas fa-chalkboard-user" style="color: var(--admin-primary);"></i> My Assigned Subjects & Classes (আমার নির্ধারিত বিষয় ও ক্লাসসমূহ)
+        <i class="fas fa-chalkboard-user" style="color: var(--admin-primary);"></i> My Assigned Subjects &amp; Classes
       </h3>
       <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--admin-text-muted);">
         Principal has allocated the following subjects to you for instruction and marks grading.

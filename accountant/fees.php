@@ -353,11 +353,11 @@ if ($invFilterStatus !== 'all') {
 }
 if ($invFilterCategory !== 'all') {
     if ($invFilterCategory === 'khata_book') {
-        $invWhere[] = "(f.fee_type LIKE '%Khata%' OR f.fee_type LIKE '%Book%' OR f.fee_type LIKE '%বই%' OR f.fee_type LIKE '%খাতা%')";
+        $invWhere[] = "(f.fee_type LIKE '%Khata%' OR f.fee_type LIKE '%Book%' OR f.fee_type LIKE '%Exercise%' OR f.fee_type LIKE '%Textbook%')";
     } elseif ($invFilterCategory === 'diary') {
-        $invWhere[] = "(f.fee_type LIKE '%Diary%' OR f.fee_type LIKE '%ডায়েরি%')";
+        $invWhere[] = "(f.fee_type LIKE '%Diary%')";
     } elseif ($invFilterCategory === 'uniform') {
-        $invWhere[] = "(f.fee_type LIKE '%Uniform%' OR f.fee_type LIKE '%ইউনিফর্ম%')";
+        $invWhere[] = "(f.fee_type LIKE '%Uniform%' OR f.fee_type LIKE '%Kit%' OR f.fee_type LIKE '%Dress%')";
     } elseif ($invFilterCategory === 'tuition') {
         $invWhere[] = "(f.fee_type LIKE '%Tuition%' OR f.fee_type LIKE '%Monthly%')";
     }
@@ -808,10 +808,10 @@ unset($iv);
         </label>
         <select name="inv_cat" class="form-control" onchange="this.form.submit()">
           <option value="all" <?= ($invFilterCategory === 'all') ? 'selected' : '' ?>>All Item Categories</option>
-          <option value="khata_book" <?= ($invFilterCategory === 'khata_book') ? 'selected' : '' ?>>📚 Exercise Books &amp; Textbooks (খাতা ও বই)</option>
-          <option value="diary" <?= ($invFilterCategory === 'diary') ? 'selected' : '' ?>>📓 School Diary (স্কুল ডায়েরি)</option>
-          <option value="uniform" <?= ($invFilterCategory === 'uniform') ? 'selected' : '' ?>>🎒 Uniform &amp; Accessories (ইউনিফর্ম)</option>
-          <option value="tuition" <?= ($invFilterCategory === 'tuition') ? 'selected' : '' ?>>📅 Monthly Tuition Fees (মাসিক ফী)</option>
+          <option value="khata_book" <?= ($invFilterCategory === 'khata_book') ? 'selected' : '' ?>>📚 Exercise Books &amp; Textbooks</option>
+          <option value="diary" <?= ($invFilterCategory === 'diary') ? 'selected' : '' ?>>📓 School Diary</option>
+          <option value="uniform" <?= ($invFilterCategory === 'uniform') ? 'selected' : '' ?>>🎒 Uniform &amp; Accessories</option>
+          <option value="tuition" <?= ($invFilterCategory === 'tuition') ? 'selected' : '' ?>>📅 Monthly Tuition Fees</option>
         </select>
       </div>
 
@@ -822,8 +822,8 @@ unset($iv);
         </label>
         <select name="inv_status" class="form-control" onchange="this.form.submit()">
           <option value="all" <?= ($invFilterStatus === 'all') ? 'selected' : '' ?>>All Statuses</option>
-          <option value="Paid" <?= ($invFilterStatus === 'Paid') ? 'selected' : '' ?>>Paid (পরিশোধিত)</option>
-          <option value="Unpaid" <?= ($invFilterStatus === 'Unpaid') ? 'selected' : '' ?>>Unpaid / Due (বকেয়া)</option>
+          <option value="Paid" <?= ($invFilterStatus === 'Paid') ? 'selected' : '' ?>>Paid</option>
+          <option value="Unpaid" <?= ($invFilterStatus === 'Unpaid') ? 'selected' : '' ?>>Unpaid / Due</option>
         </select>
       </div>
 
@@ -1031,23 +1031,23 @@ unset($iv);
           <i class="fas fa-tag text-primary"></i> Select Item / Fee Type Preset:
         </label>
         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-          <button type="button" class="preset-pill active" onclick="setPreset('Khata / Books', 'Exercise Book / Khata (খাতা)', 150, this)">
-            📚 Exercise Book (খাতা)
+          <button type="button" class="preset-pill active" onclick="setPreset('Khata / Books', 'Exercise Book / Khata', 150, this)">
+            📚 Exercise Book
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('School Diary', 'Official School Diary 2026', 150, this)">
-            📓 School Diary (ডায়েরি)
+            📓 School Diary
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('Textbooks', 'Curriculum Books &amp; Syllabus Kit', 500, this)">
-            📖 Textbooks &amp; Syllabus (বই)
+            📖 Textbooks &amp; Syllabus
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('Uniform', 'School Uniform &amp; Accessories Kit', 400, this)">
-            🎒 Uniform &amp; Kit (ইউনিফর্ম)
+            🎒 Uniform &amp; Kit
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('Tuition Fee', 'Monthly Tuition Fee - <?= date('F Y') ?>', 'tuition', this)">
             📅 Monthly Tuition Fee
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('Exam Fee', 'Term Assessment &amp; Examination Fee', 300, this)">
-            📝 Exam Fee (পরীক্ষার ফী)
+            📝 Exam Fee
           </button>
           <button type="button" class="preset-pill" onclick="setPreset('Other', 'Custom School Item / Service', 100, this)">
             🏷️ Other Item / Custom
@@ -1059,7 +1059,7 @@ unset($iv);
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Item Description / Invoice Title *</label>
-          <input type="text" name="fee_type" id="issueFeeType" class="form-control" value="Exercise Book / Khata (খাতা)" placeholder="e.g. 5 Pcs Khata, School Diary, Book set..." required style="font-weight: 600;">
+          <input type="text" name="fee_type" id="issueFeeType" class="form-control" value="Exercise Book / Khata" placeholder="e.g. 5 Pcs Khata, School Diary, Book set..." required style="font-weight: 600;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Amount (BDT ৳) *</label>
@@ -1263,16 +1263,16 @@ unset($iv);
       <!-- Payment Option Selection: Full vs Partial -->
       <div style="margin-top: 1rem; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 10px;">
         <label style="font-size: 0.82rem; font-weight: 800; color: var(--admin-deep-navy); display: block; margin-bottom: 6px;">
-          Payment Type (পরিশোধের ধরণ) *
+          Payment Type *
         </label>
         <div style="display: flex; gap: 15px;">
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #065f46;">
             <input type="radio" name="payment_type_toggle" id="toggleFullPay" value="full" checked onchange="handlePaymentTypeChange()" style="accent-color: #10b981; transform: scale(1.15);">
-            <span>Full Payment (সম্পূর্ণ পরিশোধ)</span>
+            <span>Full Payment</span>
           </label>
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #b45309;">
             <input type="radio" name="payment_type_toggle" id="togglePartialPay" value="partial" onchange="handlePaymentTypeChange()" style="accent-color: #f59e0b; transform: scale(1.15);">
-            <span>Partial Payment (আংশিক পরিশোধ)</span>
+            <span>Partial Payment</span>
           </label>
         </div>
       </div>
@@ -1280,7 +1280,7 @@ unset($iv);
       <!-- Amount to Pay Now -->
       <div class="form-group" style="margin-top: 1rem;">
         <label style="font-weight: 800; color: var(--admin-deep-navy); font-size: 0.88rem;">
-          Amount to Pay Now (পরিশোধের পরিমাণ) *
+          Amount to Pay Now *
         </label>
         <div style="position: relative;">
           <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: #0284c7; font-size: 1.1rem;">৳</span>

@@ -276,7 +276,6 @@ require_once __DIR__ . '/layout.php';
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Roll No</label>
             <input type="number" name="roll_no" class="form-control" placeholder="Auto" min="1">
-            <small style="color: var(--admin-text-muted); font-size: 0.72rem;">Blank = Next Roll</small>
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Session</label>
@@ -297,11 +296,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">First Name *</label>
-            <input type="text" name="first_name" class="form-control" placeholder="e.g. RAYHAN" required style="text-transform: uppercase;">
+            <input type="text" name="first_name" class="form-control" placeholder="First Name" required style="text-transform: uppercase;">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Last Name</label>
-            <input type="text" name="last_name" class="form-control" placeholder="e.g. CHOWDHURY" style="text-transform: uppercase;">
+            <input type="text" name="last_name" class="form-control" placeholder="Last Name" style="text-transform: uppercase;">
           </div>
         </div>
 
@@ -333,7 +332,7 @@ require_once __DIR__ . '/layout.php';
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Birth Reg. No</label>
-            <input type="text" name="birth_reg_no" class="form-control" placeholder="17-digit number">
+            <input type="text" name="birth_reg_no" class="form-control" placeholder="17-Digit Birth Reg No">
           </div>
         </div>
 
@@ -365,10 +364,10 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's Name *</label>
-            <input type="text" name="father_name" class="form-control" placeholder="Father's full name" required>
+            <input type="text" name="father_name" class="form-control" placeholder="Father's Full Name" required>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.82rem; font-weight: 700;">Father's Mobile (SMS Alerts) *</label>
+            <label style="font-size: 0.82rem; font-weight: 700;">Father's Mobile *</label>
             <input type="tel" name="father_phone" class="form-control" placeholder="01XXXXXXXXX" required>
           </div>
         </div>
@@ -376,11 +375,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's Occupation</label>
-            <input type="text" name="father_occupation" class="form-control" placeholder="e.g. Businessman, Teacher">
+            <input type="text" name="father_occupation" class="form-control" placeholder="Occupation">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's NID / Passport</label>
-            <input type="text" name="father_nid" class="form-control" placeholder="NID or Passport number">
+            <input type="text" name="father_nid" class="form-control" placeholder="NID or Passport Number">
           </div>
         </div>
 
@@ -388,7 +387,7 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Name</label>
-            <input type="text" name="mother_name" class="form-control" placeholder="Mother's full name">
+            <input type="text" name="mother_name" class="form-control" placeholder="Mother's Full Name">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Mobile</label>
@@ -399,7 +398,7 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Occupation</label>
-            <input type="text" name="mother_occupation" class="form-control" placeholder="e.g. Homemaker, Service">
+            <input type="text" name="mother_occupation" class="form-control" placeholder="Occupation">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Family Email</label>
@@ -416,11 +415,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Present Address *</label>
-            <textarea name="address" class="form-control" rows="2" placeholder="House/Road, Area, Thana, District" required></textarea>
+            <textarea name="address" class="form-control" rows="2" placeholder="House / Road, Area, District" required></textarea>
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Permanent Address</label>
-            <textarea name="permanent_address" class="form-control" rows="2" placeholder="Village, Post Office, District (Blank = Same as present)"></textarea>
+            <textarea name="permanent_address" class="form-control" rows="2" placeholder="Permanent Address"></textarea>
           </div>
         </div>
       </div>
@@ -433,11 +432,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Emergency Contact Name</label>
-            <input type="text" name="emergency_contact_name" class="form-control" placeholder="Contact person name">
+            <input type="text" name="emergency_contact_name" class="form-control" placeholder="Contact Person Name">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Relationship</label>
-            <input type="text" name="emergency_contact_relation" class="form-control" placeholder="e.g. Father, Uncle">
+            <input type="text" name="emergency_contact_relation" class="form-control" placeholder="Relationship (e.g. Uncle)">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Emergency Phone</label>
@@ -448,11 +447,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Previous School / Madrasah</label>
-            <input type="text" name="previous_school" class="form-control" placeholder="Institution name (optional)">
+            <input type="text" name="previous_school" class="form-control" placeholder="Previous School (optional)">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Medical Notes / Allergies</label>
-            <input type="text" name="medical_notes" class="form-control" placeholder="e.g. None or Asthma, Peanuts">
+            <input type="text" name="medical_notes" class="form-control" placeholder="Medical Notes or Allergies (optional)">
           </div>
         </div>
       </div>
