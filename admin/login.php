@@ -17,3 +17,4 @@ if (is_logged_in()) {
 } else {
     redirect('../login.php');
 }
+

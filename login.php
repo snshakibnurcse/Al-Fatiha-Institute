@@ -25,34 +25,42 @@ if (is_logged_in()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $username = sanitize($_POST['username'] ?? '');
+    $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if (!empty($username) && !empty($password)) {
         $db = get_db_connection();
-        $stmt = $db->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND (status = 'active' OR status IS NULL) LIMIT 1");
+        // Case-insensitive username or email lookup
+        $stmt = $db->prepare("SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?) LIMIT 1");
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['user_role'] = $user['role'];
-            $_SESSION['user_name'] = $user['full_name'];
+        if ($user) {
+            // Check status
+            if (!empty($user['status']) && strtolower($user['status']) === 'inactive') {
+                $error = 'Your account (@' . htmlspecialchars($user['username']) . ') is currently inactive. Please contact the Super Administrator.';
+            } elseif (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['user_name'] = $user['full_name'];
 
-            if (in_array($user['role'], ['super_admin', 'admin', 'principal'])) {
-                redirect('admin/dashboard.php');
-            } elseif ($user['role'] === 'teacher') {
-                redirect('teacher/dashboard.php');
-            } elseif ($user['role'] === 'parent') {
-                redirect('portal/dashboard.php');
-            } elseif ($user['role'] === 'accountant') {
-                redirect('accountant/dashboard.php');
+                if (in_array($user['role'], ['super_admin', 'admin', 'principal'])) {
+                    redirect('admin/dashboard.php');
+                } elseif ($user['role'] === 'teacher') {
+                    redirect('teacher/dashboard.php');
+                } elseif ($user['role'] === 'parent') {
+                    redirect('portal/dashboard.php');
+                } elseif ($user['role'] === 'accountant') {
+                    redirect('accountant/dashboard.php');
+                } else {
+                    redirect('./');
+                }
             } else {
-                redirect('./');
+                $error = 'Invalid Password for user @' . htmlspecialchars($user['username']) . '. Please try again or ask Super Admin to reset it.';
             }
         } else {
-            $error = 'Invalid User ID / Username or Password. Please try again.';
+            $error = 'No registered user found with username or email: ' . htmlspecialchars($username);
         }
     } else {
         $error = 'Please enter both User ID / Username and Password.';
@@ -268,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         <strong><i class="fas fa-info-circle"></i> Quick Demo Logins:</strong>
         <ul>
           <li><strong>Super Admin:</strong> <code>admin</code> / <code>admin123</code></li>
-          <li><strong>Principal:</strong> (Created by Super Admin)</li>
+          <li><strong>Principal:</strong> <code>principal</code> / <code>admin123</code></li>
           <li><strong>Teacher:</strong> <code>teacher</code> / <code>teacher123</code></li>
           <li><strong>Accountant:</strong> <code>accountant</code> / <code>accountant123</code></li>
           <li><strong>Parent:</strong> <code>parent</code> / <code>parent123</code></li>

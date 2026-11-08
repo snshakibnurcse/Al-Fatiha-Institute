@@ -40,13 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
         $err = "Password must be at least 6 characters long.";
     } else {
         // Check uniqueness of username and email
-        $chk = $db->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+        $chk = $db->prepare("SELECT id, full_name, role FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1");
         $chk->execute([$username]);
-        if ($chk->fetch()) {
-            $err = "Username '<strong>" . htmlspecialchars($username) . "</strong>' is already taken. Please choose another.";
+        $existing = $chk->fetch();
+        if ($existing) {
+            $err = "Username '<strong>" . htmlspecialchars($username) . "</strong>' is already in use by <strong>" . htmlspecialchars($existing['full_name']) . "</strong> (" . ucfirst($existing['role']) . "). If you want to change their password or update details, click the 🔑 (Key) or ✏️ (Edit) button on their row in the directory below.";
         } else {
             if (!empty($email)) {
-                $chkEmail = $db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+                $chkEmail = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1");
                 $chkEmail->execute([$email]);
                 if ($chkEmail->fetch()) {
                     $err = "Email '<strong>" . htmlspecialchars($email) . "</strong>' is already registered to another account.";
@@ -860,9 +861,9 @@ $allStudents = $db->query("
           </button>
         </div>
         <div style="position: relative;">
-          <input type="text" name="password" id="newPassInput" class="form-control" value="Afi#2026!" required style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #0284c7;">
+          <input type="text" name="password" id="newPassInput" class="form-control" value="admin123" required style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #0284c7;">
         </div>
-        <small style="color: #64748b; font-size: 0.72rem;">Minimum 6 characters. You will be able to reset this password at any time.</small>
+        <small style="color: #64748b; font-size: 0.72rem;">Default password is <code>admin123</code>. You can customize it or click Generate.</small>
       </div>
 
       <!-- 5. Dynamic Guardian Student Selector -->
@@ -1198,7 +1199,7 @@ function openResetPasswordModal(user) {
   document.getElementById('resetTargetName').innerText = user.full_name;
   document.getElementById('resetTargetUsername').innerText = '@' + user.username;
   document.getElementById('resetTargetRole').innerText = (user.role || '').toUpperCase();
-  generateRandomPass('resetPassInput');
+  document.getElementById('resetPassInput').value = 'admin123';
 
   openModal('resetPasswordModal');
 }

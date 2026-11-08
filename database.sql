@@ -519,7 +519,7 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `role` enum('admin','teacher','parent','accountant') NOT NULL,
+  `role` enum('super_admin','admin','principal','teacher','parent','accountant') NOT NULL DEFAULT 'parent',
   `full_name` varchar(100) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
