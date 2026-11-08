@@ -19,16 +19,18 @@ function get_db_connection() {
             ];
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 
-            // Self-Healing Schema: Automatically ensure role ENUM includes 'super_admin' and 'principal'
+            // Self-Healing Schema: Automatically ensure role column supports 'super_admin' and 'principal'
             static $schemaChecked = false;
             if (!$schemaChecked) {
                 $schemaChecked = true;
                 try {
                     $col = $pdo->query("SHOW COLUMNS FROM `users` LIKE 'role'")->fetch();
-                    if ($col && isset($col['Type']) && strpos($col['Type'], 'principal') === false) {
-                        $pdo->exec("ALTER TABLE `users` MODIFY COLUMN `role` ENUM('super_admin', 'admin', 'principal', 'teacher', 'parent', 'accountant') NOT NULL DEFAULT 'parent'");
-                        $pdo->exec("UPDATE `users` SET `role` = 'super_admin' WHERE `id` = 1 AND `role` = 'admin'");
+                    if ($col && isset($col['Type']) && strpos(strtolower($col['Type']), 'varchar') === false) {
+                        $pdo->exec("ALTER TABLE `users` MODIFY COLUMN `role` VARCHAR(50) NOT NULL DEFAULT 'parent'");
                     }
+                    // Fix any corrupted or unassigned root roles
+                    $pdo->exec("UPDATE `users` SET `role` = 'super_admin' WHERE `id` = 1 OR `username` = 'admin'");
+                    $pdo->exec("UPDATE `users` SET `role` = 'principal' WHERE (`role` = '' OR `role` IS NULL) AND `username` LIKE '%principal%'");
                 } catch (Exception $ign) {
                     // Ignore silently if table doesn't exist yet or during setup
                 }

@@ -39,13 +39,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
       <div class="top-actions">
         <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>
           <?php 
-            $user_role = $_SESSION['user_role'] ?? 'user';
-            $dash_url = ($user_role === 'admin') ? 'admin/dashboard' : (($user_role === 'teacher') ? 'teacher/dashboard' : 'portal/dashboard');
+            $user_role = function_exists('get_current_user_role') ? get_current_user_role() : ($_SESSION['user_role'] ?? 'user');
+            $dash_url = in_array($user_role, ['super_admin', 'admin', 'principal']) 
+                ? 'admin/dashboard.php' 
+                : (($user_role === 'teacher') 
+                    ? 'teacher/dashboard.php' 
+                    : (($user_role === 'accountant') 
+                        ? 'accountant/dashboard.php' 
+                        : 'portal/dashboard.php'));
+            $roleLabel = ($user_role === 'super_admin') ? 'Super Admin' : (($user_role === 'principal') ? 'Principal' : ucfirst($user_role));
           ?>
-          <a href="<?= $dash_url ?>" class="portal-link"><i class="fas fa-user-circle"></i> Dashboard (<?= ucfirst($user_role) ?>)</a>
-          <a href="login?logout=1" style="color: #f87171; font-size: 0.8rem; font-weight: 700; margin-left: 0.5rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          <a href="<?= $dash_url ?>" class="portal-link"><i class="fas fa-user-circle"></i> Dashboard (<?= htmlspecialchars($roleLabel) ?>)</a>
+          <a href="login.php?logout=1" style="color: #f87171; font-size: 0.8rem; font-weight: 700; margin-left: 0.5rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <?php else: ?>
-          <a href="login" class="portal-link"><i class="fas fa-user-lock"></i> Login</a>
+          <a href="login.php" class="portal-link"><i class="fas fa-user-lock"></i> Login</a>
         <?php endif; ?>
       </div>
     </div>

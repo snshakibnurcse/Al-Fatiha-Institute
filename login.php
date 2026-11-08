@@ -19,6 +19,8 @@ if (is_logged_in()) {
         redirect('portal/dashboard.php');
     } elseif ($role === 'accountant') {
         redirect('accountant/dashboard.php');
+    } else {
+        redirect('admin/dashboard.php');
     }
 }
 
@@ -40,21 +42,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             if (!empty($user['status']) && strtolower($user['status']) === 'inactive') {
                 $error = 'Your account (@' . htmlspecialchars($user['username']) . ') is currently inactive. Please contact the Super Administrator.';
             } elseif (password_verify($password, $user['password'])) {
+                // Fail-safe role normalization
+                $role = $user['role'] ?? '';
+                if ($user['id'] == 1 || strtolower($user['username']) === 'admin') {
+                    $role = 'super_admin';
+                } elseif (empty($role) && stripos($user['username'], 'principal') !== false) {
+                    $role = 'principal';
+                } elseif (empty($role)) {
+                    $role = 'admin';
+                }
+
+                // If role was empty or outdated in the database, repair it immediately
+                if (($user['role'] ?? '') !== $role) {
+                    try {
+                        $db->prepare("UPDATE users SET role = ? WHERE id = ?")->execute([$role, $user['id']]);
+                    } catch (Exception $e) {}
+                }
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
-                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['user_role'] = $role;
                 $_SESSION['user_name'] = $user['full_name'];
 
-                if (in_array($user['role'], ['super_admin', 'admin', 'principal'])) {
+                if (in_array($role, ['super_admin', 'admin', 'principal'])) {
                     redirect('admin/dashboard.php');
-                } elseif ($user['role'] === 'teacher') {
+                } elseif ($role === 'teacher') {
                     redirect('teacher/dashboard.php');
-                } elseif ($user['role'] === 'parent') {
+                } elseif ($role === 'parent') {
                     redirect('portal/dashboard.php');
-                } elseif ($user['role'] === 'accountant') {
+                } elseif ($role === 'accountant') {
                     redirect('accountant/dashboard.php');
                 } else {
-                    redirect('./');
+                    redirect('admin/dashboard.php');
                 }
             } else {
                 $error = 'Invalid Password for user @' . htmlspecialchars($user['username']) . '. Please try again or ask Super Admin to reset it.';
