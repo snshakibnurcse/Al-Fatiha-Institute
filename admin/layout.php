@@ -4,6 +4,7 @@ require_admin();
 
 $current_script = basename($_SERVER['PHP_SELF']);
 $user_name = get_current_user_name();
+$user_role = get_current_user_role();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +24,7 @@ $user_name = get_current_user_name();
       <img src="../assets/images/logo.png?v=2" alt="AFI Logo">
       <div>
         <strong>AL FATIHA</strong>
-        <span>ADMIN SYSTEM</span>
+        <span><?= ($user_role === 'super_admin') ? 'SUPER ADMIN' : (($user_role === 'principal') ? 'PRINCIPAL PORTAL' : 'ADMIN SYSTEM') ?></span>
       </div>
       <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
         <i class="fas fa-times"></i>
@@ -116,23 +117,27 @@ $user_name = get_current_user_name();
           <i class="fas fa-envelope-open-text"></i> <span>Website Inquiries</span>
         </a>
       </li>
+      <?php if (is_super_admin()): ?>
       <li style="margin-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 0.6rem;">
         <a href="users.php" class="<?= ($current_script == 'users.php') ? 'active' : '' ?>" style="<?= ($current_script == 'users.php') ? 'background: rgba(139, 92, 246, 0.25); color: #fff; border-left: 4px solid #a855f7;' : 'color: #c4b5fd;' ?>">
           <i class="fas fa-users-cog" style="color: #a855f7;"></i> <span>User Management</span>
         </a>
       </li>
+      <?php endif; ?>
     </ul>
 
     <div class="sidebar-footer">
       <div class="user-profile-badge">
-        <div class="user-avatar">A</div>
+        <div class="user-avatar" style="<?= ($user_role === 'super_admin') ? 'background: #f59e0b; color: #032d4e;' : 'background: var(--admin-primary); color: #fff;' ?>">
+          <?= ($user_role === 'super_admin') ? '<i class="fas fa-crown"></i>' : (($user_role === 'principal') ? '<i class="fas fa-user-tie"></i>' : 'A') ?>
+        </div>
         <div class="user-info">
           <strong><?= htmlspecialchars($user_name) ?></strong>
-          <span>Administrator</span>
+          <span><?= ($user_role === 'super_admin') ? 'Super Admin' : (($user_role === 'principal') ? 'Principal' : 'Administrator') ?></span>
         </div>
       </div>
-      <a href="logout.php" style="display: inline-block; margin-top: 0.8rem; color: #ef4444; font-weight: 700; font-size: 0.85rem; text-decoration: none;">
-        <i class="fas fa-sign-out-alt"></i> Logout
+      <a href="logout.php" class="sidebar-logout-btn">
+        <i class="fas fa-sign-out-alt"></i> <span>Logout Session</span>
       </a>
     </div>
   </aside>

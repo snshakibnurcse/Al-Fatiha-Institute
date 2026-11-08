@@ -11,7 +11,19 @@ $totalFeesCollected = $db->query("SELECT SUM(amount) FROM fees WHERE status='Pai
 // Recent Pending Applications
 $appsStmt = $db->query("SELECT a.*, c.class_name FROM admissions a JOIN classes c ON a.target_class_id = c.id ORDER BY a.applied_at DESC LIMIT 5");
 $recentApps = $appsStmt->fetchAll();
+
+$flash = function_exists('get_flash_msg') ? get_flash_msg() : null;
 ?>
+
+<?php if ($flash): ?>
+  <div class="alert-msg alert-<?= $flash['type'] === 'danger' ? 'danger' : 'success' ?>" style="background: <?= $flash['type'] === 'danger' ? '#fee2e2' : '#dcfce7' ?>; border: 1.5px solid <?= $flash['type'] === 'danger' ? '#fca5a5' : '#86efac' ?>; color: <?= $flash['type'] === 'danger' ? '#991b1b' : '#166534' ?>; padding: 1rem 1.4rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <i class="fas <?= $flash['type'] === 'danger' ? 'fa-exclamation-triangle' : 'fa-check-circle' ?>" style="font-size: 1.3rem;"></i> 
+      <div><?= htmlspecialchars($flash['message']) ?></div>
+    </div>
+    <button type="button" onclick="this.parentElement.style.display='none'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:inherit;">&times;</button>
+  </div>
+<?php endif; ?>
 
 <!-- Executive Welcome Banner -->
 <div class="dash-welcome-card">
@@ -20,7 +32,7 @@ $recentApps = $appsStmt->fetchAll();
       <i class="fas fa-calendar-day"></i> <?= date('l, d F Y') ?>
     </div>
     <h2 class="welcome-title">Welcome, <?= htmlspecialchars($user_name) ?></h2>
-    <p class="welcome-sub">AL FATIHA INSTITUTE Central Administrative Overview</p>
+    <p class="welcome-sub">AL FATIHA INSTITUTE <?= is_super_admin() ? 'Super Administrative' : (is_principal() ? 'Principal' : 'Administrative') ?> Overview</p>
   </div>
   <div class="welcome-actions">
     <a href="fees.php?action=issue_invoice" class="btn btn-welcome-primary">
@@ -61,10 +73,12 @@ $recentApps = $appsStmt->fetchAll();
     <i class="fas fa-book-open"></i>
     <span>Subjects</span>
   </a>
+  <?php if (is_super_admin()): ?>
   <a href="users.php" class="quick-chip">
     <i class="fas fa-users-cog"></i>
     <span>Users</span>
   </a>
+  <?php endif; ?>
 </div>
 
 <!-- KPI Stat Cards Grid -->

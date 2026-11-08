@@ -5,20 +5,20 @@ require_once __DIR__ . '/includes/functions.php';
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
-    redirect('login');
+    redirect('login.php');
 }
 
 // Redirect if already logged in
 if (is_logged_in()) {
     $role = get_current_user_role();
-    if ($role === 'admin') {
-        redirect('admin/dashboard');
+    if (in_array($role, ['super_admin', 'admin', 'principal'])) {
+        redirect('admin/dashboard.php');
     } elseif ($role === 'teacher') {
-        redirect('teacher/dashboard');
+        redirect('teacher/dashboard.php');
     } elseif ($role === 'parent') {
-        redirect('portal/dashboard');
+        redirect('portal/dashboard.php');
     } elseif ($role === 'accountant') {
-        redirect('accountant/dashboard');
+        redirect('accountant/dashboard.php');
     }
 }
 
@@ -40,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['user_name'] = $user['full_name'];
 
-            if ($user['role'] === 'admin') {
-                redirect('admin/dashboard');
+            if (in_array($user['role'], ['super_admin', 'admin', 'principal'])) {
+                redirect('admin/dashboard.php');
             } elseif ($user['role'] === 'teacher') {
-                redirect('teacher/dashboard');
+                redirect('teacher/dashboard.php');
             } elseif ($user['role'] === 'parent') {
-                redirect('portal/dashboard');
+                redirect('portal/dashboard.php');
             } elseif ($user['role'] === 'accountant') {
-                redirect('accountant/dashboard');
+                redirect('accountant/dashboard.php');
             } else {
                 redirect('./');
             }
@@ -235,10 +235,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       <p class="subtitle">Enter your User ID and Password to sign in</p>
 
       <div class="role-pills">
-        <span class="role-pill admin"><i class="fas fa-user-shield"></i> Admin</span>
+        <span class="role-pill admin"><i class="fas fa-crown" style="color: #f59e0b;"></i> Super Admin</span>
+        <span class="role-pill admin"><i class="fas fa-user-shield"></i> Principal</span>
         <span class="role-pill teacher"><i class="fas fa-chalkboard-teacher"></i> Teacher</span>
-        <span class="role-pill parent"><i class="fas fa-user-graduate"></i> Parent</span>
         <span class="role-pill accountant"><i class="fas fa-calculator"></i> Accountant</span>
+        <span class="role-pill parent"><i class="fas fa-user-graduate"></i> Parent</span>
       </div>
 
       <?php if ($error): ?>
@@ -266,10 +267,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       <div class="demo-hint">
         <strong><i class="fas fa-info-circle"></i> Quick Demo Logins:</strong>
         <ul>
-          <li><strong>Admin:</strong> <code>admin</code> / <code>admin123</code></li>
+          <li><strong>Super Admin:</strong> <code>admin</code> / <code>admin123</code></li>
+          <li><strong>Principal:</strong> (Created by Super Admin)</li>
           <li><strong>Teacher:</strong> <code>teacher</code> / <code>teacher123</code></li>
-          <li><strong>Parent:</strong> <code>parent</code> / <code>parent123</code></li>
           <li><strong>Accountant:</strong> <code>accountant</code> / <code>accountant123</code></li>
+          <li><strong>Parent:</strong> <code>parent</code> / <code>parent123</code></li>
         </ul>
       </div>
 

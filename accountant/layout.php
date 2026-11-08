@@ -155,17 +155,27 @@ $user_name = get_current_user_name();
           <i class="fas fa-calculator"></i> Financial Reports
         </a>
       </li>
-      <li style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+      <li style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.8rem;">
         <a href="../index.php" target="_blank">
           <i class="fas fa-globe"></i> View Website
         </a>
       </li>
-      <li>
-        <a href="../login.php?logout=1" style="color: #f87171;">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-      </li>
     </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge">
+        <div class="user-avatar" style="background: #10b981; color: #ffffff;">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <div class="user-info">
+          <strong><?= htmlspecialchars(get_current_user_name()) ?></strong>
+          <span>Finance & Accounts</span>
+        </div>
+      </div>
+      <a href="../login.php?logout=1" class="sidebar-logout-btn">
+        <i class="fas fa-sign-out-alt"></i> <span>Logout Session</span>
+      </a>
+    </div>
   </aside>
 
   <!-- Sidebar Backdrop for Mobile -->

@@ -59,27 +59,51 @@ function get_current_user_name() {
 }
 
 // Auth Role Requirements
+function is_super_admin() {
+    return is_logged_in() && in_array(get_current_user_role(), ['super_admin', 'admin']);
+}
+
+function is_principal() {
+    return is_logged_in() && get_current_user_role() === 'principal';
+}
+
+function is_admin_or_principal() {
+    return is_logged_in() && in_array(get_current_user_role(), ['super_admin', 'admin', 'principal']);
+}
+
 function require_admin() {
-    if (!is_logged_in() || get_current_user_role() !== 'admin') {
-        redirect('../admin/index.php');
+    if (!is_admin_or_principal()) {
+        redirect('../login.php');
+    }
+}
+
+function require_super_admin() {
+    if (!is_logged_in()) {
+        redirect('../login.php');
+    }
+    if (!is_super_admin()) {
+        if (function_exists('set_flash_msg')) {
+            set_flash_msg("Access Denied: Only Super Administrator can access User Management.", "danger");
+        }
+        redirect('dashboard.php');
     }
 }
 
 function require_teacher() {
-    if (!is_logged_in() || (get_current_user_role() !== 'teacher' && get_current_user_role() !== 'admin')) {
-        redirect('../teacher/index.php');
+    if (!is_logged_in() || (!in_array(get_current_user_role(), ['teacher', 'super_admin', 'admin', 'principal']))) {
+        redirect('../login.php');
     }
 }
 
 function require_parent() {
-    if (!is_logged_in() || (get_current_user_role() !== 'parent' && get_current_user_role() !== 'admin')) {
-        redirect('../portal/index.php');
+    if (!is_logged_in() || (!in_array(get_current_user_role(), ['parent', 'super_admin', 'admin', 'principal']))) {
+        redirect('../login.php');
     }
 }
 
 function require_accountant() {
-    if (!is_logged_in() || (get_current_user_role() !== 'accountant' && get_current_user_role() !== 'admin')) {
-        redirect('../accountant/index.php');
+    if (!is_logged_in() || (!in_array(get_current_user_role(), ['accountant', 'super_admin', 'admin', 'principal']))) {
+        redirect('../login.php');
     }
 }
 

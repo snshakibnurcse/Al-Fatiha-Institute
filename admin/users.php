@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/functions.php';
+require_super_admin();
 require_once __DIR__ . '/layout.php';
 $db = get_db_connection();
 
@@ -6,6 +8,11 @@ $msg = '';
 $err = '';
 $newCredentials = null;
 $currentAdminId = get_current_user_id();
+
+// Fetch current user details for "Edit My Profile" quick-access
+$currStmt = $db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+$currStmt->execute([$currentAdminId]);
+$currentUserProfile = $currStmt->fetch(PDO::FETCH_ASSOC);
 
 // ========================================================
 // 1. POST HANDLER: CREATE NEW USER
@@ -22,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
     $specialty = sanitize($_POST['specialty'] ?? '');
     $qualification = sanitize($_POST['qualification'] ?? '');
 
-    $allowedRoles = ['admin', 'accountant', 'teacher', 'parent'];
+    $allowedRoles = ['super_admin', 'principal', 'admin', 'accountant', 'teacher', 'parent'];
     if (!in_array($role, $allowedRoles)) {
         $role = 'parent';
     }
@@ -65,16 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
                             INSERT INTO teachers (user_id, teacher_code, full_name, qualification, specialty, email, phone, joining_date) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         ");
-                        $insTch->execute([$newUserId, $tchCode, $full_name, $qualification ?: 'B.Ed / M.A', $specialty ?: 'Islamic Studies', $email, $phone, date('Y-m-d')]);
+                        $insTch->execute([$newUserId, $tchCode, $full_name, $qualification ?: 'B.Ed / M.A', $specialty ?: 'General Faculty', $email, $phone, date('Y-m-d')]);
                     }
 
+                    $roleLabel = ($role === 'super_admin') ? 'Super Administrator' : (($role === 'principal') ? 'Principal' : ucfirst($role));
                     $newCredentials = [
                         'name' => $full_name,
                         'username' => $username,
                         'password' => $password,
-                        'role' => $role
+                        'role' => $roleLabel
                     ];
-                    $msg = "New " . ucfirst($role) . " account for <strong>" . htmlspecialchars($full_name) . "</strong> created successfully!";
+                    $msg = "New {$roleLabel} account for <strong>" . htmlspecialchars($full_name) . "</strong> created successfully!";
                 } catch (Exception $e) {
                     $err = "Error creating account: " . $e->getMessage();
                 }
@@ -103,11 +111,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reset_password
                 $upd = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
                 $upd->execute([$hashedPassword, $target_user_id]);
 
+                $roleLabel = ($targetUser['role'] === 'super_admin') ? 'Super Admin' : (($targetUser['role'] === 'principal') ? 'Principal' : ucfirst($targetUser['role']));
                 $newCredentials = [
                     'name' => $targetUser['full_name'],
                     'username' => $targetUser['username'],
                     'password' => $new_password,
-                    'role' => $targetUser['role']
+                    'role' => $roleLabel
                 ];
                 $msg = "Password for user <strong>" . htmlspecialchars($targetUser['full_name']) . " (@" . htmlspecialchars($targetUser['username']) . ")</strong> has been successfully reset!";
             } else {
@@ -120,41 +129,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_reset_password
 }
 
 // ========================================================
-// 3. POST HANDLER: UPDATE USER DETAILS
+// 3. POST HANDLER: UPDATE USER DETAILS & OPTIONAL PASSWORD
 // ========================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])) {
     $edit_user_id = intval($_POST['edit_user_id'] ?? 0);
     $full_name = sanitize($_POST['full_name'] ?? '');
+    $username = strtolower(trim(sanitize($_POST['username'] ?? '')));
     $email = strtolower(trim(sanitize($_POST['email'] ?? '')));
     $phone = sanitize($_POST['phone'] ?? '');
     $role = sanitize($_POST['role'] ?? 'parent');
     $status = sanitize($_POST['status'] ?? 'active');
     $linked_student_id = intval($_POST['linked_student_id'] ?? 0);
+    $edit_password = $_POST['edit_password'] ?? '';
+
+    $allowedRoles = ['super_admin', 'principal', 'admin', 'accountant', 'teacher', 'parent'];
+    if (!in_array($role, $allowedRoles)) {
+        $role = 'parent';
+    }
 
     if ($edit_user_id > 0 && !empty($full_name)) {
-        // Prevent Super Admin from changing their own active status to inactive or locking self
-        if ($edit_user_id === $currentAdminId && $status === 'inactive') {
-            $err = "Security restriction: You cannot deactivate your own active session administrator account.";
-        } else {
-            // Check email uniqueness if modified
-            $chkEmail = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
-            $chkEmail->execute([$email, $edit_user_id]);
-            if (!empty($email) && $chkEmail->fetch()) {
-                $err = "Email '<strong>" . htmlspecialchars($email) . "</strong>' is already in use by another user.";
+        // Security restriction: Logged-in Super Admin cannot lock or demote themselves
+        $isSelf = ($edit_user_id === $currentAdminId);
+        if ($isSelf) {
+            $status = 'active'; // Force active
+            $role = 'super_admin'; // Prevent accidental self-demotion
+        }
+
+        // Check email uniqueness if provided
+        $chkEmail = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
+        $chkEmail->execute([$email, $edit_user_id]);
+        if (!empty($email) && $chkEmail->fetch()) {
+            $err = "Email '<strong>" . htmlspecialchars($email) . "</strong>' is already in use by another user.";
+        }
+
+        // Check username uniqueness if provided
+        if (empty($err) && !empty($username)) {
+            $chkUname = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ? LIMIT 1");
+            $chkUname->execute([$username, $edit_user_id]);
+            if ($chkUname->fetch()) {
+                $err = "Username '<strong>" . htmlspecialchars($username) . "</strong>' is already taken by another account.";
+            }
+        }
+
+        // Password validation if entered
+        $updatePass = false;
+        $hashedPass = '';
+        if (empty($err) && !empty($edit_password)) {
+            if (strlen($edit_password) < 6) {
+                $err = "New password must be at least 6 characters long.";
             } else {
-                $upd = $db->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?");
-                $upd->execute([$full_name, $email, $phone, $role, $status, $edit_user_id]);
+                $updatePass = true;
+                $hashedPass = password_hash($edit_password, PASSWORD_DEFAULT);
+            }
+        }
+
+        if (empty($err)) {
+            try {
+                if ($updatePass) {
+                    $upd = $db->prepare("
+                        UPDATE users 
+                        SET full_name = ?, username = ?, email = ?, phone = ?, role = ?, status = ?, password = ? 
+                        WHERE id = ?
+                    ");
+                    $upd->execute([$full_name, $username, $email, $phone, $role, $status, $hashedPass, $edit_user_id]);
+                } else {
+                    $upd = $db->prepare("
+                        UPDATE users 
+                        SET full_name = ?, username = ?, email = ?, phone = ?, role = ?, status = ? 
+                        WHERE id = ?
+                    ");
+                    $upd->execute([$full_name, $username, $email, $phone, $role, $status, $edit_user_id]);
+                }
+
+                // If editing self, update active session name & current profile
+                if ($isSelf) {
+                    $_SESSION['user_name'] = $full_name;
+                    $currentUserProfile['full_name'] = $full_name;
+                    $currentUserProfile['username'] = $username;
+                    $currentUserProfile['email'] = $email;
+                    $currentUserProfile['phone'] = $phone;
+                }
 
                 // Update linked student if guardian
                 if ($role === 'parent') {
-                    // Clear previous link
                     $db->prepare("UPDATE students SET parent_user_id = NULL WHERE parent_user_id = ?")->execute([$edit_user_id]);
                     if ($linked_student_id > 0) {
                         $db->prepare("UPDATE students SET parent_user_id = ? WHERE id = ?")->execute([$edit_user_id, $linked_student_id]);
                     }
                 }
 
-                $msg = "Account details for <strong>" . htmlspecialchars($full_name) . "</strong> updated successfully!";
+                $msg = "Profile details for <strong>" . htmlspecialchars($full_name) . "</strong> updated successfully!";
+                if ($updatePass) {
+                    $msg .= " (Password was also updated)";
+                }
+            } catch (Exception $e) {
+                $err = "Error updating user details: " . $e->getMessage();
             }
         }
     } else {
@@ -168,7 +237,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])
 if (isset($_GET['toggle_status'])) {
     $toggle_id = intval($_GET['toggle_status']);
     if ($toggle_id === $currentAdminId) {
-        $err = "Security restriction: You cannot change status on your own logged-in account.";
+        $err = "Security restriction: You cannot deactivate your own logged-in administrator account.";
+    } elseif ($toggle_id === 1) {
+        $err = "Security restriction: The primary root administrator account cannot be deactivated.";
     } else {
         $uStmt = $db->prepare("SELECT id, status, full_name FROM users WHERE id = ? LIMIT 1");
         $uStmt->execute([$toggle_id]);
@@ -188,6 +259,8 @@ if (isset($_GET['delete_user'])) {
     $delete_id = intval($_GET['delete_user']);
     if ($delete_id === $currentAdminId) {
         $err = "Security restriction: You cannot delete your own logged-in administrator account.";
+    } elseif ($delete_id === 1) {
+        $err = "Security restriction: The primary root Super Administrator account (ID #1) cannot be deleted.";
     } else {
         $uStmt = $db->prepare("SELECT id, full_name, username, role FROM users WHERE id = ? LIMIT 1");
         $uStmt->execute([$delete_id]);
@@ -199,7 +272,7 @@ if (isset($_GET['delete_user'])) {
             $db->prepare("DELETE FROM teachers WHERE user_id = ?")->execute([$delete_id]);
             // Delete user
             $db->prepare("DELETE FROM users WHERE id = ?")->execute([$delete_id]);
-            $msg = "Account <strong>" . htmlspecialchars($target['full_name']) . " (@" . htmlspecialchars($target['username']) . ")</strong> deleted successfully.";
+            $msg = "User account <strong>" . htmlspecialchars($target['full_name']) . " (@" . htmlspecialchars($target['username']) . ")</strong> deleted successfully.";
         }
     }
 }
@@ -220,8 +293,12 @@ if (!empty($search)) {
 }
 
 if ($roleFilter !== 'all') {
-    $where[] = "u.role = :role";
-    $params[':role'] = $roleFilter;
+    if ($roleFilter === 'admin') {
+        $where[] = "u.role IN ('super_admin', 'principal', 'admin')";
+    } else {
+        $where[] = "u.role = :role";
+        $params[':role'] = $roleFilter;
+    }
 }
 
 if ($statusFilter !== 'all') {
@@ -243,7 +320,7 @@ $sql = "
     LEFT JOIN classes c ON st.class_id = c.id
     LEFT JOIN teachers t ON t.user_id = u.id
     WHERE " . implode(' AND ', $where) . "
-    ORDER BY u.id DESC
+    ORDER BY (u.id = 1) DESC, (u.role = 'super_admin') DESC, (u.role = 'principal') DESC, u.id DESC
 ";
 
 $stmt = $db->prepare($sql);
@@ -254,7 +331,8 @@ $usersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $countsStmt = $db->query("
     SELECT 
         COUNT(*) as total_users,
-        SUM(CASE WHEN role='admin' THEN 1 ELSE 0 END) as total_admins,
+        SUM(CASE WHEN role='super_admin' THEN 1 ELSE 0 END) as total_super_admins,
+        SUM(CASE WHEN role='principal' THEN 1 ELSE 0 END) as total_principals,
         SUM(CASE WHEN role='accountant' THEN 1 ELSE 0 END) as total_accountants,
         SUM(CASE WHEN role='teacher' THEN 1 ELSE 0 END) as total_teachers,
         SUM(CASE WHEN role='parent' THEN 1 ELSE 0 END) as total_guardians,
@@ -318,12 +396,12 @@ $allStudents = $db->query("
       <div>
         <span style="color: #94a3b8; font-size: 0.78rem; text-transform: uppercase;">Role Assigned:</span>
         <span style="display: inline-block; background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; color: #fbbf24;">
-          <?= ucfirst($newCredentials['role']) ?>
+          <?= htmlspecialchars($newCredentials['role']) ?>
         </span>
       </div>
     </div>
-    <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #94a3b8;">
-      <span>Please copy or safely share these login details with the user.</span>
+    <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #94a3b8; flex-wrap: wrap; gap: 8px;">
+      <span>Share these login credentials securely with the respective user.</span>
       <button onclick="copyCredentials('<?= htmlspecialchars($newCredentials['username']) ?>', '<?= htmlspecialchars($newCredentials['password']) ?>')" class="btn btn-sm" style="background: #3b82f6; color: #ffffff; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer;">
         <i class="fas fa-copy"></i> Copy Credentials
       </button>
@@ -337,23 +415,31 @@ $allStudents = $db->query("
 <div class="user-manager-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem; margin-bottom: 1.8rem;">
   <div>
     <div style="display: inline-flex; align-items: center; gap: 8px; background: #ede9fe; color: #6d28d9; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 6px;">
-      <i class="fas fa-shield-alt text-primary"></i>
-      <span>SUPER ADMIN SYSTEM OVERSIGHT &bull; ACCESS CONTROL</span>
+      <i class="fas fa-crown text-gold"></i>
+      <span>SUPER ADMIN EXCLUSIVE &bull; SYSTEM SECURITY &amp; ACCESS CONTROL</span>
     </div>
     <h2 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 0; font-size: 1.85rem; font-weight: 800;">
-      User Account Management &amp; Access Control
+      User Account &amp; Access Control
     </h2>
     <p style="color: var(--admin-text-muted); margin: 4px 0 0 0; font-size: 0.95rem;">
-      Create, oversee, and reset credentials for Principal Admins, Accountants, Teachers, and Guardians.
+      Manage accounts for Principals, Accountants, Teachers, Guardians, and System Administrators.
     </p>
   </div>
 
   <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <!-- Edit My Profile Button (Super Admin) -->
+    <?php if ($currentUserProfile): ?>
+      <button class="btn btn-outline" style="background: #ffffff; border: 1.5px solid #6366f1; color: #4f46e5; padding: 0.65rem 1.2rem; border-radius: 10px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 2px 6px rgba(99,102,241,0.12);" onclick="openMyProfileModal()">
+        <i class="fas fa-user-circle"></i> Edit My Profile
+      </button>
+    <?php endif; ?>
+
     <button class="btn btn-primary" style="background: #6366f1; color: #ffffff; padding: 0.65rem 1.3rem; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 12px rgba(99,102,241,0.3);" onclick="openModal('addUserModal')">
       <i class="fas fa-user-plus"></i> Add New User Account
     </button>
+
     <button class="btn btn-outline" style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #1e293b; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="window.print()">
-      <i class="fas fa-print"></i> Print User Directory
+      <i class="fas fa-print"></i> Print Directory
     </button>
   </div>
 </div>
@@ -374,15 +460,27 @@ $allStudents = $db->query("
     </div>
   </div>
 
-  <!-- Principal / Admins -->
-  <a href="users.php?role=admin" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'admin' ? '#8b5cf6' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
-    <div style="width: 48px; height: 48px; border-radius: 12px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+  <!-- Super Admins -->
+  <a href="users.php?role=super_admin" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'super_admin' ? '#f59e0b' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: #fef3c7; color: #d97706; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
       <i class="fas fa-crown"></i>
     </div>
     <div>
-      <span style="font-size: 0.75rem; font-weight: 700; color: #7c3aed; text-transform: uppercase;">Principal / Admins</span>
-      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #5b21b6; font-weight: 800;"><?= $stats['total_admins'] ?></h3>
-      <small style="color: #64748b; font-size: 0.72rem;">Full System Control</small>
+      <span style="font-size: 0.75rem; font-weight: 700; color: #d97706; text-transform: uppercase;">Super Admin</span>
+      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #b45309; font-weight: 800;"><?= $stats['total_super_admins'] ?></h3>
+      <small style="color: #64748b; font-size: 0.72rem;">Root Authority</small>
+    </div>
+  </a>
+
+  <!-- Principals -->
+  <a href="users.php?role=principal" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'principal' ? '#8b5cf6' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+      <i class="fas fa-user-shield"></i>
+    </div>
+    <div>
+      <span style="font-size: 0.75rem; font-weight: 700; color: #7c3aed; text-transform: uppercase;">Principal</span>
+      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #5b21b6; font-weight: 800;"><?= $stats['total_principals'] ?></h3>
+      <small style="color: #64748b; font-size: 0.72rem;">School Operations</small>
     </div>
   </a>
 
@@ -394,7 +492,7 @@ $allStudents = $db->query("
     <div>
       <span style="font-size: 0.75rem; font-weight: 700; color: #16a34a; text-transform: uppercase;">Accountants</span>
       <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #166534; font-weight: 800;"><?= $stats['total_accountants'] ?></h3>
-      <small style="color: #64748b; font-size: 0.72rem;">Finance &amp; Invoicing</small>
+      <small style="color: #64748b; font-size: 0.72rem;">Finance &amp; Ledger</small>
     </div>
   </a>
 
@@ -406,19 +504,19 @@ $allStudents = $db->query("
     <div>
       <span style="font-size: 0.75rem; font-weight: 700; color: #0284c7; text-transform: uppercase;">Teachers</span>
       <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #0369a1; font-weight: 800;"><?= $stats['total_teachers'] ?></h3>
-      <small style="color: #64748b; font-size: 0.72rem;">Academic Staff</small>
+      <small style="color: #64748b; font-size: 0.72rem;">Academic Faculty</small>
     </div>
   </a>
 
   <!-- Guardians / Parents -->
-  <a href="users.php?role=parent" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'parent' ? '#f59e0b' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
-    <div style="width: 48px; height: 48px; border-radius: 12px; background: #fef3c7; color: #d97706; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+  <a href="users.php?role=parent" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'parent' ? '#f97316' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: #fff7ed; color: #ea580c; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
       <i class="fas fa-user-friends"></i>
     </div>
     <div>
-      <span style="font-size: 0.75rem; font-weight: 700; color: #d97706; text-transform: uppercase;">Guardians / Parents</span>
-      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #92400e; font-weight: 800;"><?= $stats['total_guardians'] ?></h3>
-      <small style="color: #64748b; font-size: 0.72rem;">Parent Portal Access</small>
+      <span style="font-size: 0.75rem; font-weight: 700; color: #ea580c; text-transform: uppercase;">Guardians</span>
+      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #c2410c; font-weight: 800;"><?= $stats['total_guardians'] ?></h3>
+      <small style="color: #64748b; font-size: 0.72rem;">Parent Portal</small>
     </div>
   </a>
 </div>
@@ -446,7 +544,8 @@ $allStudents = $db->query("
       </label>
       <select name="role" class="form-control" onchange="this.form.submit()">
         <option value="all" <?= ($roleFilter === 'all') ? 'selected' : '' ?>>All Account Roles</option>
-        <option value="admin" <?= ($roleFilter === 'admin') ? 'selected' : '' ?>>👑 Principal / Admins</option>
+        <option value="super_admin" <?= ($roleFilter === 'super_admin') ? 'selected' : '' ?>>👑 Super Admins</option>
+        <option value="principal" <?= ($roleFilter === 'principal') ? 'selected' : '' ?>>🛡️ Principals</option>
         <option value="accountant" <?= ($roleFilter === 'accountant') ? 'selected' : '' ?>>💼 Accountants</option>
         <option value="teacher" <?= ($roleFilter === 'teacher') ? 'selected' : '' ?>>🎓 Teachers</option>
         <option value="parent" <?= ($roleFilter === 'parent') ? 'selected' : '' ?>>👨‍👩‍👧 Guardians / Parents</option>
@@ -504,8 +603,8 @@ $allStudents = $db->query("
           <th>User Account</th>
           <th>System Role</th>
           <th>Contact &amp; Email</th>
-          <th>Linked Student / Details</th>
-          <th>Account Status</th>
+          <th>Linked Details</th>
+          <th>Status</th>
           <th>Registered</th>
           <th style="text-align: right; width: 180px;">Actions</th>
         </tr>
@@ -518,7 +617,7 @@ $allStudents = $db->query("
               <td>
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <div class="user-avatar-badge role-<?= $u['role'] ?>">
-                    <?= strtoupper(substr($u['full_name'] ?: $u['username'], 0, 1)) ?>
+                    <?= ($u['role'] === 'super_admin') ? '<i class="fas fa-crown"></i>' : (($u['role'] === 'principal') ? '<i class="fas fa-user-shield"></i>' : strtoupper(substr($u['full_name'] ?: $u['username'], 0, 1))) ?>
                   </div>
                   <div>
                     <strong style="color: var(--admin-deep-navy); font-size: 0.96rem; display: block;">
@@ -526,15 +625,23 @@ $allStudents = $db->query("
                     </strong>
                     <code style="color: #0284c7; font-size: 0.8rem;">@<?= htmlspecialchars($u['username']) ?></code>
                     <?php if ($u['id'] == $currentAdminId): ?>
-                      <span style="background: #ede9fe; color: #7c3aed; font-size: 0.68rem; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 4px;">YOU</span>
+                      <span style="background: #fef3c7; color: #b45309; font-size: 0.68rem; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 4px; border: 1px solid #fde68a;">YOU</span>
                     <?php endif; ?>
                   </div>
                 </div>
               </td>
               <td>
-                <?php if ($u['role'] === 'admin'): ?>
+                <?php if ($u['role'] === 'super_admin'): ?>
+                  <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                    <i class="fas fa-crown text-gold"></i> Super Admin
+                  </span>
+                <?php elseif ($u['role'] === 'principal'): ?>
                   <span class="badge" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
-                    <i class="fas fa-crown text-gold"></i> Principal Admin
+                    <i class="fas fa-user-shield"></i> Principal
+                  </span>
+                <?php elseif ($u['role'] === 'admin'): ?>
+                  <span class="badge" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                    <i class="fas fa-shield-alt"></i> Admin
                   </span>
                 <?php elseif ($u['role'] === 'accountant'): ?>
                   <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
@@ -545,7 +652,7 @@ $allStudents = $db->query("
                     <i class="fas fa-chalkboard-teacher"></i> Teacher
                   </span>
                 <?php else: ?>
-                  <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                  <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-user-friends"></i> Guardian
                   </span>
                 <?php endif; ?>
@@ -576,8 +683,12 @@ $allStudents = $db->query("
                   <span style="font-size: 0.82rem; color: #475569;">
                     Staff Code: <code><?= htmlspecialchars($u['teacher_code'] ?: 'TCH-' . $u['id']) ?></code>
                   </span>
+                <?php elseif ($u['role'] === 'principal'): ?>
+                  <span style="font-size: 0.8rem; color: #7c3aed; font-weight: 700;"><i class="fas fa-university"></i> Head of School</span>
+                <?php elseif ($u['role'] === 'super_admin'): ?>
+                  <span style="font-size: 0.8rem; color: #b45309; font-weight: 700;"><i class="fas fa-shield-alt"></i> Root Admin</span>
                 <?php else: ?>
-                  <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Internal Staff</span>
+                  <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Staff Account</span>
                 <?php endif; ?>
               </td>
               <td>
@@ -601,23 +712,25 @@ $allStudents = $db->query("
                     <i class="fas fa-key"></i>
                   </button>
 
-                  <!-- 2. Edit User Button -->
+                  <!-- 2. Edit User Button (Works for everyone including self) -->
                   <button type="button" class="btn btn-action-edit" onclick="openEditUserModal(<?= htmlspecialchars(json_encode($u)) ?>)" title="Edit User Information">
                     <i class="fas fa-pencil-alt"></i>
                   </button>
 
                   <!-- 3. Toggle Status (Active / Inactive) -->
-                  <?php if ($u['id'] != $currentAdminId): ?>
-                    <a href="users.php?toggle_status=<?= $u['id'] ?>" class="btn btn-action-toggle" title="<?= $u['status'] === 'active' ? 'Deactivate Account' : 'Activate Account' ?>" onclick="return confirm('Change status for this user?');">
+                  <?php if ($u['id'] != $currentAdminId && $u['id'] != 1): ?>
+                    <a href="users.php?toggle_status=<?= $u['id'] ?>" class="btn btn-action-toggle" title="<?= $u['status'] === 'active' ? 'Deactivate Account' : 'Activate Account' ?>" onclick="return confirm('Change status for this user account?');">
                       <i class="fas <?= $u['status'] === 'active' ? 'fa-toggle-on text-emerald' : 'fa-toggle-off text-muted' ?>"></i>
                     </a>
+                  <?php endif; ?>
 
-                    <!-- 4. Delete Account -->
+                  <!-- 4. Delete Account (Cannot delete self or root ID 1) -->
+                  <?php if ($u['id'] != $currentAdminId && $u['id'] != 1): ?>
                     <a href="users.php?delete_user=<?= $u['id'] ?>" class="btn btn-action-delete" title="Delete Account" onclick="return confirm('Warning: Are you sure you want to completely delete this user account? This cannot be undone.');">
                       <i class="fas fa-trash-alt"></i>
                     </a>
                   <?php else: ?>
-                    <span class="badge" title="Active Logged-in Account" style="background: #f1f5f9; color: #94a3b8; font-size: 0.72rem; padding: 4px 6px;">
+                    <span class="badge" title="Root Protected Account" style="background: #f1f5f9; color: #94a3b8; font-size: 0.72rem; padding: 4px 6px;">
                       <i class="fas fa-lock"></i>
                     </span>
                   <?php endif; ?>
@@ -639,20 +752,20 @@ $allStudents = $db->query("
 </div>
 
 <!-- ========================================================
-     MODAL 1: ADD NEW USER ACCOUNT
+     MODAL 1: ADD NEW USER ACCOUNT (SUPER ADMIN POWER)
      ======================================================== -->
 <div id="addUserModal" class="admin-modal-wrap" style="display: none;">
-  <div class="admin-modal-box" style="max-width: 620px;">
+  <div class="admin-modal-box" style="max-width: 640px;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem;">
       <div>
         <span style="font-size: 0.7rem; font-weight: 800; color: #6366f1; letter-spacing: 0.08em; text-transform: uppercase;">
-          <i class="fas fa-user-plus"></i> ACCOUNT CREATION
+          <i class="fas fa-user-plus"></i> SUPER ADMIN ACCOUNT CREATION
         </span>
         <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.4rem;">
-          Register New User Account
+          Register New Portal User
         </h3>
         <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #64748b;">
-          Create credentials for Principal, Accountant, Teacher, or Guardian.
+          Create credentials for Principal, Accountant, Teacher, Guardian, or Super Admin.
         </p>
       </div>
       <button style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('addUserModal')">&times;</button>
@@ -667,14 +780,16 @@ $allStudents = $db->query("
           Select System Role *
         </label>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-          <label class="role-selector-card">
-            <input type="radio" name="role" value="admin" onchange="onRoleChange(this.value)">
+          <!-- Principal -->
+          <label class="role-selector-card active-card">
+            <input type="radio" name="role" value="principal" checked onchange="onRoleChange(this.value)">
             <div>
-              <strong style="color: #6d28d9; display: block;"><i class="fas fa-crown"></i> Principal / Admin</strong>
-              <small style="color: #64748b; font-size: 0.72rem;">Full school administrative control</small>
+              <strong style="color: #6d28d9; display: block;"><i class="fas fa-user-shield"></i> Principal</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Full school operational management</small>
             </div>
           </label>
 
+          <!-- Accountant -->
           <label class="role-selector-card">
             <input type="radio" name="role" value="accountant" onchange="onRoleChange(this.value)">
             <div>
@@ -683,19 +798,30 @@ $allStudents = $db->query("
             </div>
           </label>
 
+          <!-- Teacher -->
           <label class="role-selector-card">
             <input type="radio" name="role" value="teacher" onchange="onRoleChange(this.value)">
             <div>
               <strong style="color: #0284c7; display: block;"><i class="fas fa-chalkboard-teacher"></i> Teacher</strong>
-              <small style="color: #64748b; font-size: 0.72rem;">Attendance, Marks &amp; Academic Log</small>
+              <small style="color: #64748b; font-size: 0.72rem;">Attendance, Marks &amp; Academic Logs</small>
             </div>
           </label>
 
-          <label class="role-selector-card active-card">
-            <input type="radio" name="role" value="parent" checked onchange="onRoleChange(this.value)">
+          <!-- Guardian -->
+          <label class="role-selector-card">
+            <input type="radio" name="role" value="parent" onchange="onRoleChange(this.value)">
             <div>
               <strong style="color: #d97706; display: block;"><i class="fas fa-user-friends"></i> Guardian / Parent</strong>
-              <small style="color: #64748b; font-size: 0.72rem;">Parent portal &amp; Student tracking</small>
+              <small style="color: #64748b; font-size: 0.72rem;">Student progress &amp; Fee tracking</small>
+            </div>
+          </label>
+
+          <!-- Super Admin (span 2) -->
+          <label class="role-selector-card" style="grid-column: span 2;">
+            <input type="radio" name="role" value="super_admin" onchange="onRoleChange(this.value)">
+            <div>
+              <strong style="color: #b45309; display: block;"><i class="fas fa-crown"></i> Super Administrator</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Root system authority including User Management</small>
             </div>
           </label>
         </div>
@@ -705,11 +831,11 @@ $allStudents = $db->query("
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Full Name *</label>
-          <input type="text" name="full_name" class="form-control" placeholder="e.g. Dr. Mahmudul Hasan" required>
+          <input type="text" name="full_name" class="form-control" placeholder="e.g. Principal Md. Ibrahim" required>
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Login Username *</label>
-          <input type="text" name="username" class="form-control" placeholder="e.g. mahmudul or principal2" required style="font-weight: 700;">
+          <input type="text" name="username" class="form-control" placeholder="e.g. principal or ibrahim" required style="font-weight: 700;">
         </div>
       </div>
 
@@ -717,7 +843,7 @@ $allStudents = $db->query("
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="e.g. user@alfatiha.edu.bd">
+          <input type="email" name="email" class="form-control" placeholder="e.g. principal@alfatihainstitute.edu.bd">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Phone Number</label>
@@ -740,7 +866,7 @@ $allStudents = $db->query("
       </div>
 
       <!-- 5. Dynamic Guardian Student Selector -->
-      <div id="guardianSection" style="margin-top: 1rem; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px;">
+      <div id="guardianSection" style="display: none; margin-top: 1rem; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px;">
         <label style="font-weight: 700; color: #92400e; font-size: 0.85rem; display: block; margin-bottom: 4px;">
           <i class="fas fa-child text-gold"></i> Link with Student (For Guardian Portal)
         </label>
@@ -752,9 +878,6 @@ $allStudents = $db->query("
             </option>
           <?php endforeach; ?>
         </select>
-        <small style="color: #92400e; font-size: 0.72rem; display: block; margin-top: 4px;">
-          Linking a student allows the guardian to view their child's marks, attendance, and fee status.
-        </small>
       </div>
 
       <!-- 6. Dynamic Teacher Details Selector -->
@@ -788,7 +911,7 @@ $allStudents = $db->query("
 </div>
 
 <!-- ========================================================
-     MODAL 2: RESET PASSWORD MODAL (EXPLICIT USER FEATURE)
+     MODAL 2: RESET PASSWORD MODAL
      ======================================================== -->
 <div id="resetPasswordModal" class="admin-modal-wrap" style="display: none;">
   <div class="admin-modal-box" style="max-width: 520px;">
@@ -845,17 +968,18 @@ $allStudents = $db->query("
 </div>
 
 <!-- ========================================================
-     MODAL 3: EDIT USER PROFILE MODAL
+     MODAL 3: EDIT USER PROFILE & CREDENTIALS
+     (Works for Super Admin self-edit + all other users)
      ======================================================== -->
 <div id="editUserModal" class="admin-modal-wrap" style="display: none;">
-  <div class="admin-modal-box" style="max-width: 600px;">
+  <div class="admin-modal-box" style="max-width: 620px;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem;">
       <div>
         <span style="font-size: 0.7rem; font-weight: 800; color: #0284c7; letter-spacing: 0.08em; text-transform: uppercase;">
-          <i class="fas fa-user-edit"></i> MODIFY ACCOUNT
+          <i class="fas fa-user-edit"></i> PROFILE &amp; ACCESS UPDATE
         </span>
-        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.35rem;">
-          Edit User Account
+        <h3 id="editModalTitle" style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.35rem;">
+          Edit User Profile
         </h3>
       </div>
       <button style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('editUserModal')">&times;</button>
@@ -871,8 +995,8 @@ $allStudents = $db->query("
           <input type="text" name="full_name" id="editFullName" class="form-control" required>
         </div>
         <div class="form-group">
-          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Login Username (Fixed)</label>
-          <input type="text" id="editUsername" class="form-control" readonly style="background: #f1f5f9; font-weight: 700;">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Login Username</label>
+          <input type="text" name="username" id="editUsername" class="form-control" style="font-weight: 700;">
         </div>
       </div>
 
@@ -891,11 +1015,15 @@ $allStudents = $db->query("
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Role Assigned</label>
           <select name="role" id="editRole" class="form-control" onchange="onEditRoleChange(this.value)">
-            <option value="admin">👑 Principal / Admin</option>
+            <option value="super_admin">👑 Super Administrator</option>
+            <option value="principal">🛡️ Principal</option>
             <option value="accountant">💼 Accountant</option>
             <option value="teacher">🎓 Teacher</option>
             <option value="parent">👨‍👩‍👧 Guardian / Parent</option>
           </select>
+          <small id="editRoleNote" style="display: none; color: #b45309; font-size: 0.72rem; margin-top: 2px;">
+            <i class="fas fa-lock"></i> Your Super Admin role is protected and cannot be demoted.
+          </small>
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Account Status</label>
@@ -903,11 +1031,28 @@ $allStudents = $db->query("
             <option value="active">🟢 Active</option>
             <option value="inactive">🔴 Inactive</option>
           </select>
+          <small id="editStatusNote" style="display: none; color: #b45309; font-size: 0.72rem; margin-top: 2px;">
+            <i class="fas fa-lock"></i> Your active session cannot be set to inactive.
+          </small>
         </div>
       </div>
 
+      <!-- Optional Password Change Field -->
+      <div class="form-group" style="margin-top: 1rem; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem; margin: 0;">
+            <i class="fas fa-key text-primary"></i> Change Password (Optional)
+          </label>
+          <button type="button" onclick="generateRandomPass('editPasswordInput')" style="background: none; border: none; color: #6366f1; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+            <i class="fas fa-magic"></i> Generate
+          </button>
+        </div>
+        <input type="text" name="edit_password" id="editPasswordInput" class="form-control" placeholder="Leave blank to keep existing password" style="background: #ffffff; font-family: monospace;">
+        <small style="color: #64748b; font-size: 0.72rem;">Enter at least 6 characters if you wish to change the password right now.</small>
+      </div>
+
       <!-- Linked Student (if Guardian) -->
-      <div id="editGuardianSection" style="margin-top: 1rem; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px;">
+      <div id="editGuardianSection" style="margin-top: 1rem; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px; display: none;">
         <label style="font-weight: 700; color: #92400e; font-size: 0.85rem; display: block; margin-bottom: 4px;">
           <i class="fas fa-child text-gold"></i> Linked Student (For Guardian Portal)
         </label>
@@ -940,10 +1085,12 @@ $allStudents = $db->query("
   display: grid; place-items: center; font-size: 1.1rem;
   font-weight: 800; flex-shrink: 0;
 }
-.user-avatar-badge.role-admin { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
-.user-avatar-badge.role-accountant { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.user-avatar-badge.role-teacher { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-.user-avatar-badge.role-parent { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.user-avatar-badge.role-super_admin { background: #fef3c7; color: #b45309; border: 1.5px solid #fde68a; font-size: 1rem; }
+.user-avatar-badge.role-principal { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; font-size: 1rem; }
+.user-avatar-badge.role-admin { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; }
+.user-avatar-badge.role-accountant { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
+.user-avatar-badge.role-teacher { background: #e0f2fe; color: #0369a1; border: 1.5px solid #bae6fd; }
+.user-avatar-badge.role-parent { background: #fff7ed; color: #ea580c; border: 1.5px solid #ffedd5; }
 
 .btn-action-key {
   background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;
@@ -988,6 +1135,9 @@ $allStudents = $db->query("
 </style>
 
 <script>
+const CURRENT_LOGGED_IN_ID = <?= intval($currentAdminId) ?>;
+const CURRENT_USER_PROFILE = <?= json_encode($currentUserProfile) ?>;
+
 function openModal(id) {
   const m = document.getElementById(id);
   if (m) m.style.display = 'flex';
@@ -1005,23 +1155,23 @@ function onRoleChange(role) {
   const gSec = document.getElementById('guardianSection');
   const tSec = document.getElementById('teacherSection');
   if (role === 'parent') {
-    gSec.style.display = 'block';
-    tSec.style.display = 'none';
+    if (gSec) gSec.style.display = 'block';
+    if (tSec) tSec.style.display = 'none';
   } else if (role === 'teacher') {
-    gSec.style.display = 'none';
-    tSec.style.display = 'block';
+    if (gSec) gSec.style.display = 'none';
+    if (tSec) tSec.style.display = 'block';
   } else {
-    gSec.style.display = 'none';
-    tSec.style.display = 'none';
+    if (gSec) gSec.style.display = 'none';
+    if (tSec) tSec.style.display = 'none';
   }
 }
 
 function onEditRoleChange(role) {
   const gSec = document.getElementById('editGuardianSection');
   if (role === 'parent') {
-    gSec.style.display = 'block';
+    if (gSec) gSec.style.display = 'block';
   } else {
-    gSec.style.display = 'none';
+    if (gSec) gSec.style.display = 'none';
   }
 }
 
@@ -1047,13 +1197,15 @@ function openResetPasswordModal(user) {
   document.getElementById('resetUserId').value = user.id;
   document.getElementById('resetTargetName').innerText = user.full_name;
   document.getElementById('resetTargetUsername').innerText = '@' + user.username;
-  document.getElementById('resetTargetRole').innerText = user.role.toUpperCase();
+  document.getElementById('resetTargetRole').innerText = (user.role || '').toUpperCase();
   generateRandomPass('resetPassInput');
 
   openModal('resetPasswordModal');
 }
 
 function openEditUserModal(user) {
+  const isSelf = (parseInt(user.id) === CURRENT_LOGGED_IN_ID);
+  
   document.getElementById('editUserId').value = user.id;
   document.getElementById('editFullName').value = user.full_name;
   document.getElementById('editUsername').value = user.username;
@@ -1061,6 +1213,27 @@ function openEditUserModal(user) {
   document.getElementById('editPhone').value = user.phone || '';
   document.getElementById('editRole').value = user.role;
   document.getElementById('editStatus').value = user.status || 'active';
+  document.getElementById('editPasswordInput').value = '';
+
+  const titleEl = document.getElementById('editModalTitle');
+  const roleSelect = document.getElementById('editRole');
+  const statusSelect = document.getElementById('editStatus');
+  const roleNote = document.getElementById('editRoleNote');
+  const statusNote = document.getElementById('editStatusNote');
+
+  if (isSelf) {
+    if (titleEl) titleEl.innerHTML = '<i class="fas fa-crown text-gold"></i> Edit My Profile (Super Admin)';
+    if (roleSelect) roleSelect.disabled = true;
+    if (statusSelect) statusSelect.disabled = true;
+    if (roleNote) roleNote.style.display = 'block';
+    if (statusNote) statusNote.style.display = 'block';
+  } else {
+    if (titleEl) titleEl.innerText = 'Edit User Account';
+    if (roleSelect) roleSelect.disabled = false;
+    if (statusSelect) statusSelect.disabled = false;
+    if (roleNote) roleNote.style.display = 'none';
+    if (statusNote) statusNote.style.display = 'none';
+  }
 
   const gSelect = document.getElementById('editLinkedStudentId');
   if (gSelect) {
@@ -1069,6 +1242,12 @@ function openEditUserModal(user) {
   onEditRoleChange(user.role);
 
   openModal('editUserModal');
+}
+
+function openMyProfileModal() {
+  if (CURRENT_USER_PROFILE) {
+    openEditUserModal(CURRENT_USER_PROFILE);
+  }
 }
 </script>
 

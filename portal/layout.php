@@ -66,8 +66,8 @@ $user_name = get_current_user_name();
           <span>Guardian Account</span>
         </div>
       </div>
-      <a href="logout.php" style="display: inline-block; margin-top: 0.8rem; color: #ef4444; font-weight: 700; font-size: 0.85rem; text-decoration: none;">
-        <i class="fas fa-sign-out-alt"></i> Logout
+      <a href="logout.php" class="sidebar-logout-btn">
+        <i class="fas fa-sign-out-alt"></i> <span>Logout Session</span>
       </a>
     </div>
   </aside>
