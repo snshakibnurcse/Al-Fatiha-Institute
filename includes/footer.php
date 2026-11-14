@@ -8,10 +8,10 @@
             AL FATIHA INSTITUTE is an esteemed English medium kindergarten school in Cox's Bazar delivering Cambridge Early Years standards blended with authentic Islamic character building, Quranic Tajweed, and Arabic fluency for Play through Class 2.
           </p>
           <div class="social-links">
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.facebook.com/alfatihainstitute2026" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
             <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://wa.me/8801632550045" aria-label="WhatsApp" target="_blank"><i class="fab fa-whatsapp"></i></a>
           </div>
         </div>
 
