@@ -769,7 +769,24 @@ function openReceiptModal(data, monthName) {
   var notes = data.notes || '';
   var itemsMatch = notes.match(/Items:\s*\[(.*?)\]/);
   
-  if (itemsMatch && itemsMatch[1]) {
+  if (Array.isArray(data.items) && data.items.length > 0) {
+    var sl = 1;
+    data.items.forEach(function(it) {
+      var itTitle = (it.title || '') + (it.qty > 1 ? ' (' + it.qty + ' pcs)' : '');
+      var itCost = parseFloat(it.subtotal !== undefined ? it.subtotal : (it.amount || 0));
+      if (itTitle && itCost > 0) {
+        itemsHtml += `
+          <tr>
+            <td style="text-align: center;">${sl < 10 ? '0' + sl : sl}</td>
+            <td><strong>${itTitle}</strong></td>
+            <td style="text-align: center;">${periodStr}</td>
+            <td style="text-align: right;"><strong>${fmt(itCost)}</strong></td>
+          </tr>
+        `;
+        sl++;
+      }
+    });
+  } else if (itemsMatch && itemsMatch[1]) {
     var content = itemsMatch[1];
     var itemRegex = /([^:|\[\]]+?)\s*:\s*৳\s*([\d,]+(?:\.\d{1,2})?)/g;
     var match;

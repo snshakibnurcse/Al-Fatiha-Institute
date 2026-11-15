@@ -32,49 +32,102 @@ if (!preg_match('/^\d{4}-\d{2}$/', $selected_month)) {
 }
 
 // ========================================================
-// 1. POST HANDLER: ISSUE CUSTOM INVOICE (Khata, Books, Diary, Fees, etc.)
+// 1. POST HANDLER: ISSUE MULTI-ITEM INVOICE (Khata, Books, Diary, Fees, etc.)
 // ========================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_issue_custom_invoice'])) {
     $student_id = intval($_POST['student_id'] ?? 0);
-    $item_category = sanitize($_POST['item_category'] ?? 'General');
-    $fee_type = sanitize($_POST['fee_type'] ?? '');
-    $amount = floatval($_POST['amount'] ?? 0);
     $fee_month = sanitize($_POST['fee_month'] ?? date('Y-m'));
-    $payment_status = sanitize($_POST['payment_status'] ?? 'Paid'); // 'Paid' or 'Unpaid'
+    $payment_status = sanitize($_POST['payment_status'] ?? 'Paid'); // 'Paid', 'Partial', 'Unpaid'
     $payment_method = sanitize($_POST['payment_method'] ?? 'Cash');
     $paid_date = sanitize($_POST['paid_date'] ?? date('Y-m-d'));
     $due_date = sanitize($_POST['due_date'] ?? date('Y-m-d', strtotime('+7 days')));
     $reference_no = sanitize($_POST['reference_no'] ?? '');
-    $notes = sanitize($_POST['notes'] ?? '');
+    $general_notes = sanitize($_POST['notes'] ?? '');
 
-    if (empty($fee_type)) {
-        $fee_type = $item_category;
+    // Collect line items
+    $item_titles = $_POST['item_title'] ?? [];
+    $item_qtys = $_POST['item_qty'] ?? [];
+    $item_prices = $_POST['item_price'] ?? [];
+
+    $valid_items = [];
+    $total_invoice_amount = 0;
+
+    if (is_array($item_titles) && !empty($item_titles)) {
+        for ($i = 0; $i < count($item_titles); $i++) {
+            $t = sanitize($item_titles[$i] ?? '');
+            $q = max(1, intval($item_qtys[$i] ?? 1));
+            $p = floatval($item_prices[$i] ?? 0);
+            $subtotal = round($q * $p, 2);
+            if (!empty($t) && $subtotal > 0) {
+                $valid_items[] = [
+                    'title' => $t,
+                    'qty' => $q,
+                    'price' => $p,
+                    'subtotal' => $subtotal
+                ];
+                $total_invoice_amount += $subtotal;
+            }
+        }
+    } else {
+        // Fallback for legacy single item
+        $single_type = sanitize($_POST['fee_type'] ?? '');
+        $single_amount = floatval($_POST['amount'] ?? 0);
+        if (!empty($single_type) && $single_amount > 0) {
+            $valid_items[] = [
+                'title' => $single_type,
+                'qty' => 1,
+                'price' => $single_amount,
+                'subtotal' => $single_amount
+            ];
+            $total_invoice_amount = $single_amount;
+        }
     }
 
-    if ($student_id > 0 && $amount > 0) {
+    if ($student_id > 0 && $total_invoice_amount > 0 && !empty($valid_items)) {
         try {
             // Intelligent invoice numbering prefix
             $inv_prefix = 'INV-';
-            if (stripos($fee_type, 'khata') !== false || stripos($fee_type, 'book') !== false) {
+            $firstTitle = $valid_items[0]['title'];
+            if (stripos($firstTitle, 'khata') !== false || stripos($firstTitle, 'book') !== false) {
                 $inv_prefix = 'INV-BK-';
-            } elseif (stripos($fee_type, 'diary') !== false) {
+            } elseif (stripos($firstTitle, 'diary') !== false) {
                 $inv_prefix = 'INV-DRY-';
-            } elseif (stripos($fee_type, 'uniform') !== false) {
+            } elseif (stripos($firstTitle, 'uniform') !== false) {
                 $inv_prefix = 'INV-UNI-';
-            } elseif (stripos($fee_type, 'exam') !== false) {
+            } elseif (stripos($firstTitle, 'exam') !== false) {
                 $inv_prefix = 'INV-EXM-';
             }
 
             $inv_no = $inv_prefix . date('Ym') . '-' . rand(100, 999);
 
+            // Primary title for the invoice summary
+            $titlesSummary = [];
+            foreach ($valid_items as $vi) {
+                $titlesSummary[] = $vi['title'] . ($vi['qty'] > 1 ? " ({$vi['qty']})" : "");
+            }
+            $primaryTitle = implode(' + ', $titlesSummary);
+            if (strlen($primaryTitle) > 95) {
+                $primaryTitle = substr($primaryTitle, 0, 92) . '...';
+            }
+
+            // Build structured breakdown for notes and receipt modal
+            $breakdownParts = [];
+            foreach ($valid_items as $vi) {
+                $breakdownParts[] = $vi['title'] . ($vi['qty'] > 1 ? " ({$vi['qty']} pcs)" : "") . ": ৳" . number_format($vi['subtotal'], 2);
+            }
+            $fullBreakdown = "Items: [" . implode(', ', $breakdownParts) . "]";
+            if (!empty($general_notes)) {
+                $fullBreakdown .= " | Notes: " . $general_notes;
+            }
+
             if ($payment_status === 'Paid') {
                 $stmt = $db->prepare("
                     INSERT INTO fees 
-                    (invoice_no, student_id, fee_type, fee_month, amount, due_date, status, paid_date, payment_method, reference_no, notes) 
-                    VALUES (?, ?, ?, ?, ?, ?, 'Paid', ?, ?, ?, ?)
+                    (invoice_no, student_id, fee_type, fee_month, amount, paid_amount, due_date, status, paid_date, payment_method, reference_no, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Paid', ?, ?, ?, ?)
                 ");
                 $stmt->execute([
-                    $inv_no, $student_id, $fee_type, $fee_month, $amount, $paid_date, $paid_date, $payment_method, $reference_no, $notes
+                    $inv_no, $student_id, $primaryTitle, $fee_month, $total_invoice_amount, $total_invoice_amount, $paid_date, $paid_date, $payment_method, $reference_no, $fullBreakdown
                 ]);
                 $newFeeId = $db->lastInsertId();
 
@@ -86,35 +139,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_issue_custom_i
                 $stStmt->execute([$student_id]);
                 $stInfo = $stStmt->fetch(PDO::FETCH_ASSOC);
                 if ($stInfo) {
+                    $stInfo['id'] = $newFeeId;
                     $stInfo['invoice_no'] = $inv_no;
-                    $stInfo['fee_type'] = $fee_type;
-                    $stInfo['effective_amount'] = $amount;
-                    $stInfo['amount'] = $amount;
+                    $stInfo['fee_type'] = $primaryTitle;
+                    $stInfo['effective_amount'] = $total_invoice_amount;
+                    $stInfo['amount'] = $total_invoice_amount;
+                    $stInfo['paid_amount'] = $total_invoice_amount;
+                    $stInfo['due_amount'] = 0;
                     $stInfo['paid_date'] = $paid_date;
+                    $stInfo['due_date'] = $paid_date;
+                    $stInfo['status'] = 'Paid';
                     $stInfo['payment_method'] = $payment_method;
                     $stInfo['reference_no'] = $reference_no;
-                    $stInfo['notes'] = $notes;
+                    $stInfo['notes'] = $fullBreakdown;
                     $stInfo['fee_month'] = $fee_month;
+                    $stInfo['items'] = $valid_items;
                     $_SESSION['flash_receipt_slip'] = $stInfo;
                 }
 
-                set_flash_msg("Invoice <strong>$inv_no</strong> issued and payment of <strong>৳" . number_format($amount, 2) . "</strong> received successfully! Official receipt slip is ready.", 'success');
-            } else {
+                set_flash_msg("Multi-item Invoice <strong>$inv_no</strong> (" . count($valid_items) . " items) issued and full payment of <strong>৳" . number_format($total_invoice_amount, 2) . "</strong> received successfully! Official receipt slip is ready.", 'success');
+            } elseif ($payment_status === 'Partial') {
+                $paid_now = floatval($_POST['paid_amount_now'] ?? 0);
+                if ($paid_now <= 0) $paid_now = 0;
+                if ($paid_now > $total_invoice_amount) $paid_now = $total_invoice_amount;
+                $rem_due = max(0, $total_invoice_amount - $paid_now);
+                $finalStatus = ($rem_due <= 0.001) ? 'Paid' : 'Partial';
+
                 $stmt = $db->prepare("
                     INSERT INTO fees 
-                    (invoice_no, student_id, fee_type, fee_month, amount, due_date, status, notes) 
-                    VALUES (?, ?, ?, ?, ?, ?, 'Unpaid', ?)
+                    (invoice_no, student_id, fee_type, fee_month, amount, paid_amount, due_date, status, paid_date, payment_method, reference_no, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 $stmt->execute([
-                    $inv_no, $student_id, $fee_type, $fee_month, $amount, $due_date, $notes
+                    $inv_no, $student_id, $primaryTitle, $fee_month, $total_invoice_amount, $paid_now, $due_date, $finalStatus, ($paid_now > 0 ? $paid_date : null), ($paid_now > 0 ? $payment_method : null), $reference_no, $fullBreakdown
                 ]);
-                set_flash_msg("Invoice <strong>$inv_no</strong> issued as Due for <strong>৳" . number_format($amount, 2) . "</strong> (Due Date: " . format_date($due_date) . ").", 'success');
+                $newFeeId = $db->lastInsertId();
+
+                if ($paid_now > 0) {
+                    record_fee_payment($newFeeId, $paid_now, $payment_method, $reference_no, $paid_date);
+                }
+
+                // Fetch details for receipt slip
+                $stStmt = $db->prepare("SELECT s.*, s.student_id as student_code, c.class_name FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = ?");
+                $stStmt->execute([$student_id]);
+                $stInfo = $stStmt->fetch(PDO::FETCH_ASSOC);
+                if ($stInfo) {
+                    $stInfo['id'] = $newFeeId;
+                    $stInfo['invoice_no'] = $inv_no;
+                    $stInfo['fee_type'] = $primaryTitle;
+                    $stInfo['effective_amount'] = $total_invoice_amount;
+                    $stInfo['amount'] = $total_invoice_amount;
+                    $stInfo['paid_amount'] = $paid_now;
+                    $stInfo['due_amount'] = $rem_due;
+                    $stInfo['paid_date'] = $paid_date;
+                    $stInfo['due_date'] = $due_date;
+                    $stInfo['status'] = $finalStatus;
+                    $stInfo['payment_method'] = $payment_method;
+                    $stInfo['reference_no'] = $reference_no;
+                    $stInfo['notes'] = $fullBreakdown;
+                    $stInfo['fee_month'] = $fee_month;
+                    $stInfo['items'] = $valid_items;
+                    $_SESSION['flash_receipt_slip'] = $stInfo;
+                }
+
+                set_flash_msg("Multi-item Invoice <strong>$inv_no</strong> issued with partial payment of <strong>৳" . number_format($paid_now, 2) . "</strong> received. Remaining due: <strong>৳" . number_format($rem_due, 2) . "</strong>.", 'success');
+            } else {
+                // Unpaid
+                $stmt = $db->prepare("
+                    INSERT INTO fees 
+                    (invoice_no, student_id, fee_type, fee_month, amount, paid_amount, due_date, status, notes) 
+                    VALUES (?, ?, ?, ?, ?, 0, ?, 'Unpaid', ?)
+                ");
+                $stmt->execute([
+                    $inv_no, $student_id, $primaryTitle, $fee_month, $total_invoice_amount, $due_date, $fullBreakdown
+                ]);
+                set_flash_msg("Multi-item Invoice <strong>$inv_no</strong> issued as Due for <strong>৳" . number_format($total_invoice_amount, 2) . "</strong> (Due Date: " . format_date($due_date) . ").", 'success');
             }
         } catch (Exception $e) {
             set_flash_msg("Error issuing invoice: " . $e->getMessage(), 'danger');
         }
     } else {
-        set_flash_msg("Please select a student and enter a valid positive amount.", 'danger');
+        set_flash_msg("Please select a student and add at least one item with a valid positive amount.", 'danger');
     }
     redirect("fees.php?view=" . urlencode($activeView) . "&month=" . urlencode($selected_month));
 }
@@ -1060,32 +1165,34 @@ require_once __DIR__ . '/layout.php';
      MODAL 1: ISSUE CUSTOM INVOICE (Khata, Books, Diary, Fees)
      ======================================================== -->
 <div id="issueInvoiceModal" class="admin-modal-wrap" style="display: none;">
-  <div class="admin-modal-box" style="max-width: 680px;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.8rem;">
+  <div class="admin-modal-box" style="max-width: 840px; width: 95%;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.9rem;">
       <div>
-        <span style="font-size: 0.7rem; font-weight: 800; color: #2563eb; letter-spacing: 0.08em; text-transform: uppercase;">
+        <span style="font-size: 0.72rem; font-weight: 800; color: #2563eb; letter-spacing: 0.08em; text-transform: uppercase;">
           <i class="fas fa-file-invoice"></i> INVOICE ISSUANCE &amp; SALES DESK
         </span>
-        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.4rem;">
-          Issue Fee Invoice / School Item Sale
+        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.45rem; font-weight: 800;">
+          Create Multi-Item Fee Invoice &amp; School Sales
         </h3>
-        <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #64748b;">
-          Issue invoice for Extra Khata, Books, Diary, Uniform, Kits, or Monthly Fees.
+        <p style="margin: 2px 0 0 0; font-size: 0.84rem; color: #64748b;">
+          Combine Monthly Fees, Khatas, Diaries, Uniforms, and Books into a single invoice and receipt.
         </p>
       </div>
-      <button style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('issueInvoiceModal')">&times;</button>
+      <button type="button" style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('issueInvoiceModal')">&times;</button>
     </div>
 
-    <form method="POST" action="fees.php?view=<?= $activeView ?>&month=<?= $selected_month ?>">
+    <form method="POST" action="fees.php?view=<?= $activeView ?>&month=<?= $selected_month ?>" id="multiInvoiceForm">
       <input type="hidden" name="action_issue_custom_invoice" value="1">
-      <input type="hidden" name="item_category" id="issueItemCategory" value="Khata / Books">
 
       <!-- 1. Select Student -->
       <div class="form-group" style="margin-top: 1.2rem;">
-        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">
-          <i class="fas fa-user-graduate text-primary"></i> Select Student *
-        </label>
-        <select name="student_id" id="issueStudentSelect" class="form-control" required onchange="handleStudentSelect(this)" style="font-size: 0.92rem; padding: 0.65rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.86rem; margin: 0;">
+            <i class="fas fa-user-graduate text-primary"></i> Select Student *
+          </label>
+          <span id="studentTuitionInfoBadge" style="display: none; font-size: 0.76rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;"></span>
+        </div>
+        <select name="student_id" id="issueStudentSelect" class="form-control" required onchange="handleStudentSelect(this)" style="font-size: 0.92rem; padding: 0.65rem; border-radius: 10px;">
           <option value="">-- Choose Student (Type to search) --</option>
           <?php foreach ($allActiveStudents as $st): ?>
             <option value="<?= $st['id'] ?>" 
@@ -1100,57 +1207,81 @@ require_once __DIR__ . '/layout.php';
         </select>
       </div>
 
-      <!-- 2. Fast Item Category Presets -->
-      <div style="margin-top: 1rem;">
-        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem; display: block; margin-bottom: 6px;">
-          <i class="fas fa-tag text-primary"></i> Select Item / Fee Type Preset:
+      <!-- 2. Fast Add Preset Items -->
+      <div style="margin-top: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1rem;">
+        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.82rem; display: block; margin-bottom: 6px;">
+          <i class="fas fa-bolt" style="color: #f59e0b;"></i> Quick-Add Preset Items (Click to append to invoice):
         </label>
         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-          <button type="button" class="preset-pill active" onclick="setPreset('Khata / Books', 'Exercise Book / Khata', 150, this)">
-            📚 Exercise Book
+          <button type="button" class="preset-pill" onclick="addPresetItem('tuition')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            📅 + Monthly Tuition Fee
           </button>
-          <button type="button" class="preset-pill" onclick="setPreset('School Diary', 'Official School Diary 2026', 150, this)">
-            📓 School Diary
+          <button type="button" class="preset-pill" onclick="addPresetItem('khata')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            📚 + Exercise Book / Khata (৳ 50)
           </button>
-          <button type="button" class="preset-pill" onclick="setPreset('Textbooks', 'Curriculum Books &amp; Syllabus Kit', 500, this)">
-            📖 Textbooks &amp; Syllabus
+          <button type="button" class="preset-pill" onclick="addPresetItem('diary')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            📓 + School Diary (৳ 150)
           </button>
-          <button type="button" class="preset-pill" onclick="setPreset('Uniform', 'School Uniform &amp; Accessories Kit', 400, this)">
-            🎒 Uniform &amp; Kit
+          <button type="button" class="preset-pill" onclick="addPresetItem('books')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            📖 + Textbooks &amp; Syllabus (৳ 500)
           </button>
-          <button type="button" class="preset-pill" onclick="setPreset('Tuition Fee', 'Monthly Tuition Fee - <?= date('F Y') ?>', 'tuition', this)">
-            📅 Monthly Tuition Fee
+          <button type="button" class="preset-pill" onclick="addPresetItem('uniform')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            🎒 + Uniform &amp; Badge Kit (৳ 800)
           </button>
-          <button type="button" class="preset-pill" onclick="setPreset('Exam Fee', 'Term Assessment &amp; Examination Fee', 300, this)">
-            📝 Exam Fee
-          </button>
-          <button type="button" class="preset-pill" onclick="setPreset('Other', 'Custom School Item / Service', 100, this)">
-            🏷️ Other Item / Custom
+          <button type="button" class="preset-pill" onclick="addPresetItem('exam')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
+            📝 + Exam Assessment Fee (৳ 300)
           </button>
         </div>
       </div>
 
-      <!-- 3. Title & Amount -->
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1rem;">
-        <div class="form-group">
-          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Item Description / Invoice Title *</label>
-          <input type="text" name="fee_type" id="issueFeeType" class="form-control" value="Exercise Book / Khata" placeholder="e.g. 5 Pcs Khata, School Diary, Book set..." required style="font-weight: 600;">
-        </div>
-        <div class="form-group">
-          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Amount (BDT ৳) *</label>
-          <input type="number" name="amount" id="issueAmount" step="10" min="10" class="form-control" value="150" required style="font-weight: 800; font-size: 1.1rem; color: #065f46;">
+      <!-- 3. Multi-Item Table -->
+      <div style="margin-top: 1.25rem;">
+        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span><i class="fas fa-list-ol text-primary"></i> Invoice Line Items *</span>
+          <span style="font-size: 0.78rem; font-weight: 600; color: #64748b;">Specify quantity and unit price for each item</span>
+        </label>
+
+        <div style="border: 1.5px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: #ffffff;">
+          <table class="data-table" style="width: 100%; margin: 0; font-size: 0.88rem; border-collapse: collapse;">
+            <thead style="background: #f1f5f9; color: #334155;">
+              <tr>
+                <th style="width: 40px; text-align: center; padding: 8px;">#</th>
+                <th style="padding: 8px;">Item Description / Fee Particulars *</th>
+                <th style="width: 85px; text-align: center; padding: 8px;">Qty *</th>
+                <th style="width: 120px; text-align: right; padding: 8px;">Unit Price (৳) *</th>
+                <th style="width: 120px; text-align: right; padding: 8px;">Total (৳)</th>
+                <th style="width: 45px; text-align: center; padding: 8px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="invoiceItemsTbody">
+              <!-- Item rows dynamically injected via JavaScript -->
+            </tbody>
+          </table>
+
+          <div style="padding: 10px 14px; background: #fafbfc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn" onclick="addInvoiceItemRow('', 1, 0)" style="background: #ffffff; color: #0284c7; border: 1.5px dashed #0284c7; padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fas fa-plus"></i> Add Another Line Item
+            </button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <span id="itemsCountBadge" style="font-size: 0.82rem; color: #64748b; font-weight: 600;">0 Items</span>
+              <div style="text-align: right;">
+                <span style="font-size: 0.76rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Invoice:</span>
+                <strong id="multiInvoiceGrandTotal" style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: #032d4e; margin-left: 6px;">৳ 0.00</strong>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- 4. Month & Notes -->
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-top: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-top: 1.2rem;">
         <div class="form-group">
-          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Month (For Ledger)</label>
-          <input type="month" name="fee_month" class="form-control" value="<?= $selected_month ?>" style="font-weight: 600;">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Month (For Accounting Ledger)</label>
+          <input type="month" name="fee_month" class="form-control" value="<?= $selected_month ?>" style="font-weight: 600; border-radius: 8px;">
         </div>
         <div class="form-group">
-          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Particulars / Notes (Optional)</label>
-          <input type="text" name="notes" class="form-control" placeholder="e.g. 5 Pcs ruled khata, 1 pc diary, guardian received">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Particulars / Remarks (Optional)</label>
+          <input type="text" name="notes" class="form-control" placeholder="e.g. Guardian purchased 2 extra exercise books with monthly fee" style="border-radius: 8px;">
         </div>
       </div>
 
@@ -1160,29 +1291,55 @@ require_once __DIR__ . '/layout.php';
           <i class="fas fa-money-check-alt text-primary"></i> Payment Collection Status *
         </label>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <label style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #10b981; border-radius: 10px; padding: 10px 14px; cursor: pointer;">
-            <input type="radio" name="payment_status" value="Paid" checked onchange="togglePaymentBox('Paid')" style="accent-color: #10b981; transform: scale(1.2);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <label style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #10b981; border-radius: 10px; padding: 9px 12px; cursor: pointer;">
+            <input type="radio" name="payment_status" value="Paid" checked onchange="togglePaymentBox('Paid')" style="accent-color: #10b981; transform: scale(1.15);">
             <div>
-              <strong style="color: #065f46; font-size: 0.92rem; display: block;">🟢 Receive Payment Now (Paid)</strong>
-              <small style="color: #64748b; font-size: 0.74rem;">Money received now, print instant slip</small>
+              <strong style="color: #065f46; font-size: 0.88rem; display: block;">🟢 Full Payment (Paid)</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Full amount received now</small>
             </div>
           </label>
 
-          <label style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; cursor: pointer;">
-            <input type="radio" name="payment_status" value="Unpaid" onchange="togglePaymentBox('Unpaid')" style="accent-color: #ef4444; transform: scale(1.2);">
+          <label style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #0284c7; border-radius: 10px; padding: 9px 12px; cursor: pointer;">
+            <input type="radio" name="payment_status" value="Partial" onchange="togglePaymentBox('Partial')" style="accent-color: #0284c7; transform: scale(1.15);">
             <div>
-              <strong style="color: #991b1b; font-size: 0.92rem; display: block;">🟡 Issue as Due (Unpaid)</strong>
-              <small style="color: #64748b; font-size: 0.74rem;">Bill will remain due for future collection</small>
+              <strong style="color: #0369a1; font-size: 0.88rem; display: block;">🔵 Partial Payment</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Pay part now, rest due</small>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 9px 12px; cursor: pointer;">
+            <input type="radio" name="payment_status" value="Unpaid" onchange="togglePaymentBox('Unpaid')" style="accent-color: #ef4444; transform: scale(1.15);">
+            <div>
+              <strong style="color: #991b1b; font-size: 0.88rem; display: block;">🟡 Issue as Due (Unpaid)</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Full bill remains due</small>
             </div>
           </label>
         </div>
 
-        <!-- Paid Details Box -->
+        <!-- Partial Payment Specific Amount Field -->
+        <div id="boxPartialAmount" style="display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 700; color: #0369a1; display: block; margin-bottom: 4px;">
+                Amount Paid Now (BDT ৳) *
+              </label>
+              <input type="number" name="paid_amount_now" id="issuePaidNow" step="10" min="0" class="form-control" placeholder="Enter amount paid today" oninput="updatePartialRemainingDue()" style="font-weight: 800; font-size: 1.05rem; color: #0369a1; padding: 0.55rem; border-radius: 8px;">
+            </div>
+            <div>
+              <span style="font-size: 0.82rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">
+                Remaining Due Balance:
+              </span>
+              <strong id="displayPartialRemainingDue" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: #dc2626;">৳ 0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paid / Partial Payment Methods Box -->
         <div id="boxPaidDetails" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px;">
           <div>
-            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46;">Payment Method</label>
-            <select name="payment_method" class="form-control" style="padding: 0.5rem; font-size: 0.85rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 3px;">Payment Method</label>
+            <select name="payment_method" class="form-control" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
               <option value="Cash">Cash</option>
               <option value="bKash">bKash</option>
               <option value="Nagad">Nagad</option>
@@ -1191,27 +1348,27 @@ require_once __DIR__ . '/layout.php';
             </select>
           </div>
           <div>
-            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46;">Payment Date</label>
-            <input type="date" name="paid_date" class="form-control" value="<?= date('Y-m-d') ?>" style="padding: 0.5rem; font-size: 0.85rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 3px;">Payment Date</label>
+            <input type="date" name="paid_date" class="form-control" value="<?= date('Y-m-d') ?>" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
           </div>
           <div>
-            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46;">Receipt / Trx Ref</label>
-            <input type="text" name="reference_no" class="form-control" placeholder="e.g. TR-902, bKash ID" style="padding: 0.5rem; font-size: 0.85rem;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 3px;">Receipt / Trx Ref</label>
+            <input type="text" name="reference_no" class="form-control" placeholder="e.g. TR-902, bKash ID" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
           </div>
         </div>
 
         <!-- Unpaid Due Date Box -->
         <div id="boxUnpaidDetails" style="display: none; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; padding: 12px;">
-          <label style="font-size: 0.78rem; font-weight: 700; color: #9f1239;">Due Date for Payment</label>
-          <input type="date" name="due_date" class="form-control" value="<?= date('Y-m-d', strtotime('+7 days')) ?>" style="padding: 0.5rem; font-size: 0.85rem;">
+          <label style="font-size: 0.78rem; font-weight: 700; color: #9f1239; display: block; margin-bottom: 3px;">Due Date for Payment</label>
+          <input type="date" name="due_date" class="form-control" value="<?= date('Y-m-d', strtotime('+7 days')) ?>" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
           <small style="color: #9f1239; font-size: 0.74rem;">Student/guardian must clear this bill on or before this date.</small>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1.5px solid #e2e8f0; padding-top: 1rem;">
         <button type="button" class="btn btn-secondary" onclick="closeModal('issueInvoiceModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #ffffff; font-weight: 800; padding: 0.7rem 1.6rem; border-radius: 8px;">
-          <i class="fas fa-check-circle"></i> Issue Invoice &amp; Save
+        <button type="submit" class="btn btn-primary" id="btnSubmitMultiInvoice" style="background: #2563eb; color: #ffffff; font-weight: 800; padding: 0.7rem 1.8rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+          <i class="fas fa-file-invoice-dollar"></i> Issue Invoice &amp; Save
         </button>
       </div>
     </form>
@@ -1659,49 +1816,194 @@ function closeModal(id) {
   if (m) m.style.display = 'none';
 }
 
-// Preset Item Categories for Issue Invoice
-function setPreset(category, title, amount, el) {
-  document.querySelectorAll('.preset-pill').forEach(p => p.classList.remove('active'));
-  if (el) el.classList.add('active');
-
-  document.getElementById('issueItemCategory').value = category;
-  document.getElementById('issueFeeType').value = title;
-
-  if (amount === 'tuition') {
-    // Look up selected student tuition fee
-    const sel = document.getElementById('issueStudentSelect');
-    const opt = sel.options[sel.selectedIndex];
-    if (opt && opt.dataset.tuition) {
-      document.getElementById('issueAmount').value = opt.dataset.tuition;
-    } else {
-      document.getElementById('issueAmount').value = 2000;
-    }
-  } else {
-    document.getElementById('issueAmount').value = amount;
-  }
-}
+// Dynamic Multi-Item Invoice Management
+let currentSelectedStudentTuition = 2000;
 
 function handleStudentSelect(sel) {
   const opt = sel.options[sel.selectedIndex];
-  if (!opt) return;
-
-  const currentCat = document.getElementById('issueItemCategory').value;
-  if (currentCat === 'Tuition Fee' && opt.dataset.tuition) {
-    document.getElementById('issueAmount').value = opt.dataset.tuition;
+  const infoBadge = document.getElementById('studentTuitionInfoBadge');
+  if (!opt || !opt.value) {
+    if (infoBadge) infoBadge.style.display = 'none';
+    currentSelectedStudentTuition = 2000;
+    return;
   }
+
+  const cls = opt.dataset.class || '';
+  const tFee = parseFloat(opt.dataset.tuition || 2000);
+  currentSelectedStudentTuition = tFee;
+
+  if (infoBadge) {
+    infoBadge.innerText = 'Class: ' + cls + ' • Monthly Tuition: ৳ ' + tFee.toLocaleString();
+    infoBadge.style.display = 'inline-block';
+  }
+
+  // Update any existing Tuition Fee row with this student's specific class tuition
+  const rows = document.querySelectorAll('#invoiceItemsTbody tr');
+  rows.forEach(r => {
+    const titleInput = r.querySelector('.item-title-input');
+    const priceInput = r.querySelector('.item-price-input');
+    if (titleInput && priceInput && titleInput.value.toLowerCase().includes('tuition')) {
+      priceInput.value = tFee;
+    }
+  });
+  recalcMultiInvoiceTotals();
+}
+
+function addInvoiceItemRow(title = '', qty = 1, price = 0) {
+  const tbody = document.getElementById('invoiceItemsTbody');
+  if (!tbody) return;
+
+  const row = document.createElement('tr');
+  row.className = 'item-row';
+  row.style.borderBottom = '1px solid #f1f5f9';
+  row.innerHTML = `
+    <td class="row-sl" style="text-align: center; font-weight: 700; color: #64748b; padding: 8px 6px;">1</td>
+    <td style="padding: 6px;">
+      <input type="text" name="item_title[]" class="form-control item-title-input" value="${title.replace(/"/g, '&quot;')}" placeholder="e.g. Exercise Book / Khata" required style="font-weight: 600; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px;">
+    </td>
+    <td style="width: 85px; padding: 6px;">
+      <input type="number" name="item_qty[]" class="form-control item-qty-input" min="1" value="${qty || 1}" required style="text-align: center; font-weight: 700; font-size: 0.92rem; padding: 6px 4px; border-radius: 6px;" oninput="recalcMultiInvoiceTotals()">
+    </td>
+    <td style="width: 120px; padding: 6px;">
+      <input type="number" name="item_price[]" class="form-control item-price-input" min="0" step="1" value="${price || 0}" required style="text-align: right; font-weight: 700; font-size: 0.92rem; color: #065f46; padding: 6px 8px; border-radius: 6px;" oninput="recalcMultiInvoiceTotals()">
+    </td>
+    <td style="width: 120px; text-align: right; font-weight: 800; font-size: 0.95rem; color: #065f46; padding: 8px;" class="item-row-total">
+      ৳ 0.00
+    </td>
+    <td style="width: 45px; text-align: center; padding: 6px;">
+      <button type="button" class="btn" onclick="removeInvoiceItemRow(this)" style="background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 0.78rem;" title="Remove row">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+    </td>
+  `;
+  tbody.appendChild(row);
+  recalcMultiInvoiceTotals();
+}
+
+function removeInvoiceItemRow(btn) {
+  const tbody = document.getElementById('invoiceItemsTbody');
+  if (!tbody) return;
+  const row = btn.closest('tr');
+  if (row) {
+    row.remove();
+  }
+  // Ensure at least 1 row remains
+  if (tbody.children.length === 0) {
+    addInvoiceItemRow('Exercise Book / Khata', 1, 150);
+  } else {
+    recalcMultiInvoiceTotals();
+  }
+}
+
+function addPresetItem(type) {
+  const currentMonthName = '<?= date("F Y") ?>';
+  if (type === 'tuition') {
+    addInvoiceItemRow('Monthly Tuition Fee - ' + currentMonthName, 1, currentSelectedStudentTuition);
+  } else if (type === 'khata') {
+    addInvoiceItemRow('Exercise Book / Khata', 1, 50);
+  } else if (type === 'diary') {
+    addInvoiceItemRow('Official School Diary 2026', 1, 150);
+  } else if (type === 'books') {
+    addInvoiceItemRow('Curriculum Books & Syllabus Kit', 1, 500);
+  } else if (type === 'uniform') {
+    addInvoiceItemRow('School Uniform & Badge Kit', 1, 800);
+  } else if (type === 'exam') {
+    addInvoiceItemRow('Term Assessment & Exam Fee', 1, 300);
+  }
+}
+
+function recalcMultiInvoiceTotals() {
+  const tbody = document.getElementById('invoiceItemsTbody');
+  if (!tbody) return;
+
+  const rows = tbody.querySelectorAll('tr');
+  let grandTotal = 0;
+  let count = 0;
+
+  rows.forEach((r, idx) => {
+    count++;
+    const slCell = r.querySelector('.row-sl');
+    if (slCell) slCell.innerText = (idx + 1);
+
+    const qtyInput = r.querySelector('.item-qty-input');
+    const priceInput = r.querySelector('.item-price-input');
+    const totalCell = r.querySelector('.item-row-total');
+
+    const q = Math.max(1, parseInt(qtyInput ? qtyInput.value : 1) || 1);
+    const p = Math.max(0, parseFloat(priceInput ? priceInput.value : 0) || 0);
+    const sub = q * p;
+    grandTotal += sub;
+
+    if (totalCell) {
+      totalCell.innerText = '৳ ' + sub.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  });
+
+  const grandTotalEl = document.getElementById('multiInvoiceGrandTotal');
+  if (grandTotalEl) {
+    grandTotalEl.innerText = '৳ ' + grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  const countEl = document.getElementById('itemsCountBadge');
+  if (countEl) {
+    countEl.innerText = count + (count === 1 ? ' Item' : ' Items');
+  }
+
+  updatePartialRemainingDue(grandTotal);
+}
+
+function updatePartialRemainingDue(computedGrandTotal) {
+  if (computedGrandTotal === undefined) {
+    const tbody = document.getElementById('invoiceItemsTbody');
+    let gt = 0;
+    if (tbody) {
+      tbody.querySelectorAll('tr').forEach(r => {
+        const q = Math.max(1, parseInt(r.querySelector('.item-qty-input')?.value || 1) || 1);
+        const p = Math.max(0, parseFloat(r.querySelector('.item-price-input')?.value || 0) || 0);
+        gt += (q * p);
+      });
+    }
+    computedGrandTotal = gt;
+  }
+
+  const paidInput = document.getElementById('issuePaidNow');
+  const dispDue = document.getElementById('displayPartialRemainingDue');
+  if (!paidInput || !dispDue) return;
+
+  const paidVal = parseFloat(paidInput.value || 0) || 0;
+  const remDue = Math.max(0, computedGrandTotal - paidVal);
+  dispDue.innerText = '৳ ' + remDue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function togglePaymentBox(status) {
   const paidBox = document.getElementById('boxPaidDetails');
   const unpaidBox = document.getElementById('boxUnpaidDetails');
+  const partialBox = document.getElementById('boxPartialAmount');
+
   if (status === 'Paid') {
-    paidBox.style.display = 'grid';
-    unpaidBox.style.display = 'none';
+    if (paidBox) paidBox.style.display = 'grid';
+    if (unpaidBox) unpaidBox.style.display = 'none';
+    if (partialBox) partialBox.style.display = 'none';
+  } else if (status === 'Partial') {
+    if (paidBox) paidBox.style.display = 'grid';
+    if (unpaidBox) unpaidBox.style.display = 'none';
+    if (partialBox) partialBox.style.display = 'block';
+    updatePartialRemainingDue();
   } else {
-    paidBox.style.display = 'none';
-    unpaidBox.style.display = 'block';
+    // Unpaid
+    if (paidBox) paidBox.style.display = 'none';
+    if (unpaidBox) unpaidBox.style.display = 'block';
+    if (partialBox) partialBox.style.display = 'none';
   }
 }
+
+// Auto-seed initial row on startup
+document.addEventListener('DOMContentLoaded', function() {
+  const tbody = document.getElementById('invoiceItemsTbody');
+  if (tbody && tbody.children.length === 0) {
+    addInvoiceItemRow('Exercise Book / Khata', 1, 150);
+  }
+});
 
 // Quick Collect Monthly Fee Modal
 function openCollectModal(st, month, monthName) {
