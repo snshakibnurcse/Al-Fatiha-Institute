@@ -905,11 +905,68 @@ body.dashboard-body {
     font-size: 1.15rem !important;
   }
 
-  div[id$="Modal"] form button,
-  .admin-modal-box form button {
+  /* Modal Footer Submit/Cancel Action Buttons only */
+  div[id$="Modal"] form > div:last-child button,
+  .admin-modal-box form > div:last-child button,
+  .modal-submit-btn {
     width: 100% !important;
     margin-bottom: 0.5rem !important;
     margin-right: 0 !important;
+  }
+
+  /* Prevent preset pills and table buttons from stretching full-width */
+  .preset-pill,
+  button.preset-pill,
+  .admin-modal-box .preset-pill,
+  .admin-modal-box button.preset-pill {
+    width: auto !important;
+    display: inline-flex !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .preset-scroll-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  @media (max-width: 768px) {
+    .preset-scroll-container {
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-bottom: 6px;
+    }
+  }
+
+  /* Dedicated Horizontal Scroll for Multi-Item Invoice Table */
+  .invoice-table-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: block !important;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .invoice-table-scroll table {
+    min-width: 580px !important;
+    width: 100% !important;
+  }
+
+  .invoice-table-scroll button,
+  .invoice-table-scroll .btn {
+    width: auto !important;
+    margin-bottom: 0 !important;
+  }
+
+  .admin-modal-box .btn-add-item,
+  button.btn-add-item {
+    width: auto !important;
+    display: inline-flex !important;
+    margin-bottom: 0 !important;
   }
 
   /* View Switcher Tabs (Fees & Ledger) */

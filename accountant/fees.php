@@ -1139,7 +1139,7 @@ unset($iv);
         <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.82rem; display: block; margin-bottom: 6px;">
           <i class="fas fa-bolt" style="color: #f59e0b;"></i> Quick-Add Preset Items (Click to append to invoice):
         </label>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <div class="preset-scroll-container">
           <button type="button" class="preset-pill" onclick="addPresetItem('tuition')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: #032d4e;">
             📅 + Monthly Tuition Fee
           </button>
@@ -1163,30 +1163,34 @@ unset($iv);
 
       <!-- 3. Multi-Item Table -->
       <div style="margin-top: 1.25rem;">
-        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
           <span><i class="fas fa-list-ol text-primary"></i> Invoice Line Items *</span>
-          <span style="font-size: 0.78rem; font-weight: 600; color: #64748b;">Specify quantity and unit price for each item</span>
+          <span style="font-size: 0.76rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 3px 8px; border-radius: 6px;">
+            <i class="fas fa-arrows-alt-h"></i> Swipe table sideways for Qty &amp; Price
+          </span>
         </label>
 
-        <div style="border: 1.5px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: #ffffff;">
-          <table class="data-table" style="width: 100%; margin: 0; font-size: 0.88rem; border-collapse: collapse;">
-            <thead style="background: #f1f5f9; color: #334155;">
-              <tr>
-                <th style="width: 40px; text-align: center; padding: 8px;">#</th>
-                <th style="padding: 8px;">Item Description / Fee Particulars *</th>
-                <th style="width: 85px; text-align: center; padding: 8px;">Qty *</th>
-                <th style="width: 120px; text-align: right; padding: 8px;">Unit Price (৳) *</th>
-                <th style="width: 120px; text-align: right; padding: 8px;">Total (৳)</th>
-                <th style="width: 45px; text-align: center; padding: 8px;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="invoiceItemsTbody">
-              <!-- Item rows dynamically injected via JavaScript -->
-            </tbody>
-          </table>
+        <div style="border: 1.5px solid #cbd5e1; border-radius: 12px; background: #ffffff; overflow: hidden;">
+          <div class="invoice-table-scroll">
+            <table class="data-table" style="min-width: 580px; width: 100%; margin: 0; font-size: 0.88rem; border-collapse: collapse;">
+              <thead style="background: #f1f5f9; color: #334155;">
+                <tr>
+                  <th style="width: 40px; text-align: center; padding: 8px;">#</th>
+                  <th style="padding: 8px; min-width: 170px;">Item Description / Fee Particulars *</th>
+                  <th style="width: 85px; text-align: center; padding: 8px;">Qty *</th>
+                  <th style="width: 120px; text-align: right; padding: 8px;">Unit Price (৳) *</th>
+                  <th style="width: 120px; text-align: right; padding: 8px;">Total (৳)</th>
+                  <th style="width: 45px; text-align: center; padding: 8px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="invoiceItemsTbody">
+                <!-- Item rows dynamically injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
 
           <div style="padding: 10px 14px; background: #fafbfc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <button type="button" class="btn" onclick="addInvoiceItemRow('', 1, 0)" style="background: #ffffff; color: #0284c7; border: 1.5px dashed #0284c7; padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <button type="button" class="btn btn-add-item" onclick="addInvoiceItemRow('', 1, 0)" style="background: #ffffff; color: #0284c7; border: 1.5px dashed #0284c7; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; width: auto !important;">
               <i class="fas fa-plus"></i> Add Another Line Item
             </button>
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -1676,20 +1680,20 @@ function addInvoiceItemRow(title = '', qty = 1, price = 0) {
   row.style.borderBottom = '1px solid #f1f5f9';
   row.innerHTML = `
     <td class="row-sl" style="text-align: center; font-weight: 700; color: #64748b; padding: 8px 6px;">1</td>
-    <td style="padding: 6px;">
-      <input type="text" name="item_title[]" class="form-control item-title-input" value="${title.replace(/"/g, '&quot;')}" placeholder="e.g. Exercise Book / Khata" required style="font-weight: 600; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px;">
+    <td style="padding: 6px; min-width: 170px;">
+      <input type="text" name="item_title[]" class="form-control item-title-input" value="${title.replace(/"/g, '&quot;')}" placeholder="e.g. Exercise Book / Khata" required style="font-weight: 600; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; width: 100%;">
     </td>
-    <td style="width: 85px; padding: 6px;">
-      <input type="number" name="item_qty[]" class="form-control item-qty-input" min="1" value="${qty || 1}" required style="text-align: center; font-weight: 700; font-size: 0.92rem; padding: 6px 4px; border-radius: 6px;" oninput="recalcMultiInvoiceTotals()">
+    <td style="width: 85px; min-width: 80px; padding: 6px;">
+      <input type="number" name="item_qty[]" class="form-control item-qty-input" min="1" value="${qty || 1}" required style="text-align: center; font-weight: 700; font-size: 0.92rem; padding: 6px 4px; border-radius: 6px; width: 100%;" oninput="recalcMultiInvoiceTotals()">
     </td>
-    <td style="width: 120px; padding: 6px;">
-      <input type="number" name="item_price[]" class="form-control item-price-input" min="0" step="1" value="${price || 0}" required style="text-align: right; font-weight: 700; font-size: 0.92rem; color: #065f46; padding: 6px 8px; border-radius: 6px;" oninput="recalcMultiInvoiceTotals()">
+    <td style="width: 120px; min-width: 110px; padding: 6px;">
+      <input type="number" name="item_price[]" class="form-control item-price-input" min="0" step="1" value="${price || 0}" required style="text-align: right; font-weight: 700; font-size: 0.92rem; color: #065f46; padding: 6px 8px; border-radius: 6px; width: 100%;" oninput="recalcMultiInvoiceTotals()">
     </td>
-    <td style="width: 120px; text-align: right; font-weight: 800; font-size: 0.95rem; color: #065f46; padding: 8px;" class="item-row-total">
+    <td style="width: 120px; min-width: 100px; text-align: right; font-weight: 800; font-size: 0.95rem; color: #065f46; padding: 8px;" class="item-row-total">
       ৳ 0.00
     </td>
     <td style="width: 45px; text-align: center; padding: 6px;">
-      <button type="button" class="btn" onclick="removeInvoiceItemRow(this)" style="background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 0.78rem;" title="Remove row">
+      <button type="button" class="btn" onclick="removeInvoiceItemRow(this)" style="background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 0.82rem; width: auto !important; display: inline-flex; align-items: center; justify-content: center;" title="Remove row">
         <i class="fas fa-trash-alt"></i>
       </button>
     </td>
