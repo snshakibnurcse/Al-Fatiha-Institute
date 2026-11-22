@@ -219,7 +219,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
         <input type="text" name="reference_no" class="form-control" placeholder="e.g., MEMO-9012, BILL-402" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
-      <div class="form-group" style="grid-column: span 2;">
+      <div class="form-group" style="grid-column: 1 / -1;">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">
           <i class="fas fa-paperclip" style="color: #ef4444;"></i> Attach Bill Voucher / Receipt Document (JPG, PNG, PDF)
         </label>

@@ -17,25 +17,6 @@ $user_name = get_current_user_name();
   <!-- Chart.js CDN for visual financial graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .sidebar {
-      width: 260px !important;
-      position: fixed !important;
-      top: 0; bottom: 0; left: 0;
-      z-index: 100;
-    }
-    .main-content, .main-wrapper {
-      margin-left: 260px !important;
-      width: calc(100% - 260px) !important;
-      min-height: 100vh;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box !important;
-    }
-    .topbar, .top-nav {
-      width: 100% !important;
-      box-sizing: border-box !important;
-    }
     .account-badge {
       background: #ecfdf5;
       color: #047857;
@@ -112,6 +93,15 @@ $user_name = get_current_user_name();
       background: none;
       border: none;
     }
+    @media (max-width: 768px) {
+      .modal-content {
+        padding: 1.25rem;
+        width: 95%;
+      }
+      .chart-card {
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body class="dashboard-body">
@@ -185,13 +175,15 @@ $user_name = get_current_user_name();
   <div class="main-content">
     <!-- Topbar -->
     <header class="topbar">
-      <div class="top-nav-left" style="display: flex; align-items: center; gap: 0.85rem;">
+      <div class="top-nav-left" style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
         <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation">
           <i class="fas fa-bars"></i>
         </button>
-        <h2 style="font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.25rem; color: var(--admin-deep-navy);">
-          School Accounts & Finance
-        </h2>
+        <div class="page-title" style="min-width: 0;">
+          <h2 style="font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.15rem; color: var(--admin-deep-navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            School Accounts &amp; Finance
+          </h2>
+        </div>
       </div>
 
       <div style="display: flex; align-items: center; gap: 0.85rem;">
