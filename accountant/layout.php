@@ -172,7 +172,7 @@ $user_name = get_current_user_name();
           <span>Finance & Accounts</span>
         </div>
       </div>
-      <a href="../login.php?logout=1" class="sidebar-logout-btn">
+      <a href="logout.php" class="sidebar-logout-btn">
         <i class="fas fa-sign-out-alt"></i> <span>Logout Session</span>
       </a>
     </div>
@@ -201,7 +201,7 @@ $user_name = get_current_user_name();
         <a href="../index.php" target="_blank" class="btn btn-view-site" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
           <i class="fas fa-external-link-alt"></i> <span class="hide-mobile">Website</span>
         </a>
-        <a href="../login.php?logout=1" class="btn btn-logout-mobile" title="Logout" style="background: #fee2e2; color: #dc2626; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">
+        <a href="logout.php" class="btn btn-logout-mobile" title="Logout" style="background: #fee2e2; color: #dc2626; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">
           <i class="fas fa-sign-out-alt"></i>
         </a>
       </div>

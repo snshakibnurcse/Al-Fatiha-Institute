@@ -1,6 +1,22 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 
+// Handle explicit logout
+if (isset($_GET['logout'])) {
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
+    redirect('login.php');
+}
+
 if (is_logged_in()) {
     $role = get_current_user_role();
     if (in_array($role, ['super_admin', 'admin', 'principal'])) {
