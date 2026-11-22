@@ -12,28 +12,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
     $phone = sanitize($_POST['phone'] ?? '');
     $qualification = sanitize($_POST['qualification'] ?? '');
     $specialty = sanitize($_POST['specialty'] ?? '');
+    $joining_date = sanitize($_POST['joining_date'] ?? date('Y-m-d'));
     $username = sanitize($_POST['username'] ?? '');
     $password = $_POST['password'] ?? 'teacher123';
 
-    if (empty($full_name) || empty($email) || empty($phone) || empty($username)) {
-        $err = "Please fill in all required fields.";
+    if (empty($full_name) || empty($email) || empty($phone) || empty($username) || empty($specialty)) {
+        $err = "Please fill in all required fields (Name, Email, Phone, Specialty, Username).";
     } else {
         try {
             $db->beginTransaction();
 
+            // Check duplicate username
+            $chkU = $db->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1");
+            $chkU->execute([$username]);
+            if ($chkU->fetch()) {
+                throw new Exception("Username '$username' is already taken. Please choose another username.");
+            }
+
+            // Check duplicate email
+            $chkE = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1");
+            $chkE->execute([$email]);
+            if ($chkE->fetch()) {
+                throw new Exception("Email '$email' is already registered with another account.");
+            }
+
             // 1. Create User
             $pass_hash = password_hash($password, PASSWORD_BCRYPT);
-            $userStmt = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone) VALUES (?, ?, ?, 'teacher', ?, ?)");
+            $userStmt = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, 'teacher', ?, ?, 'active')");
             $userStmt->execute([$username, $pass_hash, $email, $full_name, $phone]);
             $user_id = $db->lastInsertId();
 
             // 2. Create Teacher
             $teacher_code = 'TCH-' . date('Y') . '-' . rand(10, 99);
-            $tchStmt = $db->prepare("INSERT INTO teachers (user_id, teacher_code, full_name, qualification, specialty, email, phone, joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_DATE())");
-            $tchStmt->execute([$user_id, $teacher_code, $full_name, $qualification, $specialty, $email, $phone]);
+            $tchStmt = $db->prepare("INSERT INTO teachers (user_id, teacher_code, full_name, qualification, specialty, email, phone, joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $tchStmt->execute([$user_id, $teacher_code, $full_name, $qualification, $specialty, $email, $phone, $joining_date]);
 
             $db->commit();
-            $msg = "Teacher <strong>$full_name</strong> ($teacher_code) added successfully! Login Username: <code>$username</code>";
+            $msg = "Teacher <strong>" . htmlspecialchars($full_name) . "</strong> ($teacher_code) added successfully! Login Username: <code>$username</code>";
         } catch (Exception $e) {
             $db->rollBack();
             $err = "Failed to add teacher: " . $e->getMessage();
@@ -41,120 +56,402 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
     }
 }
 
+// Handle Edit Teacher
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
+    $teacher_id = intval($_POST['teacher_id'] ?? 0);
+    $user_id = intval($_POST['user_id'] ?? 0);
+    $full_name = sanitize($_POST['full_name'] ?? '');
+    $email = sanitize($_POST['email'] ?? '');
+    $phone = sanitize($_POST['phone'] ?? '');
+    $qualification = sanitize($_POST['qualification'] ?? '');
+    $specialty = sanitize($_POST['specialty'] ?? '');
+    $joining_date = sanitize($_POST['joining_date'] ?? date('Y-m-d'));
+    $username = sanitize($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $status = sanitize($_POST['status'] ?? 'active');
+
+    if ($teacher_id <= 0 || empty($full_name) || empty($email) || empty($phone) || empty($username) || empty($specialty)) {
+        $err = "Please fill in all required fields (Name, Email, Phone, Specialty, Username).";
+    } else {
+        try {
+            $db->beginTransaction();
+
+            // Check if username is taken by another user
+            $userChk = $db->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? LIMIT 1");
+            $userChk->execute([$username, $user_id]);
+            if ($userChk->fetch()) {
+                throw new Exception("Username '$username' is already in use by another account.");
+            }
+
+            // Check if email is taken by another user
+            $emailChk = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ? LIMIT 1");
+            $emailChk->execute([$email, $user_id]);
+            if ($emailChk->fetch()) {
+                throw new Exception("Email address '$email' is already in use by another account.");
+            }
+
+            // 1. Update Teacher record
+            $updTch = $db->prepare("
+                UPDATE teachers 
+                SET full_name = ?, qualification = ?, specialty = ?, email = ?, phone = ?, joining_date = ? 
+                WHERE id = ?
+            ");
+            $updTch->execute([$full_name, $qualification, $specialty, $email, $phone, $joining_date, $teacher_id]);
+
+            // 2. Update User record
+            if ($user_id > 0) {
+                if (!empty($password)) {
+                    $pass_hash = password_hash($password, PASSWORD_BCRYPT);
+                    $updUsr = $db->prepare("
+                        UPDATE users 
+                        SET full_name = ?, username = ?, email = ?, phone = ?, status = ?, password = ? 
+                        WHERE id = ?
+                    ");
+                    $updUsr->execute([$full_name, $username, $email, $phone, $status, $pass_hash, $user_id]);
+                } else {
+                    $updUsr = $db->prepare("
+                        UPDATE users 
+                        SET full_name = ?, username = ?, email = ?, phone = ?, status = ? 
+                        WHERE id = ?
+                    ");
+                    $updUsr->execute([$full_name, $username, $email, $phone, $status, $user_id]);
+                }
+            } else {
+                // If teacher had no user record linked yet, create one now
+                $defaultPass = !empty($password) ? $password : 'teacher123';
+                $pass_hash = password_hash($defaultPass, PASSWORD_BCRYPT);
+                $newUsr = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, 'teacher', ?, ?, ?)");
+                $newUsr->execute([$username, $pass_hash, $email, $full_name, $phone, $status]);
+                $newUserId = $db->lastInsertId();
+                $db->prepare("UPDATE teachers SET user_id = ? WHERE id = ?")->execute([$newUserId, $teacher_id]);
+            }
+
+            $db->commit();
+            $msg = "Teacher <strong>" . htmlspecialchars($full_name) . "</strong> updated successfully!";
+        } catch (Exception $e) {
+            $db->rollBack();
+            $err = "Failed to update teacher: " . $e->getMessage();
+        }
+    }
+}
+
 // Handle Delete Teacher
 if (isset($_GET['delete'])) {
     $del_id = intval($_GET['delete']);
-    $db->prepare("DELETE FROM teachers WHERE id = ?")->execute([$del_id]);
-    $msg = "Teacher deleted successfully.";
+    try {
+        $db->beginTransaction();
+        $tch = $db->prepare("SELECT user_id, full_name FROM teachers WHERE id = ?");
+        $tch->execute([$del_id]);
+        $teacherData = $tch->fetch();
+        if ($teacherData) {
+            $db->prepare("DELETE FROM teachers WHERE id = ?")->execute([$del_id]);
+            if (!empty($teacherData['user_id'])) {
+                $db->prepare("DELETE FROM users WHERE id = ? AND role = 'teacher'")->execute([$teacherData['user_id']]);
+            }
+            $db->commit();
+            $msg = "Teacher <strong>" . htmlspecialchars($teacherData['full_name']) . "</strong> removed successfully.";
+        }
+    } catch (Exception $e) {
+        $db->rollBack();
+        $err = "Failed to delete teacher: " . $e->getMessage();
+    }
 }
 
-$teachers = $db->query("SELECT t.*, u.username FROM teachers t LEFT JOIN users u ON t.user_id = u.id ORDER BY t.id ASC")->fetchAll();
+$teachers = $db->query("
+    SELECT t.*, u.username, u.status as user_status 
+    FROM teachers t 
+    LEFT JOIN users u ON t.user_id = u.id 
+    ORDER BY t.id ASC
+")->fetchAll();
 ?>
 
 <?php if ($msg): ?><div class="alert-msg alert-success"><i class="fas fa-check-circle"></i> <?= $msg ?></div><?php endif; ?>
 <?php if ($err): ?><div class="alert-msg alert-danger"><i class="fas fa-exclamation-triangle"></i> <?= $err ?></div><?php endif; ?>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-  <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0;">Teacher Staff Directory</h3>
-  <button class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer;" onclick="openModal('addTeacherModal')">
-    <i class="fas fa-plus"></i> Add New Teacher
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0; font-size: 1.5rem;">
+      <i class="fas fa-chalkboard-teacher text-primary"></i> Teacher Staff Directory
+    </h3>
+    <p style="color: #64748b; margin: 2px 0 0 0; font-size: 0.85rem;">
+      Manage teachers, update contact numbers, qualifications, specialties, and login access.
+    </p>
+  </div>
+  <button class="btn btn-primary" style="background: var(--admin-primary); color: #ffffff; padding: 0.65rem 1.3rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(14, 115, 185, 0.25);" onclick="openModal('addTeacherModal')">
+    <i class="fas fa-plus-circle"></i> Add New Teacher
   </button>
 </div>
 
 <div class="card-box">
-  <div class="card-header">
-    <h3 class="card-title"><i class="fas fa-chalkboard-teacher"></i> Teaching Faculty List</h3>
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3 class="card-title"><i class="fas fa-users"></i> Teaching Faculty List (<?= count($teachers) ?>)</h3>
   </div>
 
   <div class="table-responsive">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Code</th>
+          <th style="width: 100px;">Code</th>
           <th>Full Name</th>
           <th>Specialty</th>
           <th>Qualification</th>
-          <th>Email & Phone</th>
-          <th>Login User</th>
-          <th>Action</th>
+          <th>Email &amp; Phone</th>
+          <th>Username</th>
+          <th style="width: 90px; text-align: center;">Status</th>
+          <th style="width: 150px; text-align: center;">Action</th>
         </tr>
       </thead>
       <tbody>
         <?php if (!empty($teachers)): ?>
           <?php foreach ($teachers as $t): ?>
             <tr>
-              <td><code><?= htmlspecialchars($t['teacher_code']) ?></code></td>
-              <td><strong><?= htmlspecialchars($t['full_name']) ?></strong></td>
-              <td><span class="badge badge-info"><?= htmlspecialchars($t['specialty']) ?></span></td>
-              <td><?= htmlspecialchars($t['qualification']) ?></td>
-              <td><?= htmlspecialchars($t['email']) ?><br><small style="color: var(--admin-text-muted);"><?= htmlspecialchars($t['phone']) ?></small></td>
-              <td><code><?= htmlspecialchars($t['username']) ?></code></td>
+              <td><code style="font-weight: 700; color: #0284c7;"><?= htmlspecialchars($t['teacher_code']) ?></code></td>
               <td>
-                <a href="teachers.php?delete=<?= $t['id'] ?>" class="btn" style="background: #fee2e2; color: #dc2626; padding: 0.25rem 0.6rem; font-size: 0.78rem; border-radius: 6px; text-decoration: none;" onclick="return confirm('Delete teacher?')">Delete</a>
+                <strong style="color: var(--admin-deep-navy); font-size: 0.95rem; display: block;"><?= htmlspecialchars($t['full_name']) ?></strong>
+                <?php if (!empty($t['joining_date'])): ?>
+                  <small style="color: #64748b; font-size: 0.74rem;"><i class="fas fa-calendar-alt"></i> Joined: <?= format_date($t['joining_date']) ?></small>
+                <?php endif; ?>
+              </td>
+              <td><span class="badge badge-info" style="font-weight: 700; font-size: 0.8rem;"><?= htmlspecialchars($t['specialty']) ?></span></td>
+              <td><span style="font-size: 0.88rem; color: #334155;"><?= htmlspecialchars($t['qualification'] ?: 'N/A') ?></span></td>
+              <td>
+                <span style="display: block; font-size: 0.85rem; color: #334155;"><i class="fas fa-envelope" style="color: #64748b; font-size: 0.78rem;"></i> <?= htmlspecialchars($t['email']) ?></span>
+                <span style="display: block; font-size: 0.85rem; color: #0369a1; font-weight: 600;"><i class="fas fa-phone-alt" style="font-size: 0.78rem;"></i> <?= htmlspecialchars($t['phone']) ?></span>
+              </td>
+              <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;"><?= htmlspecialchars($t['username'] ?: 'N/A') ?></code></td>
+              <td style="text-align: center;">
+                <?php if (strtolower($t['user_status'] ?? 'active') === 'active'): ?>
+                  <span class="badge badge-success" style="background: #dcfce7; color: #15803d; font-size: 0.76rem; padding: 3px 8px; font-weight: 700;">Active</span>
+                <?php else: ?>
+                  <span class="badge badge-danger" style="background: #fee2e2; color: #991b1b; font-size: 0.76rem; padding: 3px 8px; font-weight: 700;">Inactive</span>
+                <?php endif; ?>
+              </td>
+              <td style="text-align: center; white-space: nowrap;">
+                <div style="display: inline-flex; gap: 6px; align-items: center;">
+                  <button type="button" class="btn" onclick='openEditTeacherModal(<?= json_encode($t, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) ?>)' style="background: #e0f2fe; color: #0284c7; padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <a href="teachers.php?delete=<?= $t['id'] ?>" class="btn" style="background: #fee2e2; color: #dc2626; padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" onclick="return confirm('Are you sure you want to delete teacher <?= htmlspecialchars(addslashes($t['full_name'])) ?>?')">
+                    <i class="fas fa-trash-alt"></i> Delete
+                  </a>
+                </div>
               </td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr><td colspan="7" style="text-align: center;">No teachers found.</td></tr>
+          <tr><td colspan="8" style="text-align: center; padding: 3rem 1rem; color: #94a3b8;"><i class="fas fa-user-slash" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i> No teachers found.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- Add Teacher Modal -->
-<div id="addTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem;">
-  <div style="background: #ffffff; width: 100%; max-width: 600px; border-radius: 16px; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0;">Add New Teacher</h3>
-      <button style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('addTeacherModal')">&times;</button>
+<!-- ========================================================
+     MODAL 1: ADD NEW TEACHER
+     ======================================================== -->
+<div id="addTeacherModal" class="admin-modal-wrap" style="display: none;">
+  <div class="admin-modal-box" style="max-width: 650px; width: 95%;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.8rem;">
+      <div>
+        <span style="font-size: 0.72rem; font-weight: 800; color: #0284c7; letter-spacing: 0.08em; text-transform: uppercase;">FACULTY ENROLLMENT</span>
+        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.35rem; font-weight: 800;">
+          Add New Teacher
+        </h3>
+      </div>
+      <button type="button" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('addTeacherModal')">&times;</button>
     </div>
 
     <form method="POST">
       <div class="form-group">
-        <label>Full Name *</label>
-        <input type="text" name="full_name" class="form-control" placeholder="e.g. Ustadh Ahmad Rahman" required>
+        <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
+        <input type="text" name="full_name" class="form-control" placeholder="e.g. Ustadh Ahmad Rahman" required style="border-radius: 8px;">
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
         <div class="form-group">
-          <label>Email *</label>
-          <input type="email" name="email" class="form-control" placeholder="teacher@example.com" required>
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Email Address *</label>
+          <input type="email" name="email" class="form-control" placeholder="teacher@example.com" required style="border-radius: 8px;">
         </div>
         <div class="form-group">
-          <label>Phone *</label>
-          <input type="text" name="phone" class="form-control" placeholder="01800000000" required>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div class="form-group">
-          <label>Qualification</label>
-          <input type="text" name="qualification" class="form-control" placeholder="B.Ed, M.A. in Arabic">
-        </div>
-        <div class="form-group">
-          <label>Subject Specialty *</label>
-          <input type="text" name="specialty" class="form-control" placeholder="Arabic & Tajweed" required>
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Phone / Mobile *</label>
+          <input type="text" name="phone" class="form-control" placeholder="01800000000" required style="border-radius: 8px;">
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
         <div class="form-group">
-          <label>Login Username *</label>
-          <input type="text" name="username" class="form-control" placeholder="teacher_username" required>
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Qualification</label>
+          <input type="text" name="qualification" class="form-control" placeholder="e.g. B.Ed, M.A. in Arabic" style="border-radius: 8px;">
         </div>
         <div class="form-group">
-          <label>Login Password *</label>
-          <input type="password" name="password" class="form-control" value="teacher123" required>
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Subject Specialty *</label>
+          <input type="text" name="specialty" class="form-control" placeholder="Arabic &amp; Tajweed" required style="border-radius: 8px;">
         </div>
       </div>
 
-      <div style="text-align: right; margin-top: 1.5rem;">
-        <button type="button" class="btn" style="background: #e2e8f0; color: var(--admin-text); padding: 0.6rem 1.2rem; border-radius: 8px; border: none; margin-right: 0.5rem; cursor: pointer;" onclick="closeModal('addTeacherModal')">Cancel</button>
-        <button type="submit" name="add_teacher" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.6rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700;">Save Teacher</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Joining Date</label>
+          <input type="date" name="joining_date" class="form-control" value="<?= date('Y-m-d') ?>" style="border-radius: 8px;">
+        </div>
+        <div></div>
+      </div>
+
+      <div style="margin-top: 1.2rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
+        <label style="font-weight: 800; color: var(--admin-deep-navy); font-size: 0.88rem; display: block; margin-bottom: 0.75rem;">
+          <i class="fas fa-key text-primary"></i> Login Credentials
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Login Username *</label>
+            <input type="text" name="username" class="form-control" placeholder="teacher_username" required style="border-radius: 8px; font-weight: 600;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Login Password *</label>
+            <input type="password" name="password" class="form-control" value="teacher123" required style="border-radius: 8px;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; border-top: 1.5px solid #e2e8f0; padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addTeacherModal')" style="padding: 0.6rem 1.4rem; border-radius: 8px;">Cancel</button>
+        <button type="submit" name="add_teacher" class="btn btn-primary" style="background: var(--admin-primary); color: #ffffff; padding: 0.6rem 1.6rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-check-circle"></i> Save Teacher
+        </button>
       </div>
     </form>
   </div>
 </div>
+
+<!-- ========================================================
+     MODAL 2: EDIT TEACHER DETAILS
+     ======================================================== -->
+<div id="editTeacherModal" class="admin-modal-wrap" style="display: none;">
+  <div class="admin-modal-box" style="max-width: 650px; width: 95%;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 0.8rem;">
+      <div>
+        <span style="font-size: 0.72rem; font-weight: 800; color: #0284c7; letter-spacing: 0.08em; text-transform: uppercase;">TEACHER PROFILE</span>
+        <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-deep-navy); margin: 2px 0 0 0; font-size: 1.35rem; font-weight: 800;">
+          Edit Teacher Information
+        </h3>
+      </div>
+      <button type="button" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--admin-text-muted);" onclick="closeModal('editTeacherModal')">&times;</button>
+    </div>
+
+    <form method="POST">
+      <input type="hidden" name="edit_teacher" value="1">
+      <input type="hidden" name="teacher_id" id="editTeacherId">
+      <input type="hidden" name="user_id" id="editUserId">
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
+          <input type="text" name="full_name" id="editFullName" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Teacher Code</label>
+          <input type="text" id="editTeacherCode" class="form-control" readonly style="background: #f1f5f9; color: #64748b; font-weight: 700; border-radius: 8px;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Email Address *</label>
+          <input type="email" name="email" id="editEmail" class="form-control" required style="border-radius: 8px;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Phone / Mobile *</label>
+          <input type="text" name="phone" id="editPhone" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Qualification</label>
+          <input type="text" name="qualification" id="editQualification" class="form-control" placeholder="e.g. B.Ed, M.A. in Arabic" style="border-radius: 8px;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Subject Specialty *</label>
+          <input type="text" name="specialty" id="editSpecialty" class="form-control" required style="border-radius: 8px;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Joining Date</label>
+          <input type="date" name="joining_date" id="editJoiningDate" class="form-control" style="border-radius: 8px;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Account Status</label>
+          <select name="status" id="editStatus" class="form-control" style="border-radius: 8px; font-weight: 600;">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Login Credentials Section -->
+      <div style="margin-top: 1.2rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
+        <label style="font-weight: 800; color: var(--admin-deep-navy); font-size: 0.88rem; display: block; margin-bottom: 0.75rem;">
+          <i class="fas fa-key text-primary"></i> Login Credentials
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Username *</label>
+            <input type="text" name="username" id="editUsername" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">New Password</label>
+            <input type="password" name="password" id="editPassword" class="form-control" placeholder="Leave blank to keep unchanged" style="border-radius: 8px;">
+            <small style="color: #64748b; font-size: 0.74rem;">Leave blank to keep existing password.</small>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; border-top: 1.5px solid #e2e8f0; padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editTeacherModal')" style="padding: 0.6rem 1.4rem; border-radius: 8px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="background: #2563eb; color: #ffffff; padding: 0.6rem 1.6rem; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) {
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) {
+    m.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+function openEditTeacherModal(tch) {
+  if (!tch) return;
+  document.getElementById('editTeacherId').value = tch.id || '';
+  document.getElementById('editUserId').value = tch.user_id || '';
+  document.getElementById('editFullName').value = tch.full_name || '';
+  document.getElementById('editTeacherCode').value = tch.teacher_code || '';
+  document.getElementById('editEmail').value = tch.email || '';
+  document.getElementById('editPhone').value = tch.phone || '';
+  document.getElementById('editQualification').value = tch.qualification || '';
+  document.getElementById('editSpecialty').value = tch.specialty || '';
+  document.getElementById('editJoiningDate').value = tch.joining_date || '';
+  document.getElementById('editUsername').value = tch.username || '';
+  document.getElementById('editPassword').value = '';
+  document.getElementById('editStatus').value = (tch.user_status || 'active').toLowerCase();
+
+  openModal('editTeacherModal');
+}
+</script>
 
 <?php require_once __DIR__ . '/layout_footer.php'; ?>
