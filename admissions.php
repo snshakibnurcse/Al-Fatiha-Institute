@@ -139,6 +139,7 @@ $classesList = $classesStmt->fetchAll();
 
 // Target class pre-selection from URL
 $selected_class_id = isset($_GET['class']) ? intval($_GET['class']) : 1;
+$admissionYear = (int)date('Y') + 1;
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -155,7 +156,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container" style="position: relative; z-index: 2;">
     <div class="smart-hero-badge">
       <i class="fas fa-certificate text-gold"></i>
-      <span>ADMISSION SESSION 2027 &ndash; 2028</span>
+      <span>ADMISSION SESSION <?= $admissionYear ?> &ndash; <?= $admissionYear + 1 ?></span>
       <span class="badge-dot"></span>
       <span class="badge-status">OPEN</span>
     </div>
@@ -240,7 +241,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div class="portal-academic-card">
             <span class="acad-label">ACADEMIC YEAR</span>
-            <strong class="acad-year">2027 &ndash; 2028</strong>
+            <strong class="acad-year"><?= $admissionYear ?> &ndash; <?= $admissionYear + 1 ?></strong>
             <span class="acad-mode"><i class="fas fa-check-circle"></i> Digital Verified</span>
           </div>
         </div>
@@ -377,9 +378,8 @@ include __DIR__ . '/includes/header.php';
                 Student Full Name <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-user-graduate shell-icon"></i>
                 <input type="text" name="child_name" id="child_name" class="field-input uppercase-field" 
-                       placeholder="Student Full Name" required 
+                       required 
                        value="<?= htmlspecialchars($_POST['child_name'] ?? '') ?>" autocomplete="name">
               </div>
             </div>
@@ -390,11 +390,10 @@ include __DIR__ . '/includes/header.php';
                 Class / Grade <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-layer-group shell-icon"></i>
                 <select name="target_class_id" id="target_class_id" class="field-select highlight-field" required>
                   <?php foreach ($classesList as $c): ?>
                     <option value="<?= $c['id'] ?>" <?= ($selected_class_id == $c['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($c['class_name']) ?> (<?= htmlspecialchars($c['age_group']) ?>) &bull; <?= format_currency($c['tuition_fee']) ?>/mo
+                      <?= htmlspecialchars($c['class_name']) ?>
                     </option>
                   <?php endforeach; ?>
                 </select>
@@ -410,9 +409,8 @@ include __DIR__ . '/includes/header.php';
                 Birth Reg. / Passport No. <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-id-card shell-icon"></i>
                 <input type="text" name="birth_reg_or_passport" id="birth_reg_or_passport" class="field-input" 
-                       placeholder="17-Digit Birth Reg. No." required 
+                       required 
                        value="<?= htmlspecialchars($_POST['birth_reg_or_passport'] ?? '') ?>" maxlength="30">
               </div>
             </div>
@@ -423,7 +421,6 @@ include __DIR__ . '/includes/header.php';
                 Date of Birth <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-calendar-day shell-icon"></i>
                 <input type="date" name="dob" id="dob" class="field-input" required 
                        max="<?= date('Y-m-d') ?>" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>">
               </div>
@@ -432,12 +429,11 @@ include __DIR__ . '/includes/header.php';
             <!-- Age (as of 1st January) -->
             <div class="form-group">
               <label for="age_jan_1" class="field-label">
-                Age (as of 1st Jan <?= date('Y') ?>)
+                Age (as of 1st Jan <?= $admissionYear ?>)
               </label>
               <div class="input-shell readonly-shell">
-                <i class="fas fa-calculator shell-icon text-gold"></i>
                 <input type="text" name="age_jan_1" id="age_jan_1" class="field-input readonly-field" 
-                       placeholder="Auto-calculated" readonly 
+                       readonly 
                        value="<?= htmlspecialchars($_POST['age_jan_1'] ?? '') ?>">
               </div>
               <span id="ageCalculatorNote" style="display:none;"></span>
@@ -452,9 +448,8 @@ include __DIR__ . '/includes/header.php';
                 Blood Group <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-tint shell-icon text-danger"></i>
                 <select name="blood_group" id="blood_group" class="field-select" required>
-                  <option value="">-- Select --</option>
+                  <option value="">Select</option>
                   <?php foreach (['A+','A-','B+','B-','O+','O-','AB+','AB-','Unknown'] as $bg): ?>
                     <option value="<?= $bg ?>" <?= (($_POST['blood_group'] ?? '') === $bg) ? 'selected' : '' ?>><?= $bg ?></option>
                   <?php endforeach; ?>
@@ -468,7 +463,6 @@ include __DIR__ . '/includes/header.php';
                 Nationality <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-flag shell-icon"></i>
                 <input type="text" name="nationality" id="nationality" class="field-input" 
                        value="<?= htmlspecialchars($_POST['nationality'] ?? 'Bangladeshi') ?>" required>
               </div>
@@ -480,7 +474,6 @@ include __DIR__ . '/includes/header.php';
                 Religion <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-mosque shell-icon"></i>
                 <select name="religion" id="religion" class="field-select" required>
                   <?php foreach (['Islam','Christianity','Hinduism','Buddhism','Other'] as $rel): ?>
                     <option value="<?= $rel ?>" <?= (($_POST['religion'] ?? 'Islam') === $rel) ? 'selected' : '' ?>><?= $rel ?></option>
@@ -497,12 +490,10 @@ include __DIR__ . '/includes/header.php';
               <div class="gender-segmented-cards">
                 <label class="gender-card <?= (($_POST['gender'] ?? 'Male') === 'Male') ? 'selected' : '' ?>">
                   <input type="radio" name="gender" value="Male" <?= (($_POST['gender'] ?? 'Male') === 'Male') ? 'checked' : '' ?> required>
-                  <span class="gender-icon"><i class="fas fa-mars"></i></span>
                   <span class="gender-label">Male</span>
                 </label>
                 <label class="gender-card <?= (($_POST['gender'] ?? '') === 'Female') ? 'selected' : '' ?>">
                   <input type="radio" name="gender" value="Female" <?= (($_POST['gender'] ?? '') === 'Female') ? 'checked' : '' ?>>
-                  <span class="gender-icon"><i class="fas fa-venus"></i></span>
                   <span class="gender-label">Female</span>
                 </label>
               </div>
@@ -515,9 +506,7 @@ include __DIR__ . '/includes/header.php';
               Previous School (if any)
             </label>
             <div class="input-shell">
-              <i class="fas fa-school shell-icon"></i>
               <input type="text" name="previous_school" id="previous_school" class="field-input" 
-                     placeholder="Previous School Name" 
                      value="<?= htmlspecialchars($_POST['previous_school'] ?? '') ?>">
             </div>
           </div>
@@ -528,9 +517,8 @@ include __DIR__ . '/includes/header.php';
               Present Residential Address <span class="req">*</span>
             </label>
             <div class="input-shell textarea-shell">
-              <i class="fas fa-map-marker-alt shell-icon"></i>
               <textarea name="address" id="present_address" class="field-textarea" rows="2" 
-                        placeholder="House / Road, Area, District" required><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
+                        required><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
             </div>
           </div>
 
@@ -543,14 +531,13 @@ include __DIR__ . '/includes/header.php';
               <label class="copy-address-toggle">
                 <input type="checkbox" id="sameAddressCheck">
                 <span class="toggle-pill-custom">
-                  <i class="fas fa-copy"></i> Same as Present Address
+                  Same as Present Address
                 </span>
               </label>
             </div>
             <div class="input-shell textarea-shell" style="margin-top: 6px;">
-              <i class="fas fa-home shell-icon"></i>
               <textarea name="permanent_address" id="permanent_address" class="field-textarea" rows="2" 
-                        placeholder="Village, Post Office, District" required><?= htmlspecialchars($_POST['permanent_address'] ?? '') ?></textarea>
+                        required><?= htmlspecialchars($_POST['permanent_address'] ?? '') ?></textarea>
             </div>
           </div>
 
@@ -596,9 +583,8 @@ include __DIR__ . '/includes/header.php';
                   Father's Full Name <span class="req">*</span>
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-user shell-icon"></i>
                   <input type="text" name="father_name" id="father_name" class="field-input" 
-                         placeholder="Father's Full Name" required 
+                         required 
                          value="<?= htmlspecialchars($_POST['father_name'] ?? '') ?>" autocomplete="name">
                 </div>
               </div>
@@ -609,9 +595,7 @@ include __DIR__ . '/includes/header.php';
                   Father's Occupation
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-briefcase shell-icon"></i>
                   <input type="text" name="father_occupation" id="father_occupation" class="field-input" 
-                         placeholder="Occupation" 
                          value="<?= htmlspecialchars($_POST['father_occupation'] ?? '') ?>">
                 </div>
               </div>
@@ -624,9 +608,7 @@ include __DIR__ . '/includes/header.php';
                   Organization / Workplace
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-building shell-icon"></i>
                   <input type="text" name="father_organization" id="father_organization" class="field-input" 
-                         placeholder="Organization Name" 
                          value="<?= htmlspecialchars($_POST['father_organization'] ?? '') ?>">
                 </div>
               </div>
@@ -637,9 +619,7 @@ include __DIR__ . '/includes/header.php';
                   Workplace Location
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-map-marked-alt shell-icon"></i>
                   <input type="text" name="father_location" id="father_location" class="field-input" 
-                         placeholder="Workplace Location" 
                          value="<?= htmlspecialchars($_POST['father_location'] ?? '') ?>">
                 </div>
               </div>
@@ -652,9 +632,8 @@ include __DIR__ . '/includes/header.php';
                   Father's Mobile Number <span class="req">*</span>
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-phone-alt shell-icon"></i>
                   <input type="tel" name="phone" id="father_phone" class="field-input highlight-field" 
-                         placeholder="01XXXXXXXXX" required 
+                         required 
                          value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" autocomplete="tel">
                 </div>
               </div>
@@ -665,9 +644,7 @@ include __DIR__ . '/includes/header.php';
                   Father's NID / Passport Number
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-id-badge shell-icon"></i>
                   <input type="text" name="father_nid_passport" id="father_nid_passport" class="field-input" 
-                         placeholder="NID or Passport Number" 
                          value="<?= htmlspecialchars($_POST['father_nid_passport'] ?? '') ?>">
                 </div>
               </div>
@@ -679,9 +656,7 @@ include __DIR__ . '/includes/header.php';
                 Father's Present Address
               </label>
               <div class="input-shell">
-                <i class="fas fa-location-arrow shell-icon"></i>
                 <input type="text" name="father_present_address" id="father_present_address" class="field-input" 
-                       placeholder="Present Address" 
                        value="<?= htmlspecialchars($_POST['father_present_address'] ?? '') ?>">
               </div>
             </div>
@@ -697,7 +672,7 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </div>
               <button type="button" class="btn-quick-chip" id="copyStudentToMother">
-                <i class="fas fa-map-pin"></i> Use Student's Address
+                Use Student's Address
               </button>
             </div>
 
@@ -708,9 +683,8 @@ include __DIR__ . '/includes/header.php';
                   Mother's Full Name <span class="req">*</span>
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-user shell-icon"></i>
                   <input type="text" name="mother_name" id="mother_name" class="field-input" 
-                         placeholder="Mother's Full Name" required 
+                         required 
                          value="<?= htmlspecialchars($_POST['mother_name'] ?? '') ?>" autocomplete="name">
                 </div>
               </div>
@@ -721,9 +695,7 @@ include __DIR__ . '/includes/header.php';
                   Mother's Occupation
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-briefcase shell-icon"></i>
                   <input type="text" name="mother_occupation" id="mother_occupation" class="field-input" 
-                         placeholder="Occupation" 
                          value="<?= htmlspecialchars($_POST['mother_occupation'] ?? '') ?>">
                 </div>
               </div>
@@ -736,9 +708,7 @@ include __DIR__ . '/includes/header.php';
                   Organization / Workplace
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-building shell-icon"></i>
                   <input type="text" name="mother_organization" id="mother_organization" class="field-input" 
-                         placeholder="Organization Name" 
                          value="<?= htmlspecialchars($_POST['mother_organization'] ?? '') ?>">
                 </div>
               </div>
@@ -749,9 +719,7 @@ include __DIR__ . '/includes/header.php';
                   Workplace Location
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-map-marked-alt shell-icon"></i>
                   <input type="text" name="mother_location" id="mother_location" class="field-input" 
-                         placeholder="Workplace Location" 
                          value="<?= htmlspecialchars($_POST['mother_location'] ?? '') ?>">
                 </div>
               </div>
@@ -764,9 +732,7 @@ include __DIR__ . '/includes/header.php';
                   Mother's Phone Number
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-phone-alt shell-icon"></i>
                   <input type="tel" name="mother_phone" id="mother_phone" class="field-input" 
-                         placeholder="01XXXXXXXXX" 
                          value="<?= htmlspecialchars($_POST['mother_phone'] ?? '') ?>">
                 </div>
               </div>
@@ -777,9 +743,7 @@ include __DIR__ . '/includes/header.php';
                   Mother's NID / Passport Number
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-id-badge shell-icon"></i>
                   <input type="text" name="mother_nid_passport" id="mother_nid_passport" class="field-input" 
-                         placeholder="NID or Passport Number" 
                          value="<?= htmlspecialchars($_POST['mother_nid_passport'] ?? '') ?>">
                 </div>
               </div>
@@ -791,9 +755,7 @@ include __DIR__ . '/includes/header.php';
                 Mother's Present Address
               </label>
               <div class="input-shell">
-                <i class="fas fa-location-arrow shell-icon"></i>
                 <input type="text" name="mother_present_address" id="mother_present_address" class="field-input" 
-                       placeholder="Present Address" 
                        value="<?= htmlspecialchars($_POST['mother_present_address'] ?? '') ?>">
               </div>
             </div>
@@ -809,9 +771,7 @@ include __DIR__ . '/includes/header.php';
                 <strong>Notification Email</strong>
               </label>
               <div class="input-shell">
-                <i class="fas fa-at shell-icon"></i>
                 <input type="email" name="email" id="parent_email" class="field-input" 
-                       placeholder="example@mail.com" 
                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" autocomplete="email">
               </div>
             </div>
@@ -835,9 +795,7 @@ include __DIR__ . '/includes/header.php';
                     Guardian Name
                   </label>
                   <div class="input-shell">
-                    <i class="fas fa-user-shield shell-icon"></i>
                     <input type="text" name="other_guardian_name" id="other_guardian_name" class="field-input" 
-                           placeholder="Guardian's Full Name" 
                            value="<?= htmlspecialchars($_POST['other_guardian_name'] ?? '') ?>">
                   </div>
                 </div>
@@ -848,9 +806,7 @@ include __DIR__ . '/includes/header.php';
                     Relationship to Student
                   </label>
                   <div class="input-shell">
-                    <i class="fas fa-link shell-icon"></i>
                     <input type="text" name="other_guardian_relationship" id="other_guardian_relationship" class="field-input" 
-                           placeholder="Relationship (e.g. Uncle, Grandparent)" 
                            value="<?= htmlspecialchars($_POST['other_guardian_relationship'] ?? '') ?>">
                   </div>
                 </div>
@@ -863,9 +819,7 @@ include __DIR__ . '/includes/header.php';
                     Guardian Phone Number
                   </label>
                   <div class="input-shell">
-                    <i class="fas fa-phone-alt shell-icon"></i>
                     <input type="tel" name="other_guardian_phone" id="other_guardian_phone" class="field-input" 
-                           placeholder="01XXXXXXXXX" 
                            value="<?= htmlspecialchars($_POST['other_guardian_phone'] ?? '') ?>">
                   </div>
                 </div>
@@ -876,9 +830,7 @@ include __DIR__ . '/includes/header.php';
                     Guardian Email Address
                   </label>
                   <div class="input-shell">
-                    <i class="fas fa-envelope shell-icon"></i>
                     <input type="email" name="other_guardian_email" id="other_guardian_email" class="field-input" 
-                           placeholder="guardian@mail.com" 
                            value="<?= htmlspecialchars($_POST['other_guardian_email'] ?? '') ?>">
                   </div>
                 </div>
@@ -890,9 +842,7 @@ include __DIR__ . '/includes/header.php';
                   Guardian Present Address
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-map-marker-alt shell-icon"></i>
                   <input type="text" name="other_guardian_present_address" id="other_guardian_present_address" class="field-input" 
-                         placeholder="Present Address" 
                          value="<?= htmlspecialchars($_POST['other_guardian_present_address'] ?? '') ?>">
                 </div>
               </div>
@@ -903,9 +853,7 @@ include __DIR__ . '/includes/header.php';
                   Guardian Permanent Address
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-home shell-icon"></i>
                   <input type="text" name="other_guardian_permanent_address" id="other_guardian_permanent_address" class="field-input" 
-                         placeholder="Permanent Address" 
                          value="<?= htmlspecialchars($_POST['other_guardian_permanent_address'] ?? '') ?>">
                 </div>
               </div>
@@ -961,9 +909,8 @@ include __DIR__ . '/includes/header.php';
                 Contact Person Name <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-user-shield shell-icon"></i>
                 <input type="text" name="emergency_name" id="emergency_name" class="field-input" 
-                       placeholder="Full Name" required 
+                       required 
                        value="<?= htmlspecialchars($_POST['emergency_name'] ?? '') ?>">
               </div>
             </div>
@@ -974,9 +921,8 @@ include __DIR__ . '/includes/header.php';
                 Relationship <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-users shell-icon"></i>
                 <input type="text" name="emergency_relationship" id="emergency_relationship" class="field-input" 
-                       placeholder="Relationship (e.g. Uncle)" required 
+                       required 
                        value="<?= htmlspecialchars($_POST['emergency_relationship'] ?? '') ?>">
               </div>
             </div>
@@ -987,9 +933,8 @@ include __DIR__ . '/includes/header.php';
                 Emergency Phone Number <span class="req">*</span>
               </label>
               <div class="input-shell">
-                <i class="fas fa-phone-volume shell-icon text-danger"></i>
                 <input type="tel" name="emergency_phone" id="emergency_phone" class="field-input highlight-field" 
-                       placeholder="01XXXXXXXXX" required 
+                       required 
                        value="<?= htmlspecialchars($_POST['emergency_phone'] ?? '') ?>">
               </div>
             </div>
@@ -1055,9 +1000,7 @@ include __DIR__ . '/includes/header.php';
                   If yes, please list allergies:
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-notes-medical shell-icon"></i>
                   <input type="text" name="allergies_list" id="allergies_list" class="field-input" 
-                         placeholder="List allergies (e.g. Peanuts, Dust)" 
                          value="<?= htmlspecialchars($_POST['allergies_list'] ?? '') ?>">
                 </div>
               </div>
@@ -1069,9 +1012,7 @@ include __DIR__ . '/includes/header.php';
                 Regular medication (if any):
               </label>
               <div class="input-shell">
-                <i class="fas fa-pills shell-icon"></i>
                 <input type="text" name="regular_medications" id="regular_medications" class="field-input" 
-                       placeholder="Regular medication name (optional)" 
                        value="<?= htmlspecialchars($_POST['regular_medications'] ?? '') ?>">
               </div>
             </div>
@@ -1086,12 +1027,12 @@ include __DIR__ . '/includes/header.php';
                   <label class="toggle-choice-pill <?= (($_POST['has_medical_conditions'] ?? 'No') === 'No') ? 'selected' : '' ?>">
                     <input type="radio" name="has_medical_conditions" value="No" <?= (($_POST['has_medical_conditions'] ?? 'No') === 'No') ? 'checked' : '' ?>>
                     <span class="pill-dot"></span>
-                    <span><i class="fas fa-check-circle"></i> No Condition</span>
+                    <span>No Condition</span>
                   </label>
                   <label class="toggle-choice-pill <?= (($_POST['has_medical_conditions'] ?? '') === 'Yes') ? 'selected' : '' ?>">
                     <input type="radio" name="has_medical_conditions" value="Yes" <?= (($_POST['has_medical_conditions'] ?? '') === 'Yes') ? 'checked' : '' ?>>
                     <span class="pill-dot warning"></span>
-                    <span><i class="fas fa-heart-pulse"></i> Yes, Has Condition</span>
+                    <span>Yes, Has Condition</span>
                   </label>
                 </div>
               </div>
@@ -1102,9 +1043,7 @@ include __DIR__ . '/includes/header.php';
                   If yes, please specify condition:
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-file-medical-alt shell-icon"></i>
                   <input type="text" name="medical_conditions_details" id="medical_conditions_details" class="field-input" 
-                         placeholder="Medical condition details (e.g. Asthma)" 
                          value="<?= htmlspecialchars($_POST['medical_conditions_details'] ?? '') ?>">
                 </div>
               </div>
@@ -1116,9 +1055,7 @@ include __DIR__ . '/includes/header.php';
                 Preferred Hospital (in emergency):
               </label>
               <div class="input-shell">
-                <i class="fas fa-hospital-alt shell-icon text-danger"></i>
                 <input type="text" name="preferred_hospital" id="preferred_hospital" class="field-input" 
-                       placeholder="Preferred Hospital Name (optional)" 
                        value="<?= htmlspecialchars($_POST['preferred_hospital'] ?? '') ?>">
               </div>
             </div>
@@ -1178,9 +1115,7 @@ include __DIR__ . '/includes/header.php';
                   Pick-up Point (Morning)
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-map-pin shell-icon"></i>
                   <input type="text" name="pickup_point" id="pickup_point" class="field-input" 
-                         placeholder="Morning pick-up point" 
                          value="<?= htmlspecialchars($_POST['pickup_point'] ?? '') ?>">
                 </div>
               </div>
@@ -1191,9 +1126,7 @@ include __DIR__ . '/includes/header.php';
                   Drop-off Point (Afternoon)
                 </label>
                 <div class="input-shell">
-                  <i class="fas fa-map-pin shell-icon"></i>
                   <input type="text" name="dropoff_point" id="dropoff_point" class="field-input" 
-                         placeholder="Afternoon drop-off point" 
                          value="<?= htmlspecialchars($_POST['dropoff_point'] ?? '') ?>">
                 </div>
               </div>
@@ -1323,9 +1256,7 @@ include __DIR__ . '/includes/header.php';
                 Other Attached Documents (if any):
               </label>
               <div class="input-shell">
-                <i class="fas fa-paperclip shell-icon"></i>
                 <input type="text" name="documents_other" id="documents_other" class="field-input" 
-                       placeholder="Other documents (optional)" 
                        value="<?= htmlspecialchars($_POST['documents_other'] ?? '') ?>">
               </div>
             </div>
@@ -1979,17 +1910,16 @@ details[open] .summary-arrow {
 }
 .field-input, .field-select, .field-textarea {
   width: 100%;
-  padding: 12px 14px 12px 42px;
+  padding: 11px 14px;
   border: 1.5px solid var(--portal-border);
   border-radius: 10px;
   font-size: 0.92rem;
   color: var(--portal-text);
-  background: #fcfdfe;
-  transition: all 0.2s ease;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   font-family: inherit;
 }
 .field-textarea {
-  padding-left: 42px;
   resize: vertical;
 }
 .textarea-shell .shell-icon {
@@ -2992,8 +2922,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function calculateJan1Age() {
     if (!dobInput.value) return;
     const dob = new Date(dobInput.value);
-    const currentYear = new Date().getFullYear();
-    const jan1 = new Date(currentYear, 0, 1);
+    const targetYear = <?= $admissionYear ?>;
+    const jan1 = new Date(targetYear, 0, 1);
 
     let years = jan1.getFullYear() - dob.getFullYear();
     let months = jan1.getMonth() - dob.getMonth();
@@ -3011,7 +2941,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     ageInput.value = calculatedText;
     if (ageNote) {
-      ageNote.innerHTML = `<i class="fas fa-check-circle"></i> Computed for Jan 1, ${currentYear}: <strong>${calculatedText}</strong>`;
+      ageNote.innerHTML = `<i class="fas fa-check-circle"></i> Computed for Jan 1, ${targetYear}: <strong>${calculatedText}</strong>`;
     }
   }
 
