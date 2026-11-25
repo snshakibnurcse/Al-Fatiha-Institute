@@ -125,7 +125,7 @@ $applications = $db->query("SELECT a.*, c.class_name FROM admissions a JOIN clas
 <div class="card-box">
   <div class="card-header">
     <h3 class="card-title"><i class="fas fa-file-signature"></i> Online Admission Applications (44 Questions)</h3>
-    <input type="text" id="tableSearch" placeholder="Search applications..." class="form-control" style="width: 250px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+    <input type="text" id="tableSearch" placeholder="Search" class="form-control" style="width: 250px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
   </div>
 
   <div class="table-responsive">

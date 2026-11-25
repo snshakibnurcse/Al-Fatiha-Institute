@@ -181,7 +181,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
       
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Expense Title / Purpose *</label>
-        <input type="text" name="title" class="form-control" placeholder="e.g., October Electricity Bill, Phonics Books Purchase" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="text" name="title" class="form-control" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
       <div class="form-group">
@@ -196,7 +196,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
 
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Amount (৳) *</label>
-        <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="number" step="0.01" name="amount" class="form-control" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
       <div class="form-group">
@@ -216,7 +216,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
 
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Bill / Memo / Voucher Reference No.</label>
-        <input type="text" name="reference_no" class="form-control" placeholder="e.g., MEMO-9012, BILL-402" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="text" name="reference_no" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
       <div class="form-group" style="grid-column: span 2;">
@@ -231,7 +231,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
 
     <div class="form-group" style="margin-top: 1.25rem;">
       <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Additional Notes / Description</label>
-      <textarea name="description" class="form-control" rows="2" placeholder="Enter details about this expense item..." style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;"></textarea>
+      <textarea name="description" class="form-control" rows="2" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;"></textarea>
     </div>
 
     <div style="margin-top: 1.5rem; text-align: right;">
@@ -248,7 +248,7 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
   <form method="GET" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
     <div style="flex: 1; min-width: 200px;">
       <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Search Keyword</label>
-      <input type="text" name="search" class="form-control" placeholder="Search title, voucher no..." value="<?= htmlspecialchars($search) ?>" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+      <input type="text" name="search" class="form-control" placeholder="Search" value="<?= htmlspecialchars($search) ?>" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
     </div>
 
     <div style="min-width: 180px;">

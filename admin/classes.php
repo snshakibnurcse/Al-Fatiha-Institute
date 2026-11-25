@@ -236,22 +236,22 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1.2rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Class Name *</label>
-          <input type="text" name="class_name" class="form-control" placeholder="e.g. Class Three, Class Four, Class Five, Hifz A" required style="font-weight: 700;">
+          <input type="text" name="class_name" class="form-control" required style="font-weight: 700;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Section</label>
-          <input type="text" name="section" class="form-control" value="A" placeholder="A, B, C">
+          <input type="text" name="section" class="form-control" value="A">
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Target Age Group *</label>
-          <input type="text" name="age_group" class="form-control" placeholder="e.g. 7 - 8 Years" required>
+          <input type="text" name="age_group" class="form-control" required>
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Room Number</label>
-          <input type="text" name="room_no" class="form-control" placeholder="e.g. Room 204">
+          <input type="text" name="room_no" class="form-control">
         </div>
       </div>
 
@@ -381,7 +381,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
 
       <div class="form-group" style="margin-top: 1rem;">
         <label style="font-weight: 700;">Classroom Room No</label>
-        <input type="text" name="room_no" id="modalRoomNo" class="form-control" required placeholder="e.g. 101, 102">
+        <input type="text" name="room_no" id="modalRoomNo" class="form-control" required>
       </div>
 
       <div style="text-align: right; margin-top: 1.8rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">

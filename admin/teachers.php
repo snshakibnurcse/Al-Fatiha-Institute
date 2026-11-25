@@ -264,28 +264,28 @@ $teachers = $db->query("
     <form method="POST">
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
-        <input type="text" name="full_name" class="form-control" placeholder="e.g. Ustadh Ahmad Rahman" required style="border-radius: 8px;">
+        <input type="text" name="full_name" class="form-control" required style="border-radius: 8px;">
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Email Address *</label>
-          <input type="email" name="email" class="form-control" placeholder="teacher@example.com" required style="border-radius: 8px;">
+          <input type="email" name="email" class="form-control" required style="border-radius: 8px;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Phone / Mobile *</label>
-          <input type="text" name="phone" class="form-control" placeholder="01800000000" required style="border-radius: 8px;">
+          <input type="text" name="phone" class="form-control" required style="border-radius: 8px;">
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Qualification</label>
-          <input type="text" name="qualification" class="form-control" placeholder="e.g. B.Ed, M.A. in Arabic" style="border-radius: 8px;">
+          <input type="text" name="qualification" class="form-control" style="border-radius: 8px;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Subject Specialty *</label>
-          <input type="text" name="specialty" class="form-control" placeholder="Arabic &amp; Tajweed" required style="border-radius: 8px;">
+          <input type="text" name="specialty" class="form-control" required style="border-radius: 8px;">
         </div>
       </div>
 
@@ -304,7 +304,7 @@ $teachers = $db->query("
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-group">
             <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Login Username *</label>
-            <input type="text" name="username" class="form-control" placeholder="teacher_username" required style="border-radius: 8px; font-weight: 600;">
+            <input type="text" name="username" class="form-control" required style="border-radius: 8px; font-weight: 600;">
           </div>
           <div class="form-group">
             <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Login Password *</label>
@@ -368,7 +368,7 @@ $teachers = $db->query("
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Qualification</label>
-          <input type="text" name="qualification" id="editQualification" class="form-control" placeholder="e.g. B.Ed, M.A. in Arabic" style="border-radius: 8px;">
+          <input type="text" name="qualification" id="editQualification" class="form-control" style="border-radius: 8px;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Subject Specialty *</label>
@@ -402,7 +402,7 @@ $teachers = $db->query("
           </div>
           <div class="form-group">
             <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">New Password</label>
-            <input type="password" name="password" id="editPassword" class="form-control" placeholder="Leave blank to keep unchanged" style="border-radius: 8px;">
+            <input type="password" name="password" id="editPassword" class="form-control" style="border-radius: 8px;">
             <small style="color: #64748b; font-size: 0.74rem;">Leave blank to keep existing password.</small>
           </div>
         </div>

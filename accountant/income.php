@@ -139,7 +139,7 @@ $totalFilteredIncome = array_sum(array_column($incomes, 'amount'));
       
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Income Title / Source *</label>
-        <input type="text" name="title" class="form-control" placeholder="e.g., Monthly Tuition Fee Collection, Islamic Trust Grant" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="text" name="title" class="form-control" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
       <div class="form-group">
@@ -154,7 +154,7 @@ $totalFilteredIncome = array_sum(array_column($incomes, 'amount'));
 
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Amount (৳) *</label>
-        <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="number" step="0.01" name="amount" class="form-control" required style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
       <div class="form-group">
@@ -174,14 +174,14 @@ $totalFilteredIncome = array_sum(array_column($incomes, 'amount'));
 
       <div class="form-group">
         <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Reference / Deposit Receipt No.</label>
-        <input type="text" name="reference_no" class="form-control" placeholder="e.g., REF-OCT-102, TRF-889" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
+        <input type="text" name="reference_no" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;">
       </div>
 
     </div>
 
     <div class="form-group" style="margin-top: 1.25rem;">
       <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Description / Remarks</label>
-      <textarea name="description" class="form-control" rows="2" placeholder="Notes about this income entry..." style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;"></textarea>
+      <textarea name="description" class="form-control" rows="2" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1.5px solid #cbd5e1;"></textarea>
     </div>
 
     <div style="margin-top: 1.5rem; text-align: right;">
@@ -198,7 +198,7 @@ $totalFilteredIncome = array_sum(array_column($incomes, 'amount'));
   <form method="GET" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
     <div style="flex: 1; min-width: 200px;">
       <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Search Keyword</label>
-      <input type="text" name="search" class="form-control" placeholder="Search title, ref no..." value="<?= htmlspecialchars($search) ?>" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+      <input type="text" name="search" class="form-control" placeholder="Search" value="<?= htmlspecialchars($search) ?>" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
     </div>
 
     <div style="min-width: 180px;">

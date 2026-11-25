@@ -812,7 +812,7 @@ require_once __DIR__ . '/layout.php';
           <i class="fas fa-search text-primary"></i> Search Student
         </label>
         <div style="position: relative;">
-          <input type="text" name="q" class="form-control" placeholder="Search name, code, roll..." value="<?= htmlspecialchars($search_query) ?>" style="padding-left: 2rem;">
+          <input type="text" name="q" class="form-control" placeholder="Search" value="<?= htmlspecialchars($search_query) ?>" style="padding-left: 2rem;">
           <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8; font-size: 0.85rem;"></i>
         </div>
         <small style="color: var(--admin-text-muted); font-size: 0.72rem; margin-top: 4px; display: block;">Instant student name / ID lookup</small>
@@ -967,7 +967,7 @@ require_once __DIR__ . '/layout.php';
           <i class="fas fa-search text-primary"></i> Search Invoices / Sales
         </label>
         <div style="position: relative;">
-          <input type="text" name="inv_q" class="form-control" placeholder="Search Invoice #, Student Name, Item..." value="<?= htmlspecialchars($invSearch) ?>" style="padding-left: 2rem;">
+          <input type="text" name="inv_q" class="form-control" placeholder="Search" value="<?= htmlspecialchars($invSearch) ?>" style="padding-left: 2rem;">
           <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8; font-size: 0.85rem;"></i>
         </div>
       </div>
@@ -1285,7 +1285,7 @@ require_once __DIR__ . '/layout.php';
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Particulars / Remarks (Optional)</label>
-          <input type="text" name="notes" class="form-control" placeholder="e.g. Guardian purchased 2 extra exercise books with monthly fee" style="border-radius: 8px;">
+          <input type="text" name="notes" class="form-control" style="border-radius: 8px;">
         </div>
       </div>
 
@@ -1328,7 +1328,7 @@ require_once __DIR__ . '/layout.php';
               <label style="font-size: 0.82rem; font-weight: 700; color: #0369a1; display: block; margin-bottom: 4px;">
                 Amount Paid Now (BDT ৳) *
               </label>
-              <input type="number" name="paid_amount_now" id="issuePaidNow" step="10" min="0" class="form-control" placeholder="Enter amount paid today" oninput="updatePartialRemainingDue()" style="font-weight: 800; font-size: 1.05rem; color: #0369a1; padding: 0.55rem; border-radius: 8px;">
+              <input type="number" name="paid_amount_now" id="issuePaidNow" step="10" min="0" class="form-control" oninput="updatePartialRemainingDue()" style="font-weight: 800; font-size: 1.05rem; color: #0369a1; padding: 0.55rem; border-radius: 8px;">
             </div>
             <div>
               <span style="font-size: 0.82rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">
@@ -1357,7 +1357,7 @@ require_once __DIR__ . '/layout.php';
           </div>
           <div>
             <label style="font-size: 0.78rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 3px;">Receipt / Trx Ref</label>
-            <input type="text" name="reference_no" class="form-control" placeholder="e.g. TR-902, bKash ID" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+            <input type="text" name="reference_no" class="form-control" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
           </div>
         </div>
 
@@ -1436,7 +1436,7 @@ require_once __DIR__ . '/layout.php';
 
         <div class="form-group">
           <label>Deposit Slip / Trx ID (Optional)</label>
-          <input type="text" name="reference_no" class="form-control" placeholder="e.g. bKash TrxID or MR-908">
+          <input type="text" name="reference_no" class="form-control">
         </div>
       </div>
 
@@ -1547,7 +1547,7 @@ require_once __DIR__ . '/layout.php';
 
       <div class="form-group" style="margin-top: 0.8rem;">
         <label>Deposit Slip / Transaction Ref (Optional)</label>
-        <input type="text" name="reference_no" class="form-control" placeholder="e.g. bKash TrxID or MR-102">
+        <input type="text" name="reference_no" class="form-control">
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
@@ -1621,7 +1621,7 @@ require_once __DIR__ . '/layout.php';
           </div>
           <div>
             <label style="font-size: 0.78rem; color: #475569;">Reference / Note</label>
-            <input type="text" name="reference_no" class="form-control" placeholder="Trx ID or Receipt #" style="padding: 0.45rem;">
+            <input type="text" name="reference_no" class="form-control" style="padding: 0.45rem;">
           </div>
         </div>
       </div>
@@ -1686,7 +1686,7 @@ require_once __DIR__ . '/layout.php';
 
       <div class="form-group" style="margin-bottom: 1.2rem;">
         <label style="font-weight: 700; font-size: 0.85rem; color: var(--admin-deep-navy);">Notes / Particulars (Optional)</label>
-        <textarea name="notes" id="editNotes" class="form-control" rows="2" placeholder="Item breakdown, remarks..."></textarea>
+        <textarea name="notes" id="editNotes" class="form-control" rows="2"></textarea>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
@@ -1863,7 +1863,7 @@ function addInvoiceItemRow(title = '', qty = 1, price = 0) {
   row.innerHTML = `
     <td class="row-sl" style="text-align: center; font-weight: 700; color: #64748b; padding: 8px 6px;">1</td>
     <td style="padding: 6px; min-width: 170px;">
-      <input type="text" name="item_title[]" class="form-control item-title-input" value="${title.replace(/"/g, '&quot;')}" placeholder="e.g. Exercise Book / Khata" required style="font-weight: 600; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; width: 100%;">
+      <input type="text" name="item_title[]" class="form-control item-title-input" value="${title.replace(/"/g, '&quot;')}" required style="font-weight: 600; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; width: 100%;">
     </td>
     <td style="width: 85px; min-width: 80px; padding: 6px;">
       <input type="number" name="item_qty[]" class="form-control item-qty-input" min="1" value="${qty || 1}" required style="text-align: center; font-weight: 700; font-size: 0.92rem; padding: 6px 4px; border-radius: 6px; width: 100%;" oninput="recalcMultiInvoiceTotals()">

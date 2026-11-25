@@ -271,7 +271,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
         <i class="fas fa-search text-primary"></i> Search Subjects
       </label>
       <div style="position: relative;">
-        <input type="text" name="q" class="form-control" placeholder="Search subject name, code, teacher..." value="<?= htmlspecialchars($search) ?>" style="padding-left: 2rem;">
+        <input type="text" name="q" class="form-control" placeholder="Search" value="<?= htmlspecialchars($search) ?>" style="padding-left: 2rem;">
         <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8; font-size: 0.85rem;"></i>
       </div>
     </div>
@@ -499,11 +499,11 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
       <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Subject Name *</label>
-          <input type="text" name="subject_name" id="addSubjectName" class="form-control" placeholder="e.g. Cambridge Primary English" required style="font-weight: 700;">
+          <input type="text" name="subject_name" id="addSubjectName" class="form-control" required style="font-weight: 700;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Subject Code *</label>
-          <input type="text" name="subject_code" id="addSubjectCode" class="form-control" placeholder="e.g. ENG-Y1" required style="font-family: monospace; font-weight: 700; text-transform: uppercase;">
+          <input type="text" name="subject_code" id="addSubjectCode" class="form-control" required style="font-family: monospace; font-weight: 700; text-transform: uppercase;">
         </div>
       </div>
 
@@ -540,7 +540,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
       <!-- Description / Syllabus Note -->
       <div class="form-group" style="margin-top: 1rem;">
         <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Syllabus Notes / Description (Optional)</label>
-        <input type="text" name="description" class="form-control" placeholder="e.g. Cambridge Curriculum Stage 1 Workbook + Reader">
+        <input type="text" name="description" class="form-control">
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">

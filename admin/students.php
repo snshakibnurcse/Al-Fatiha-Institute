@@ -187,7 +187,7 @@ require_once __DIR__ . '/layout.php';
 <div class="card-box">
   <div class="card-header">
     <h3 class="card-title"><i class="fas fa-user-graduate"></i> Enrolled Students List</h3>
-    <input type="text" id="tableSearch" placeholder="Search student name or ID..." class="form-control" style="width: 250px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+    <input type="text" id="tableSearch" placeholder="Search" class="form-control" style="width: 250px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
   </div>
 
   <div class="table-responsive">
@@ -246,10 +246,10 @@ require_once __DIR__ . '/layout.php';
           <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); font-size: 1.35rem; margin: 0;">
             <i class="fas fa-user-plus" style="color: var(--admin-primary);"></i> Running &amp; New Student Admission
           </h3>
-          <span class="badge" style="background: #dbeafe; color: #1e40af; font-weight: 800;">SESSION 2027</span>
+          <span class="badge badge-info">SESSION <?= (int)date('Y') + 1 ?></span>
         </div>
         <p style="color: var(--admin-text-muted); font-size: 0.85rem; margin: 0.35rem 0 0 0;">
-          Directly admit running school students with full 360° bio-data. Auto-generates Student ID (<code>AFI-2027-XXX</code>).
+          Admit running or new school students. Auto-generates Student ID (<code>AFI-<?= (int)date('Y') + 1 ?>-XXX</code>).
         </p>
       </div>
       <button type="button" style="background: #f1f5f9; border: none; font-size: 1.3rem; cursor: pointer; color: var(--admin-text-muted); width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center;" onclick="closeModal('addStudentModal')">&times;</button>
@@ -259,8 +259,8 @@ require_once __DIR__ . '/layout.php';
       
       <!-- 1. Academic Placement Section -->
       <div style="background: #f8fafc; border: 1.5px solid var(--admin-border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;">
-        <h4 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0 0 0.85rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 7px;">
-          <i class="fas fa-school" style="color: var(--admin-primary);"></i> 1. Academic Placement &amp; Session
+        <h4 style="color: var(--admin-primary-dark); margin: 0 0 0.85rem 0; font-size: 0.95rem;">
+          1. Academic Placement &amp; Session
         </h4>
         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
@@ -268,18 +268,18 @@ require_once __DIR__ . '/layout.php';
             <select name="class_id" class="form-control" required style="font-weight: 600;">
               <?php foreach ($classes as $c): ?>
                 <option value="<?= $c['id'] ?>">
-                  <?= htmlspecialchars($c['class_name']) ?> (<?= htmlspecialchars($c['age_group']) ?>)
+                  <?= htmlspecialchars($c['class_name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
           </div>
           <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.82rem; font-weight: 700;">Roll No</label>
-            <input type="number" name="roll_no" class="form-control" placeholder="Auto" min="1">
+            <label style="font-size: 0.82rem; font-weight: 700;">Roll No (Optional)</label>
+            <input type="number" name="roll_no" class="form-control" min="1">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Session</label>
-            <input type="text" name="admission_session" class="form-control" value="2027" required>
+            <input type="text" name="admission_session" class="form-control" value="<?= (int)date('Y') + 1 ?>" required>
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Admission Date</label>
@@ -296,11 +296,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">First Name *</label>
-            <input type="text" name="first_name" class="form-control" placeholder="First Name" required style="text-transform: uppercase;">
+            <input type="text" name="first_name" class="form-control" required style="text-transform: uppercase;">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Last Name</label>
-            <input type="text" name="last_name" class="form-control" placeholder="Last Name" style="text-transform: uppercase;">
+            <input type="text" name="last_name" class="form-control" style="text-transform: uppercase;">
           </div>
         </div>
 
@@ -332,7 +332,7 @@ require_once __DIR__ . '/layout.php';
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Birth Reg. No</label>
-            <input type="text" name="birth_reg_no" class="form-control" placeholder="17-Digit Birth Reg No">
+            <input type="text" name="birth_reg_no" class="form-control">
           </div>
         </div>
 
@@ -364,22 +364,22 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's Name *</label>
-            <input type="text" name="father_name" class="form-control" placeholder="Father's Full Name" required>
+            <input type="text" name="father_name" class="form-control" required>
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's Mobile *</label>
-            <input type="tel" name="father_phone" class="form-control" placeholder="01XXXXXXXXX" required>
+            <input type="tel" name="father_phone" class="form-control" required>
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's Occupation</label>
-            <input type="text" name="father_occupation" class="form-control" placeholder="Occupation">
+            <input type="text" name="father_occupation" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Father's NID / Passport</label>
-            <input type="text" name="father_nid" class="form-control" placeholder="NID or Passport Number">
+            <input type="text" name="father_nid" class="form-control">
           </div>
         </div>
 
@@ -387,22 +387,22 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Name</label>
-            <input type="text" name="mother_name" class="form-control" placeholder="Mother's Full Name">
+            <input type="text" name="mother_name" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Mobile</label>
-            <input type="tel" name="mother_phone" class="form-control" placeholder="01XXXXXXXXX">
+            <input type="tel" name="mother_phone" class="form-control">
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Mother's Occupation</label>
-            <input type="text" name="mother_occupation" class="form-control" placeholder="Occupation">
+            <input type="text" name="mother_occupation" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Family Email</label>
-            <input type="email" name="email" class="form-control" placeholder="parent@mail.com">
+            <input type="email" name="email" class="form-control">
           </div>
         </div>
       </div>
@@ -415,11 +415,11 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Present Address *</label>
-            <textarea name="address" class="form-control" rows="2" placeholder="House / Road, Area, District" required></textarea>
+            <textarea name="address" class="form-control" rows="2" required></textarea>
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Permanent Address</label>
-            <textarea name="permanent_address" class="form-control" rows="2" placeholder="Permanent Address"></textarea>
+            <textarea name="permanent_address" class="form-control" rows="2"></textarea>
           </div>
         </div>
       </div>
@@ -432,26 +432,26 @@ require_once __DIR__ . '/layout.php';
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Emergency Contact Name</label>
-            <input type="text" name="emergency_contact_name" class="form-control" placeholder="Contact Person Name">
+            <input type="text" name="emergency_contact_name" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Relationship</label>
-            <input type="text" name="emergency_contact_relation" class="form-control" placeholder="Relationship (e.g. Uncle)">
+            <input type="text" name="emergency_contact_relation" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Emergency Phone</label>
-            <input type="tel" name="emergency_contact_phone" class="form-control" placeholder="01XXXXXXXXX">
+            <input type="tel" name="emergency_contact_phone" class="form-control">
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Previous School / Madrasah</label>
-            <input type="text" name="previous_school" class="form-control" placeholder="Previous School (optional)">
+            <input type="text" name="previous_school" class="form-control">
           </div>
           <div class="form-group" style="margin: 0;">
             <label style="font-size: 0.82rem; font-weight: 700;">Medical Notes / Allergies</label>
-            <input type="text" name="medical_notes" class="form-control" placeholder="Medical Notes or Allergies (optional)">
+            <input type="text" name="medical_notes" class="form-control">
           </div>
         </div>
       </div>

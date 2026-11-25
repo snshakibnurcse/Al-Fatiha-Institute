@@ -77,7 +77,7 @@ $notices = $db->query("SELECT * FROM notices ORDER BY published_date DESC")->fet
     <form method="POST">
       <div class="form-group">
         <label>Notice Title *</label>
-        <input type="text" name="title" class="form-control" placeholder="Notice Title" required>
+        <input type="text" name="title" class="form-control" required>
       </div>
 
       <div class="form-group">
@@ -93,7 +93,7 @@ $notices = $db->query("SELECT * FROM notices ORDER BY published_date DESC")->fet
 
       <div class="form-group">
         <label>Notice Content *</label>
-        <textarea name="content" class="form-control" rows="4" placeholder="Detailed notice description..." required></textarea>
+        <textarea name="content" class="form-control" rows="4" required></textarea>
       </div>
 
       <div style="text-align: right; margin-top: 1.5rem;">

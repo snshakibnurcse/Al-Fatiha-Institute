@@ -533,7 +533,7 @@ $allStudents = $db->query("
         <i class="fas fa-search text-primary"></i> Search User Accounts
       </label>
       <div style="position: relative;">
-        <input type="text" name="q" class="form-control" placeholder="Search by name, username, email, phone..." value="<?= htmlspecialchars($search) ?>" style="padding-left: 2rem;">
+        <input type="text" name="q" class="form-control" placeholder="Search" value="<?= htmlspecialchars($search) ?>" style="padding-left: 2rem;">
         <i class="fas fa-search" style="position: absolute; left: 10px; top: 12px; color: #94a3b8; font-size: 0.85rem;"></i>
       </div>
     </div>
@@ -832,11 +832,11 @@ $allStudents = $db->query("
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Full Name *</label>
-          <input type="text" name="full_name" class="form-control" placeholder="e.g. Principal Md. Ibrahim" required>
+          <input type="text" name="full_name" class="form-control" required>
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Login Username *</label>
-          <input type="text" name="username" class="form-control" placeholder="e.g. principal or ibrahim" required style="font-weight: 700;">
+          <input type="text" name="username" class="form-control" required style="font-weight: 700;">
         </div>
       </div>
 
@@ -844,11 +844,11 @@ $allStudents = $db->query("
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="e.g. principal@alfatihainstitute.edu.bd">
+          <input type="email" name="email" class="form-control">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Phone Number</label>
-          <input type="text" name="phone" class="form-control" placeholder="e.g. 01812345678">
+          <input type="text" name="phone" class="form-control">
         </div>
       </div>
 
@@ -887,8 +887,8 @@ $allStudents = $db->query("
           <i class="fas fa-graduation-cap"></i> Teacher Profile Details
         </label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <input type="text" name="specialty" class="form-control" placeholder="Subject / Specialty (e.g. Quran, English)" style="background: #ffffff; font-size: 0.85rem;">
-          <input type="text" name="qualification" class="form-control" placeholder="Qualification (e.g. Kamil, B.Ed)" style="background: #ffffff; font-size: 0.85rem;">
+          <input type="text" name="specialty" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
+          <input type="text" name="qualification" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
         </div>
       </div>
 
@@ -1048,7 +1048,7 @@ $allStudents = $db->query("
             <i class="fas fa-magic"></i> Generate
           </button>
         </div>
-        <input type="text" name="edit_password" id="editPasswordInput" class="form-control" placeholder="Leave blank to keep existing password" style="background: #ffffff; font-family: monospace;">
+        <input type="text" name="edit_password" id="editPasswordInput" class="form-control" style="background: #ffffff; font-family: monospace;">
         <small style="color: #64748b; font-size: 0.72rem;">Enter at least 6 characters if you wish to change the password right now.</small>
       </div>
 

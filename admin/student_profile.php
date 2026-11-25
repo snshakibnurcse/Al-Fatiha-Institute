@@ -704,7 +704,7 @@ require_once __DIR__ . '/layout.php';
 
       <div class="form-group">
         <label>Receipt / Transaction Ref No</label>
-        <input type="text" name="reference_no" class="form-control" placeholder="ADV-REC-101">
+        <input type="text" name="reference_no" class="form-control">
       </div>
 
       <div class="form-group" style="margin-top: 1rem;">
@@ -780,14 +780,14 @@ require_once __DIR__ . '/layout.php';
         <div id="multiItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
           <!-- Item Row 1 (Default) -->
           <div class="multi-item-row" style="display: grid; grid-template-columns: 2fr 1fr 40px; gap: 8px; align-items: center;">
-            <input type="text" name="item_title[]" class="form-control" placeholder="Item description (e.g. Admission Fee)" value="Admission Fee" required>
-            <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" placeholder="Amount (৳)" value="5000" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
+            <input type="text" name="item_title[]" class="form-control" value="Admission Fee" required>
+            <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" value="5000" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
             <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.6rem 0.7rem; cursor: pointer;" onclick="removeMultiItemRow(this)" title="Remove item">&times;</button>
           </div>
           <!-- Item Row 2 (Default) -->
           <div class="multi-item-row" style="display: grid; grid-template-columns: 2fr 1fr 40px; gap: 8px; align-items: center;">
-            <input type="text" name="item_title[]" class="form-control" placeholder="Item description (e.g. Khata & Books)" value="Khata &amp; Books" required>
-            <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" placeholder="Amount (৳)" value="1500" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
+            <input type="text" name="item_title[]" class="form-control" value="Khata &amp; Books" required>
+            <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" value="1500" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
             <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.6rem 0.7rem; cursor: pointer;" onclick="removeMultiItemRow(this)" title="Remove item">&times;</button>
           </div>
         </div>
@@ -823,7 +823,7 @@ require_once __DIR__ . '/layout.php';
       <!-- Notes / Particulars -->
       <div class="form-group" style="margin-bottom: 1rem;">
         <label style="font-weight: 700; font-size: 0.85rem;">Additional Notes / Remarks (Optional)</label>
-        <input type="text" name="notes" class="form-control" placeholder="e.g. Paid in full by father at school counter">
+        <input type="text" name="notes" class="form-control">
       </div>
 
       <!-- Payment Status Selector -->
@@ -859,7 +859,7 @@ require_once __DIR__ . '/layout.php';
           </div>
           <div>
             <label style="font-size: 0.75rem; font-weight: 700; color: #065f46;">Reference No</label>
-            <input type="text" name="reference_no" class="form-control" placeholder="TrxID / MR-101" style="padding: 0.45rem; font-size: 0.85rem;">
+            <input type="text" name="reference_no" class="form-control" style="padding: 0.45rem; font-size: 0.85rem;">
           </div>
         </div>
       </div>
@@ -915,7 +915,7 @@ require_once __DIR__ . '/layout.php';
 
       <div class="form-group" style="margin-bottom: 1.2rem;">
         <label style="font-weight: 700; font-size: 0.85rem;">Notes / Remarks (Optional)</label>
-        <textarea name="notes" id="editNotes" class="form-control" rows="2" placeholder="Item breakdown, remarks..."></textarea>
+        <textarea name="notes" id="editNotes" class="form-control" rows="2"></textarea>
       </div>
 
       <div style="text-align: right; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
@@ -1025,7 +1025,7 @@ require_once __DIR__ . '/layout.php';
 
       <div class="form-group" style="margin-top: 0.8rem;">
         <label>Deposit Slip / Transaction Ref (Optional)</label>
-        <input type="text" name="reference_no" class="form-control" placeholder="e.g. bKash TrxID or MR-102">
+        <input type="text" name="reference_no" class="form-control">
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
@@ -1059,8 +1059,8 @@ require_once __DIR__ . '/layout.php';
     row.className = 'multi-item-row';
     row.style = 'display: grid; grid-template-columns: 2fr 1fr 40px; gap: 8px; align-items: center;';
     row.innerHTML = `
-      <input type="text" name="item_title[]" class="form-control" placeholder="Item description" value="${title}" required>
-      <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" placeholder="Amount (৳)" value="${amount}" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
+      <input type="text" name="item_title[]" class="form-control" value="${title}" required>
+      <input type="number" name="item_amount[]" class="form-control item-amount-input" step="10" min="10" value="${amount}" required oninput="recalcMultiTotal()" style="font-weight: 700; color: #065f46;">
       <button type="button" class="btn" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 0.6rem 0.7rem; cursor: pointer;" onclick="removeMultiItemRow(this)" title="Remove item">&times;</button>
     `;
     container.appendChild(row);

@@ -206,7 +206,7 @@ foreach ($slots as $s) {
 
       <div class="form-group">
         <label>Period Title / Name *</label>
-        <input type="text" name="period_name" class="form-control" placeholder="Period 1 (Morning Quran & Tajweed)" required>
+        <input type="text" name="period_name" class="form-control" required>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

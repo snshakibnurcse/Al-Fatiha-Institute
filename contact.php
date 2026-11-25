@@ -101,30 +101,30 @@ include __DIR__ . '/includes/header.php';
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
               <label>Your Name *</label>
-              <input type="text" name="name" class="form-control" placeholder="Full Name" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">
+              <input type="text" name="name" class="form-control" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">
             </div>
 
             <div class="form-group">
               <label>Phone Number *</label>
-              <input type="text" name="phone" class="form-control" placeholder="01800000000" required value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
+              <input type="text" name="phone" class="form-control" required value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
               <label>Email Address</label>
-              <input type="email" name="email" class="form-control" placeholder="your@email.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+              <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
             </div>
 
             <div class="form-group">
               <label>Subject *</label>
-              <input type="text" name="subject" class="form-control" placeholder="e.g. Playgroup Admission Query" required value="<?= htmlspecialchars($_POST['subject'] ?? '') ?>">
+              <input type="text" name="subject" class="form-control" required value="<?= htmlspecialchars($_POST['subject'] ?? '') ?>">
             </div>
           </div>
 
           <div class="form-group">
             <label>Message *</label>
-            <textarea name="message" class="form-control" rows="4" placeholder="Write your query details here..." required><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
+            <textarea name="message" class="form-control" rows="4" required><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
           </div>
 
           <button type="submit" name="submit_inquiry" class="btn btn-primary btn-block" style="margin-top: 1rem;">

@@ -125,7 +125,7 @@ foreach ($attStmt->fetchAll() as $row) {
                   </label>
                 </td>
                 <td>
-                  <input type="text" name="remarks[<?= $t['id'] ?>]" value="<?= htmlspecialchars($curr_rem) ?>" placeholder="e.g. Sick Leave, Official Duty" class="form-control" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">
+                  <input type="text" name="remarks[<?= $t['id'] ?>]" value="<?= htmlspecialchars($curr_rem) ?>" class="form-control" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">
                 </td>
               </tr>
             <?php endforeach; ?>
