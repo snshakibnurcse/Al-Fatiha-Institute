@@ -340,7 +340,7 @@ require_once __DIR__ . '/layout.php';
 </div>
 
 <!-- Student Header Card -->
-<div style="background: linear-gradient(135deg, #032d4e 0%, #064878 100%); color: #ffffff; border-radius: 18px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(3, 45, 78, 0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+<div style="background: #082447; color: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
   <div style="display: flex; align-items: center; gap: 1.5rem;">
     <div style="width: 80px; height: 80px; background: #f3b527; color: #032d4e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; font-family: 'Outfit', sans-serif;">
       <?= strtoupper(substr($student['first_name'], 0, 1)) ?>
@@ -798,7 +798,7 @@ require_once __DIR__ . '/layout.php';
       </div>
 
       <!-- Live Calculated Total Banner -->
-      <div style="background: linear-gradient(135deg, #032d4e 0%, #064878 100%); color: #ffffff; border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <div style="background: #082447; color: #ffffff; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div>
           <span style="font-size: 0.78rem; text-transform: uppercase; color: #cbd5e1; font-weight: 700;">TOTAL INVOICE AMOUNT</span>
           <div style="font-size: 0.8rem; color: #94a3b8;">Sum of all items included above</div>

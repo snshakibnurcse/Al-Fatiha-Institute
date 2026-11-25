@@ -369,7 +369,7 @@ $allStudents = $db->query("
      CREDENTIALS DISPLAY CARD (SHOWN AFTER CREATE OR RESET)
      ======================================================== -->
 <?php if ($newCredentials): ?>
-  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 2px solid #3b82f6;">
+  <div style="background: #082447; color: #ffffff; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.12);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 0.6rem;">
       <div style="display: flex; align-items: center; gap: 10px;">
         <span style="background: #10b981; color: #ffffff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">

@@ -104,8 +104,8 @@ $totalFilteredIncome = array_sum(array_column($incomes, 'amount'));
     </p>
   </div>
 
-  <button onclick="toggleAddForm()" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 0.8rem 1.4rem; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
-    <i class="fas fa-plus-circle"></i> Add New Income Entry
+  <button onclick="toggleAddForm()" class="btn" style="background: #16a34a; color: #ffffff; height: 40px; padding: 0 16px; border-radius: 8px; font-weight: 500; font-size: 13.5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+    <i class="fas fa-plus"></i> Add Income Entry
   </button>
 </div>
 

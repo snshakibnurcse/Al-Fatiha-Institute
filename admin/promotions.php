@@ -224,8 +224,8 @@ $srcStudents = $srcStudentsStmt->fetchAll();
         </div>
 
         <div>
-          <button type="submit" name="process_promotion" class="btn" style="background: linear-gradient(135deg, #f3b527 0%, #cd8707 100%); color: #032d4e; padding: 0.8rem 2rem; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1rem; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(243, 181, 39, 0.4);" onclick="return confirm('Are you sure you want to promote selected students?')">
-            <i class="fas fa-level-up-alt"></i> Promote Selected Students Now
+          <button type="submit" name="process_promotion" class="btn" style="background: #082447; color: #ffffff; height: 42px; padding: 0 24px; font-weight: 500; font-size: 14px; border: none; border-radius: 8px; cursor: pointer;" onclick="return confirm('Are you sure you want to promote selected students?')">
+            <i class="fas fa-level-up-alt"></i> Promote Selected Students
           </button>
         </div>
       </div>
