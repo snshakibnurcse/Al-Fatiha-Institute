@@ -14,44 +14,42 @@ $st_id = $student['id'];
 $results = $db->query("SELECT r.*, sub.subject_name FROM results r JOIN subjects sub ON r.subject_id = sub.id WHERE r.student_id = $st_id ORDER BY r.exam_term ASC")->fetchAll();
 ?>
 
-<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-  <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0;">Academic Performance & Report Card</h3>
-  <button id="printDocumentBtn" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 700; border: none; cursor: pointer;">
-    <i class="fas fa-print"></i> Print Official Report Card
+<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+  <div>
+    <h2 style="font-family: 'Newsreader', Georgia, serif; font-size: 26px; font-weight: 500; color: var(--admin-navy); margin: 0;">Academic Report Card</h2>
+    <p style="margin: 4px 0 0 0; font-size: 13.5px; color: var(--admin-text-muted);">Official term marks and grading record.</p>
+  </div>
+  <button id="printDocumentBtn" class="btn-welcome-primary" style="cursor: pointer;">
+    <i class="fas fa-print"></i> Print Report Card
   </button>
 </div>
 
-<!-- Printable Report Card Container -->
-<div class="card-box" style="padding: 2.5rem; background: #ffffff;">
-  
-  <!-- Official Report Card Header -->
-  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double var(--admin-primary); padding-bottom: 1.5rem; margin-bottom: 2rem;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <img src="../assets/images/logo.png?v=2" alt="AFI Logo" style="height: 75px;">
+<!-- Printable Report Card -->
+<div class="card-box" style="padding: 28px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--admin-navy); padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <img src="../assets/images/logo.png?v=2" alt="AFI Logo" style="height: 58px; width: 58px; object-fit: contain;">
       <div>
-        <h2 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); margin: 0; font-size: 1.8rem;">AL FATIHA INSTITUTE</h2>
-        <span style="color: var(--admin-gold-dark); font-weight: 800; font-size: 0.85rem; letter-spacing: 1px;">CAMBRIDGE CURRICULUM & ISLAMIC ETHOS SCHOOL</span>
-        <p style="margin: 0; font-size: 0.82rem; color: var(--admin-text-muted);">Main Road, Cox's Bazar, Bangladesh • ESTD 2025</p>
+        <h2 style="font-family: 'Newsreader', Georgia, serif; color: var(--admin-navy); margin: 0; font-size: 24px; font-weight: 500;">AL FATIHA INSTITUTE</h2>
+        <span style="font-family: 'IBM Plex Mono', monospace; color: var(--admin-gold-dark); font-size: 12px;">Cambridge Curriculum &amp; Islamic Ethos</span>
+        <p style="margin: 2px 0 0 0; font-size: 12.5px; color: var(--admin-text-muted);">Tekpara Main Road, Cox's Bazar · Est. 2025</p>
       </div>
     </div>
-    <div style="text-align: right;">
-      <span style="background: var(--admin-primary); color: #ffffff; padding: 0.4rem 1rem; border-radius: 6px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">
-        OFFICIAL REPORT CARD
-      </span>
-    </div>
+    <span class="badge badge-info" style="font-size: 12px; padding: 6px 12px;">Official Report Card</span>
   </div>
 
   <!-- Student Info Box -->
-  <div style="background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.2rem; margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.92rem;">
+  <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13.5px;">
     <div>
-      <p style="margin-bottom: 0.4rem;"><strong>Student Name:</strong> <?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></p>
-      <p style="margin-bottom: 0.4rem;"><strong>Student ID:</strong> <code><?= htmlspecialchars($student['student_id']) ?></code></p>
-      <p style="margin: 0;"><strong>Class & Grade:</strong> <?= htmlspecialchars($student['class_name']) ?></p>
+      <p style="margin: 0 0 6px 0;"><span style="color: var(--admin-text-muted);">Student Name:</span> <strong><?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></strong></p>
+      <p style="margin: 0 0 6px 0;"><span style="color: var(--admin-text-muted);">Student ID:</span> <code style="font-family: 'IBM Plex Mono', monospace;"><?= htmlspecialchars($student['student_id']) ?></code></p>
+      <p style="margin: 0;"><span style="color: var(--admin-text-muted);">Class:</span> <?= htmlspecialchars($student['class_name']) ?></p>
     </div>
     <div>
-      <p style="margin-bottom: 0.4rem;"><strong>Roll Number:</strong> #<?= $student['roll_no'] ?></p>
-      <p style="margin-bottom: 0.4rem;"><strong>Father's Name:</strong> <?= htmlspecialchars($student['father_name']) ?></p>
-      <p style="margin: 0;"><strong>Academic Year:</strong> 2025 - 2026</p>
+      <p style="margin: 0 0 6px 0;"><span style="color: var(--admin-text-muted);">Roll Number:</span> <span style="font-family: 'IBM Plex Mono', monospace;">#<?= $student['roll_no'] ?></span></p>
+      <p style="margin: 0 0 6px 0;"><span style="color: var(--admin-text-muted);">Father's Name:</span> <?= htmlspecialchars($student['father_name']) ?></p>
+      <p style="margin: 0;"><span style="color: var(--admin-text-muted);">Academic Year:</span> <span style="font-family: 'IBM Plex Mono', monospace;">2026–2027</span></p>
     </div>
   </div>
 
@@ -61,10 +59,10 @@ $results = $db->query("SELECT r.*, sub.subject_name FROM results r JOIN subjects
       <thead>
         <tr>
           <th>Exam Term</th>
-          <th>Subject / Curriculum Area</th>
+          <th>Subject</th>
           <th>Max Marks</th>
-          <th>Marks Obtained</th>
-          <th>Letter Grade</th>
+          <th>Obtained</th>
+          <th>Grade</th>
           <th>GPA</th>
           <th>Teacher Remarks</th>
         </tr>
@@ -76,30 +74,30 @@ $results = $db->query("SELECT r.*, sub.subject_name FROM results r JOIN subjects
             <tr>
               <td><span class="badge badge-info"><?= htmlspecialchars($r['exam_term']) ?></span></td>
               <td><strong><?= htmlspecialchars($r['subject_name']) ?></strong></td>
-              <td><?= $r['max_marks'] ?></td>
-              <td><strong style="color: var(--admin-primary);"><?= $r['marks_obtained'] ?></strong></td>
+              <td style="font-family: 'IBM Plex Mono', monospace;"><?= $r['max_marks'] ?></td>
+              <td style="font-family: 'IBM Plex Mono', monospace;"><strong style="color: var(--admin-navy);"><?= $r['marks_obtained'] ?></strong></td>
               <td><span class="badge <?= $g['class'] ?>"><?= $g['grade'] ?></span></td>
-              <td><strong><?= $g['gpa'] ?></strong></td>
-              <td><?= htmlspecialchars($r['teacher_remarks']) ?></td>
+              <td style="font-family: 'IBM Plex Mono', monospace;"><strong><?= $g['gpa'] ?></strong></td>
+              <td style="color: var(--admin-text-secondary);"><?= htmlspecialchars($r['teacher_remarks']) ?></td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr><td colspan="7" style="text-align: center;">No exam grades recorded yet.</td></tr>
+          <tr><td colspan="7" style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No exam grades recorded yet.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
   </div>
 
   <!-- Signatures Block -->
-  <div style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1rem;">
-    <div style="text-align: center; border-top: 2px solid var(--admin-border); width: 200px; padding-top: 0.4rem; font-weight: 700; font-size: 0.88rem;">
+  <div style="margin-top: 56px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap;">
+    <div style="text-align: center; border-top: 1px solid var(--admin-border-strong); width: 190px; padding-top: 6px; font-weight: 500; font-size: 13px; color: var(--admin-text-secondary);">
       Class Teacher Signature
     </div>
-    <div style="text-align: center; border-top: 2px solid var(--admin-border); width: 200px; padding-top: 0.4rem; font-weight: 700; font-size: 0.88rem;">
+    <div style="text-align: center; border-top: 1px solid var(--admin-border-strong); width: 190px; padding-top: 6px; font-weight: 500; font-size: 13px; color: var(--admin-text-secondary);">
       Parent / Guardian Signature
     </div>
-    <div style="text-align: center; border-top: 2px solid var(--admin-primary); width: 200px; padding-top: 0.4rem; font-weight: 800; font-size: 0.88rem; color: var(--admin-primary-dark);">
-      Principal Seal & Stamp
+    <div style="text-align: center; border-top: 1px solid var(--admin-navy); width: 190px; padding-top: 6px; font-weight: 600; font-size: 13px; color: var(--admin-navy);">
+      Principal Seal &amp; Stamp
     </div>
   </div>
 

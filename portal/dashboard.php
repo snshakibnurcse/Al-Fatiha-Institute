@@ -9,13 +9,11 @@ $stStmt = $db->prepare("SELECT s.*, c.class_name, c.tuition_fee FROM students s 
 $stStmt->execute([$user_id]);
 $student = $stStmt->fetch();
 
-// If no student mapped directly, fallback to demo student 1
 if (!$student) {
     $stStmt2 = $db->query("SELECT s.*, c.class_name, c.tuition_fee FROM students s JOIN classes c ON s.class_id = c.id WHERE s.id = 1");
     $student = $stStmt2->fetch();
 }
 
-// Stats for child
 $student_db_id = $student['id'];
 $totalAttDays = $db->query("SELECT COUNT(*) FROM attendance WHERE student_id = $student_db_id")->fetchColumn() ?: 1;
 $presentDays = $db->query("SELECT COUNT(*) FROM attendance WHERE student_id = $student_db_id AND status = 'Present'")->fetchColumn();
@@ -24,88 +22,94 @@ $attPercentage = round(($presentDays / $totalAttDays) * 100);
 $unpaidFees = $db->query("SELECT SUM(amount) FROM fees WHERE student_id = $student_db_id AND status = 'Unpaid'")->fetchColumn() ?: 0;
 ?>
 
-<div style="background: linear-gradient(135deg, var(--admin-deep-navy) 0%, var(--admin-primary-dark) 100%); color: #ffffff; padding: 2.2rem; border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-  <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
-    <div style="width: 80px; height: 80px; background: var(--admin-gold); color: var(--admin-deep-navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 900;">
-      <i class="fas fa-child"></i>
+<!-- Student Overview Header -->
+<div class="dash-welcome-card">
+  <div style="display: flex; gap: 16px; align-items: center;">
+    <div style="width: 52px; height: 52px; background: var(--admin-navy); color: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; flex-shrink: 0;">
+      <?= strtoupper(substr($student['first_name'] ?: 'S', 0, 1)) ?>
     </div>
-    <div style="flex: 1;">
-      <span style="background: rgba(243,181,39,0.2); color: var(--admin-gold); padding: 0.2rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase;">
-        ENROLLED STUDENT
-      </span>
-      <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; color: #ffffff; margin: 0.3rem 0;">
-        <?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?>
-      </h1>
-      <p style="color: rgba(255,255,255,0.85); font-size: 0.98rem; margin: 0;">
-        Student ID: <code><?= htmlspecialchars($student['student_id']) ?></code> • Class: <strong><?= htmlspecialchars($student['class_name']) ?></strong> • Roll No: <strong>#<?= $student['roll_no'] ?></strong>
-      </p>
+    <div>
+      <div class="welcome-meta-row">
+        <span class="date-badge"><?= htmlspecialchars($student['student_id']) ?></span>
+        <span class="role-pill-tag"><?= htmlspecialchars($student['class_name']) ?> · Roll #<?= $student['roll_no'] ?></span>
+      </div>
+      <h1 class="welcome-title"><?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']) ?></h1>
+      <p class="welcome-sub">Enrolled Student · AL FATIHA INSTITUTE</p>
     </div>
+  </div>
+  <div class="welcome-actions">
+    <a href="results.php" class="btn-welcome-primary">Report Card</a>
+    <a href="timetable.php" class="btn-welcome-secondary">Class Timetable</a>
   </div>
 </div>
 
 <?php if ($unpaidFees > 0): ?>
-  <div class="alert-msg alert-warning" style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem;">
+  <div class="alert-msg" style="background: #fbf4e3; color: #9a6704; border: 1px solid rgba(154, 103, 4, 0.25); justify-content: space-between; flex-wrap: wrap;">
     <div>
-      <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>
-      <strong>Pending Fee Dues Notice:</strong> You have outstanding fee invoices totaling <strong><?= format_currency($unpaidFees) ?></strong>.
+      <strong>Pending Fee Dues:</strong> Outstanding invoices totaling <strong style="font-family: 'IBM Plex Mono', monospace;"><?= format_currency($unpaidFees) ?></strong>.
     </div>
-    <a href="fees.php" class="btn" style="background: var(--admin-gold); color: var(--admin-deep-navy); padding: 0.4rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 800;">View Invoices</a>
+    <a href="fees.php" class="btn-welcome-primary" style="height: 32px; padding: 0 12px; font-size: 12.5px;">View Invoices</a>
   </div>
 <?php endif; ?>
 
-<div class="stats-grid">
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
   <div class="kpi-card">
-    <div class="kpi-icon green"><i class="fas fa-calendar-check"></i></div>
     <div class="kpi-data">
       <h3><?= $attPercentage ?>%</h3>
-      <p>Attendance Record</p>
+      <p>Attendance record</p>
     </div>
+    <div class="kpi-icon green"><i class="fas fa-calendar-check"></i></div>
   </div>
 
   <div class="kpi-card">
-    <div class="kpi-icon gold"><i class="fas fa-award"></i></div>
     <div class="kpi-data">
       <h3>A+</h3>
-      <p>Latest Overall Grade</p>
+      <p>Overall grade</p>
     </div>
+    <div class="kpi-icon gold"><i class="fas fa-award"></i></div>
   </div>
 
   <div class="kpi-card">
-    <div class="kpi-icon purple"><i class="fas fa-money-bill"></i></div>
     <div class="kpi-data">
       <h3><?= format_currency($student['tuition_fee']) ?></h3>
-      <p>Monthly Tuition Fee</p>
+      <p>Monthly tuition fee</p>
     </div>
+    <div class="kpi-icon"><i class="fas fa-money-bill"></i></div>
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+<div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
   <div class="card-box">
     <div class="card-header">
-      <h3 class="card-title"><i class="fas fa-user"></i> Student Personal Profile</h3>
+      <h3 class="card-title">Student Personal Profile</h3>
     </div>
     <table class="data-table">
-      <tr><td><strong>Father's Name:</strong></td><td><?= htmlspecialchars($student['father_name']) ?></td></tr>
-      <tr><td><strong>Mother's Name:</strong></td><td><?= htmlspecialchars($student['mother_name']) ?></td></tr>
-      <tr><td><strong>Contact Phone:</strong></td><td><?= htmlspecialchars($student['phone']) ?></td></tr>
-      <tr><td><strong>Date of Birth:</strong></td><td><?= format_date($student['dob']) ?></td></tr>
-      <tr><td><strong>Address:</strong></td><td><?= htmlspecialchars($student['address']) ?></td></tr>
+      <tbody>
+        <tr><td style="color: var(--admin-text-muted); width: 160px;">Father's Name</td><td><strong><?= htmlspecialchars($student['father_name']) ?></strong></td></tr>
+        <tr><td style="color: var(--admin-text-muted);">Mother's Name</td><td><strong><?= htmlspecialchars($student['mother_name']) ?></strong></td></tr>
+        <tr><td style="color: var(--admin-text-muted);">Contact Phone</td><td style="font-family: 'IBM Plex Mono', monospace;"><?= htmlspecialchars($student['phone']) ?></td></tr>
+        <tr><td style="color: var(--admin-text-muted);">Date of Birth</td><td style="font-family: 'IBM Plex Mono', monospace;"><?= format_date($student['dob']) ?></td></tr>
+        <tr><td style="color: var(--admin-text-muted);">Address</td><td><?= htmlspecialchars($student['address']) ?></td></tr>
+      </tbody>
     </table>
   </div>
 
   <div class="card-box">
     <div class="card-header">
-      <h3 class="card-title"><i class="fas fa-bolt"></i> Quick Links</h3>
+      <h3 class="card-title">Quick Access</h3>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-      <a href="results.php" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.85rem; border-radius: 10px; text-decoration: none; text-align: center; font-weight: 700;">
-        <i class="fas fa-file-pdf"></i> Download / Print Academic Report Card
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <a href="results.php" class="btn-welcome-primary" style="justify-content: center;">
+        Academic Report Card
       </a>
-      <a href="fees.php" class="btn" style="background: #10b981; color: #ffffff; padding: 0.85rem; border-radius: 10px; text-decoration: none; text-align: center; font-weight: 700;">
-        <i class="fas fa-receipt"></i> View Fee Statements & Receipts
+      <a href="fees.php" class="btn-welcome-secondary" style="justify-content: center;">
+        Fee Statements &amp; Receipts
       </a>
-      <a href="attendance.php" class="btn" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.85rem; border-radius: 10px; text-decoration: none; text-align: center; font-weight: 700;">
-        <i class="fas fa-calendar-alt"></i> View Attendance History Calendar
+      <a href="attendance.php" class="btn-welcome-secondary" style="justify-content: center;">
+        Attendance History Log
+      </a>
+      <a href="timetable.php" class="btn-welcome-secondary" style="justify-content: center;">
+        Weekly Class Routine
       </a>
     </div>
   </div>

@@ -150,8 +150,8 @@ $totalFilteredExpense = array_sum(array_column($expenses, 'amount'));
     </p>
   </div>
 
-  <button onclick="toggleAddForm()" class="btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; padding: 0.8rem 1.4rem; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);">
-    <i class="fas fa-plus-circle"></i> Add New Expense & Voucher
+  <button onclick="toggleAddForm()" class="btn" style="background: #dc2626; color: #ffffff; height: 40px; padding: 0 16px; border-radius: 8px; font-weight: 500; font-size: 13.5px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+    <i class="fas fa-plus"></i> Add Expense &amp; Voucher
   </button>
 </div>
 
