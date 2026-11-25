@@ -4,12 +4,12 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Banner -->
-<section style="background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-dark) 100%); color: #ffffff; padding: 4rem 0 3.5rem 0; text-align: center;">
+<section class="page-banner centered">
   <div class="container">
-    <span class="sub-badge gold"><i class="fas fa-images"></i> Campus Life</span>
-    <h1 style="color: #ffffff; font-size: 2.8rem; margin-top: 0.5rem;">Photo & Event Gallery</h1>
-    <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 650px; margin: 0.8rem auto 0 auto;">
-      Highlights from classroom sensory activities, Quran recitation exhibitions, Cambridge science days, and celebrations.
+    <span class="eyebrow eyebrow-light">Campus Life · Cox's Bazar</span>
+    <h1>Campus &amp; Event Highlights</h1>
+    <p>
+      Classroom sensory work, Quran recitation exhibitions, Cambridge science demonstrations, and student gatherings.
     </p>
   </div>
 </section>
@@ -17,45 +17,53 @@ include __DIR__ . '/includes/header.php';
 <!-- Gallery Showcase -->
 <section class="section-padding">
   <div class="container">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.8rem;">
-      
-      <div style="background: #ffffff; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-        <div style="height: 200px; background: linear-gradient(135deg, #0e73b9, #032d4e); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 3rem;">
-          <i class="fas fa-quran"></i>
+    <div class="gallery-grid">
+
+      <div class="gallery-card">
+        <div class="gallery-plate navy">
+          <span class="gallery-plate-index">01</span>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e5a922" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
         </div>
-        <div style="padding: 1.2rem;">
-          <span style="font-size: 0.75rem; color: var(--accent-gold-dark); font-weight: 800; text-transform: uppercase;">ISLAMIC EVENTS</span>
-          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Annual Tajweed & Recitation Contest</h4>
+        <div class="gallery-body">
+          <span class="mono-meta" style="color: var(--accent-gold-dark);">Islamic Events</span>
+          <h4>Annual Tajweed &amp; Recitation Contest</h4>
+          <p>Students recite memorized Surahs with proper Makharij and rhythmic clarity before parents and teachers.</p>
         </div>
       </div>
 
-      <div style="background: #ffffff; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-        <div style="height: 200px; background: linear-gradient(135deg, #f3b527, #cd8707); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 3rem;">
-          <i class="fas fa-shapes"></i>
+      <div class="gallery-card">
+        <div class="gallery-plate">
+          <span class="gallery-plate-index">02</span>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#082447" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
         </div>
-        <div style="padding: 1.2rem;">
-          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">CLASSROOM</span>
-          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Playgroup Phonics & Sensory Activity</h4>
-        </div>
-      </div>
-
-      <div style="background: #ffffff; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-        <div style="height: 200px; background: linear-gradient(135deg, #3ac0f6, #0e73b9); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 3rem;">
-          <i class="fas fa-atom"></i>
-        </div>
-        <div style="padding: 1.2rem;">
-          <span style="font-size: 0.75rem; color: var(--sky-blue); font-weight: 800; text-transform: uppercase;">CAMBRIDGE ACADEMICS</span>
-          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Class 1 & 2 Primary Science Fair</h4>
+        <div class="gallery-body">
+          <span class="mono-meta" style="color: var(--text-muted);">Classroom</span>
+          <h4>Playgroup Phonics &amp; Sensory Morning</h4>
+          <p>Tactile alphabet sorting, Jolly Phonics sound games, and calm small-group guided reading sessions.</p>
         </div>
       </div>
 
-      <div style="background: #ffffff; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-        <div style="height: 200px; background: linear-gradient(135deg, #10b981, #064878); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 3rem;">
-          <i class="fas fa-child"></i>
+      <div class="gallery-card">
+        <div class="gallery-plate">
+          <span class="gallery-plate-index">03</span>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#082447" stroke-width="1.5"><path d="M9 3h6v4l4 8.5A2 2 0 0 1 17.2 18H6.8a2 2 0 0 1-1.8-2.5L9 7V3z"/><line x1="6" y1="3" x2="18" y2="3"/></svg>
         </div>
-        <div style="padding: 1.2rem;">
-          <span style="font-size: 0.75rem; color: #10b981; font-weight: 800; text-transform: uppercase;">CO-CURRICULAR</span>
-          <h4 style="color: var(--primary-dark); margin-top: 0.2rem;">Little Sunnah Sports & Physical Day</h4>
+        <div class="gallery-body">
+          <span class="mono-meta" style="color: var(--text-muted);">Cambridge Academics</span>
+          <h4>Class 1 &amp; 2 Primary Science Fair</h4>
+          <p>Hands-on experiments exploring plant growth, simple forces, and observation journals presented by young learners.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card">
+        <div class="gallery-plate navy">
+          <span class="gallery-plate-index">04</span>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e5a922" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <div class="gallery-body">
+          <span class="mono-meta" style="color: var(--accent-gold-dark);">Co-Curricular</span>
+          <h4>Little Sunnah Sports &amp; Activity Day</h4>
+          <p>Team relays, obstacle courses, and outdoor physical coordination fostering sportsmanship and joy.</p>
         </div>
       </div>
 

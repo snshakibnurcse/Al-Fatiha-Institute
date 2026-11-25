@@ -4,12 +4,12 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Banner -->
-<section style="background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-dark) 100%); color: #ffffff; padding: 4rem 0 3.5rem 0; text-align: center;">
+<section class="page-banner centered">
   <div class="container">
-    <span class="sub-badge gold"><i class="fas fa-mosque"></i> Islamic Ethos & Character</span>
-    <h1 style="color: #ffffff; font-size: 2.8rem; margin-top: 0.5rem;">Arabic & Islamic Values Priority</h1>
-    <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 650px; margin: 0.8rem auto 0 auto;">
-      Cultivating love for Allah (SWT), His Messenger (ﷺ), and noble Akhlaq alongside Cambridge academic rigor.
+    <span class="eyebrow eyebrow-light">Islamic Ethos &amp; Character</span>
+    <h1>Arabic &amp; Islamic Values Priority</h1>
+    <p>
+      Cultivating reverence for Allah (SWT), love for His Messenger (ﷺ), and principled Akhlaq alongside Cambridge academic standards.
     </p>
   </div>
 </section>
@@ -18,41 +18,63 @@ include __DIR__ . '/includes/header.php';
 <section class="section-padding">
   <div class="container">
     <div class="section-title-wrap">
-      <span class="sub-badge"><i class="fas fa-heart"></i> Tarbiyah Pillars</span>
-      <h2 class="section-title">Core Components of Our Islamic Program</h2>
+      <span class="eyebrow">Tarbiyah Pillars</span>
+      <h2 class="section-title">Core components of our Islamic program</h2>
     </div>
 
-    <div class="pillars-grid" style="margin-bottom: 3rem;">
+    <div class="pillars-grid" style="margin-bottom: 48px;">
       <div class="pillar-card">
-        <div class="pillar-icon" style="background: var(--accent-gold-light); color: var(--accent-gold-dark);"><i class="fas fa-quran"></i></div>
-        <h3>Quran Recitation & Tajweed</h3>
-        <p>Children are taught correct Arabic phonetics (Makharij) from day one. By Class 1, students recite short Surahs with proper Tajweed rules including Gunnah and Madd.</p>
+        <div class="pillar-top">
+          <span class="pillar-num">01</span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+          </span>
+        </div>
+        <h3>Quran Recitation &amp; Tajweed</h3>
+        <p>Accurate Arabic phonetics (Makharij) from day one. By Class 1, students apply foundational rules including Ghunnah and Madd.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-icon" style="background: var(--sky-blue-light); color: var(--sky-blue);"><i class="fas fa-comments"></i></div>
+        <div class="pillar-top">
+          <span class="pillar-num">02</span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+        </div>
         <h3>Spoken Arabic Vocabulary</h3>
-        <p>We introduce everyday Arabic words through interactive visual cards, songs, and dialogue. Students learn greetings, numbers, family terms, and classroom objects in Arabic.</p>
+        <p>Everyday Arabic words taught through visual cards and dialogue—covering greetings, numbers, family terms, and classroom objects.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-icon" style="background: var(--primary-light); color: var(--primary);"><i class="fas fa-hands-praying"></i></div>
+        <div class="pillar-top">
+          <span class="pillar-num">03</span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+        </div>
         <h3>Daily Sunnah Practice</h3>
-        <p>Practical routines for eating with the right hand, saying Bismillah and Alhamdu Lillah, making Salam, performing Wudu, and offering short congregational Duas.</p>
+        <p>Practical routines for eating with the right hand, saying Bismillah and Alhamdulillah, greeting with Salam, Wudu, and short Duas.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-icon" style="background: rgba(16,185,129,0.12); color: #10b981;"><i class="fas fa-user-shield"></i></div>
-        <h3>Akhlaq & Moral Integrity</h3>
-        <p>Teaching honesty, respect for elders, kindness to peers, truthfulness, and responsibility through inspiring stories of the Prophets and Sahabah.</p>
+        <div class="pillar-top">
+          <span class="pillar-num">04</span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+        </div>
+        <h3>Akhlaq &amp; Moral Integrity</h3>
+        <p>Honesty, respect for elders, kindness to peers, and responsibility nurtured through stories of the Prophets and Sahabah.</p>
       </div>
     </div>
 
     <!-- Hadith Quote Box -->
-    <div style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-deep) 100%); color: #ffffff; border-radius: var(--radius-lg); padding: 3rem; text-align: center; box-shadow: var(--shadow-md);">
-      <div class="arabic-header arabic-text">"طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ"</div>
-      <h3 style="color: var(--accent-gold); font-size: 1.4rem; margin-bottom: 0.5rem;">"Seeking knowledge is an obligation upon every Muslim."</h3>
-      <p style="color: rgba(255,255,255,0.8); font-size: 0.95rem;">- Prophet Muhammad (ﷺ) • Sunan Ibn Majah</p>
+    <div class="islamic-card-box" style="background: var(--navy); border-color: var(--border-on-dark);">
+      <div class="quran-quote arabic-text" lang="ar" dir="rtl">"طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ"</div>
+      <div class="translation-quote">
+        "Seeking knowledge is an obligation upon every Muslim."
+        <span class="translation-source">Prophet Muhammad (ﷺ) · Sunan Ibn Majah</span>
+      </div>
     </div>
   </div>
 </section>
