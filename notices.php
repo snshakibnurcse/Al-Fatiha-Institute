@@ -16,12 +16,12 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Banner -->
-<section class="page-banner centered">
+<section style="background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-dark) 100%); color: #ffffff; padding: 4rem 0 3.5rem 0; text-align: center;">
   <div class="container">
-    <span class="eyebrow eyebrow-light">Official Announcements</span>
-    <h1>School Notice Board</h1>
-    <p>
-      Academic schedules, school events, holiday calendars, and administrative updates from AL FATIHA INSTITUTE.
+    <span class="sub-badge gold"><i class="fas fa-bullhorn"></i> Official Announcements</span>
+    <h1 style="color: #ffffff; font-size: 2.8rem; margin-top: 0.5rem;">School Notice Board</h1>
+    <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 650px; margin: 0.8rem auto 0 auto;">
+      Stay updated with academic schedules, events, holiday announcements, and administrative notices.
     </p>
   </div>
 </section>
@@ -29,34 +29,37 @@ include __DIR__ . '/includes/header.php';
 <!-- Notice Board Listing -->
 <section class="section-padding">
   <div class="container">
-
+    
     <!-- Filter Buttons -->
-    <div class="filter-bar">
-      <a href="notices.php" class="btn btn-nav <?= empty($category) ? 'btn-primary' : 'btn-white' ?>">All Notices</a>
-      <a href="notices.php?category=Admission" class="btn btn-nav <?= ($category == 'Admission') ? 'btn-primary' : 'btn-white' ?>">Admissions</a>
-      <a href="notices.php?category=Event" class="btn btn-nav <?= ($category == 'Event') ? 'btn-primary' : 'btn-white' ?>">Events</a>
-      <a href="notices.php?category=Academic" class="btn btn-nav <?= ($category == 'Academic') ? 'btn-primary' : 'btn-white' ?>">Academic</a>
-      <a href="notices.php?category=Holiday" class="btn btn-nav <?= ($category == 'Holiday') ? 'btn-primary' : 'btn-white' ?>">Holidays</a>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2.5rem;">
+      <a href="notices.php" class="btn <?= empty($category) ? 'btn-primary' : 'btn-white' ?>"><i class="fas fa-th-list"></i> All Notices</a>
+      <a href="notices.php?category=Admission" class="btn <?= ($category == 'Admission') ? 'btn-primary' : 'btn-white' ?>"><i class="fas fa-user-plus"></i> Admissions</a>
+      <a href="notices.php?category=Event" class="btn <?= ($category == 'Event') ? 'btn-primary' : 'btn-white' ?>"><i class="fas fa-calendar-star"></i> Events</a>
+      <a href="notices.php?category=Academic" class="btn <?= ($category == 'Academic') ? 'btn-primary' : 'btn-white' ?>"><i class="fas fa-book"></i> Academic</a>
+      <a href="notices.php?category=Holiday" class="btn <?= ($category == 'Holiday') ? 'btn-primary' : 'btn-white' ?>"><i class="fas fa-umbrella-beach"></i> Holidays</a>
     </div>
 
-    <div class="notices-list">
+    <div style="max-width: 900px; margin: 0 auto;">
       <?php if (!empty($allNotices)): ?>
         <?php foreach ($allNotices as $n): ?>
-          <article id="notice-<?= $n['id'] ?>" class="notice-card-full">
-            <div class="notice-card-meta">
-              <span class="category-tag"><?= htmlspecialchars($n['category']) ?></span>
-              <span class="mono-meta" style="color: var(--text-muted);">
-                Published <?= format_date($n['published_date']) ?>
+          <div id="notice-<?= $n['id'] ?>" style="background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 1.8rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; transition: var(--transition);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem;">
+              <span style="background: var(--sky-blue-light); color: var(--primary); font-weight: 800; padding: 0.25rem 0.8rem; border-radius: var(--radius-full); font-size: 0.78rem; text-transform: uppercase;">
+                <i class="fas fa-tag"></i> <?= htmlspecialchars($n['category']) ?>
+              </span>
+              <span style="font-size: 0.85rem; color: var(--text-light); font-weight: 600;">
+                <i class="far fa-calendar-alt"></i> Published: <?= format_date($n['published_date']) ?>
               </span>
             </div>
 
-            <h3><?= htmlspecialchars($n['title']) ?></h3>
-            <p><?= nl2br(htmlspecialchars($n['content'])) ?></p>
-          </article>
+            <h3 style="color: var(--primary-dark); font-size: 1.35rem; margin-bottom: 0.8rem;"><?= htmlspecialchars($n['title']) ?></h3>
+            <p style="color: var(--text-muted); font-size: 0.98rem; line-height: 1.7;"><?= nl2br(htmlspecialchars($n['content'])) ?></p>
+          </div>
         <?php endforeach; ?>
       <?php else: ?>
-        <div class="content-card" style="text-align: center; padding: 48px 24px;">
-          <p class="section-desc">No notices found in this category.</p>
+        <div style="text-align: center; padding: 3rem; background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <i class="fas fa-info-circle" style="font-size: 2.5rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+          <p style="color: var(--text-muted);">No notices found for this category.</p>
         </div>
       <?php endif; ?>
     </div>

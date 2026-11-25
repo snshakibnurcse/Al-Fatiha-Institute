@@ -164,7 +164,7 @@ $fees = $db->query("SELECT * FROM fees WHERE student_id = $st_id ORDER BY id DES
 
       <div class="form-group">
         <label>Transaction ID / Reference (Optional)</label>
-        <input type="text" name="trx_id" class="form-control" placeholder="BKASH-991208">
+        <input type="text" name="trx_id" class="form-control">
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">

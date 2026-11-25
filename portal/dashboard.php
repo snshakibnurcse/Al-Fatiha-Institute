@@ -25,7 +25,7 @@ $unpaidFees = $db->query("SELECT SUM(amount) FROM fees WHERE student_id = $stude
 <!-- Student Overview Header -->
 <div class="dash-welcome-card">
   <div style="display: flex; gap: 16px; align-items: center;">
-    <div style="width: 52px; height: 52px; background: var(--admin-navy); color: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; flex-shrink: 0;">
+    <div style="width: 52px; height: 52px; background: var(--admin-gold); color: var(--admin-navy-deep); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0;">
       <?= strtoupper(substr($student['first_name'] ?: 'S', 0, 1)) ?>
     </div>
     <div>

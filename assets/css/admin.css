@@ -1,31 +1,32 @@
 /* ==========================================================================
    AL FATIHA INSTITUTE - Dashboard & Management System Stylesheet
-   Direction: Quiet Warm-Graphite App Chrome + Oxford Navy Anchor
+   Clean Typography + Vibrant Brand Palette (Oxford Navy, Cambridge Blue, Gold)
    Shared across Admin, Principal, Teacher, Accountant, and Parent Portals
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --admin-navy-deep: #061c38;
-  --admin-navy: #082447;
-  --admin-deep-navy: #061c38;
+  --admin-navy-deep: #032d4e;
+  --admin-navy: #064878;
+  --admin-deep-navy: #032d4e;
   --admin-primary: #0e73b9;
-  --admin-primary-dark: #082447;
-  --admin-gold: #e5a922;
-  --admin-gold-dark: #9a6704;
+  --admin-primary-dark: #064878;
+  --admin-sky: #3ac0f6;
+  --admin-gold: #f3b527;
+  --admin-gold-dark: #b45309;
 
-  /* Quiet Neutral Surfaces */
-  --admin-bg: #f7f7f5;
+  /* Vibrant Light-Sky Surfaces (Replaces dull grey) */
+  --admin-bg: #f1f6fb;
   --admin-card: #ffffff;
-  --admin-raised: #f2f1ed;
-  --admin-border: rgba(23, 23, 23, 0.09);
-  --admin-border-strong: rgba(23, 23, 23, 0.16);
+  --admin-raised: #eaf2fa;
+  --admin-border: #dbe7f3;
+  --admin-border-strong: #bfd3e8;
 
   /* Text Roles */
-  --admin-text: #171717;
-  --admin-text-secondary: #525252;
-  --admin-text-muted: #737373;
+  --admin-text: #0f172a;
+  --admin-text-secondary: #334155;
+  --admin-text-muted: #64748b;
 
   /* Semantic */
   --admin-positive: #16a34a;
@@ -33,7 +34,7 @@
 
   /* App Layout Dimensions */
   --sidebar-width: 256px;
-  --header-height: 58px;
+  --header-height: 60px;
 
   /* Radii & Motion */
   --radius-xs: 6px;
@@ -65,7 +66,7 @@ body.dashboard-body {
 }
 
 /* ==========================================================================
-   1. Form Controls & Alerts
+   1. Clean Form Controls & Alerts
    ========================================================================== */
 .form-group {
   text-align: left;
@@ -75,8 +76,8 @@ body.dashboard-body {
 .form-group label {
   display: block;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--admin-text);
+  font-weight: 600;
+  color: var(--admin-navy-deep);
   margin-bottom: 6px;
 }
 
@@ -86,7 +87,7 @@ body.dashboard-body {
   font-size: 14px;
   border: 1px solid var(--admin-border-strong);
   border-radius: var(--radius-sm);
-  background: var(--admin-card);
+  background: #ffffff;
   transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
   font-family: inherit;
   color: var(--admin-text);
@@ -94,15 +95,15 @@ body.dashboard-body {
 
 .form-control:focus {
   outline: none;
-  border-color: var(--admin-navy);
+  border-color: var(--admin-primary);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(8, 36, 71, 0.08);
+  box-shadow: 0 0 0 3px rgba(14, 115, 185, 0.14);
 }
 
 .btn-block {
   width: 100%;
   padding: 10px 16px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
 }
 
@@ -120,22 +121,22 @@ body.dashboard-body {
 .alert-danger {
   background: #fef2f2;
   color: #b91c1c;
-  border: 1px solid rgba(220, 38, 38, 0.25);
+  border: 1px solid #fecaca;
 }
 
 .alert-success {
-  background: #eef7f1;
-  color: #15803d;
-  border: 1px solid rgba(22, 163, 74, 0.25);
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
 }
 
 /* ==========================================================================
-   2. Sidebar Navigation (Compact 34px Rows + Grouped Sections)
+   2. Sidebar Navigation (Deep Brand Navy + Cambridge Blue Active + Gold)
    ========================================================================== */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--admin-navy-deep);
-  color: #f7f5f0;
+  background: linear-gradient(180deg, #032d4e 0%, #053963 100%);
+  color: #f8fafc;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -152,21 +153,21 @@ body.dashboard-body {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   min-height: var(--header-height);
 }
 
 .sidebar-header img {
-  height: 36px;
-  width: 36px;
+  height: 38px;
+  width: 38px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .sidebar-header div strong {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   color: #ffffff;
   line-height: 1.15;
 }
@@ -177,13 +178,13 @@ body.dashboard-body {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   color: var(--admin-gold);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .sidebar-close-btn {
   display: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #ffffff;
   width: 32px;
   height: 32px;
@@ -196,7 +197,7 @@ body.dashboard-body {
 }
 
 .sidebar-close-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-menu {
@@ -212,14 +213,14 @@ body.dashboard-body {
   width: 4px;
 }
 .sidebar-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 4px;
 }
 
 .sidebar-section-label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  color: rgba(247, 245, 240, 0.45);
+  color: #7dd3fc;
   padding: 16px 10px 6px 10px;
   margin: 0;
   user-select: none;
@@ -238,8 +239,8 @@ body.dashboard-body {
   align-items: center;
   gap: 10px;
   padding: 0 10px;
-  height: 34px;
-  color: rgba(247, 245, 240, 0.72);
+  height: 35px;
+  color: rgba(248, 250, 252, 0.8);
   border-radius: var(--radius-sm);
   font-weight: 500;
   font-size: 13.5px;
@@ -255,23 +256,23 @@ body.dashboard-body {
   width: 18px;
   text-align: center;
   flex-shrink: 0;
-  color: rgba(247, 245, 240, 0.52);
+  color: rgba(186, 230, 253, 0.72);
   transition: color 140ms var(--ease);
 }
 
 .sidebar-menu a:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
 .sidebar-menu a:hover i {
-  color: rgba(247, 245, 240, 0.85);
+  color: var(--admin-gold);
 }
 
 .sidebar-menu a.active {
-  background: #10325e;
+  background: var(--admin-primary);
   color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: inset 3px 0 0 var(--admin-gold);
 }
 
 .sidebar-menu a.active i {
@@ -280,7 +281,7 @@ body.dashboard-body {
 
 .sidebar-footer {
   padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-profile-badge {
@@ -298,7 +299,7 @@ body.dashboard-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -310,7 +311,7 @@ body.dashboard-body {
 .user-info strong {
   display: block;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
@@ -321,7 +322,7 @@ body.dashboard-body {
   display: block;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  color: rgba(247, 245, 240, 0.58);
+  color: #bae6fd;
 }
 
 .sidebar-logout-btn {
@@ -332,13 +333,13 @@ body.dashboard-body {
   width: 100%;
   margin-top: 12px;
   height: 36px;
-  background: rgba(220, 38, 38, 0.14);
+  background: rgba(239, 68, 68, 0.16);
   color: #fca5a5 !important;
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: var(--radius-sm);
   text-decoration: none !important;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   transition: background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
   cursor: pointer;
 }
@@ -355,7 +356,7 @@ body.dashboard-body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(6, 28, 56, 0.55);
+  background: rgba(3, 45, 78, 0.55);
   z-index: 1040;
   opacity: 0;
   pointer-events: none;
@@ -384,7 +385,7 @@ body.dashboard-body {
 
 .top-nav,
 .topbar {
-  background: var(--admin-card);
+  background: #ffffff;
   position: sticky;
   top: 0;
   z-index: 900;
@@ -406,7 +407,7 @@ body.dashboard-body {
 .mobile-menu-toggle {
   display: none;
   background: var(--admin-raised);
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-border-strong);
   color: var(--admin-navy);
   font-size: 16px;
   width: 36px;
@@ -419,7 +420,7 @@ body.dashboard-body {
 }
 
 .page-title h2 {
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--admin-navy);
   margin: 0;
@@ -435,14 +436,14 @@ body.dashboard-body {
 }
 
 .btn-view-site {
-  background: var(--admin-bg);
-  color: var(--admin-text-secondary);
+  background: var(--admin-raised);
+  color: var(--admin-navy);
   border: 1px solid var(--admin-border-strong);
   height: 34px;
   padding: 0 12px;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -450,8 +451,9 @@ body.dashboard-body {
 }
 
 .btn-view-site:hover {
-  background: var(--admin-raised);
-  color: var(--admin-navy);
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: #ffffff;
 }
 
 .btn-logout-mobile {
@@ -459,7 +461,7 @@ body.dashboard-body {
 }
 
 /* ==========================================================================
-   4. Content Area, Executive Header & KPI Cards
+   4. Content Area, Vibrant Brand Welcome Card & Colorful KPI Cards
    ========================================================================== */
 .content-area,
 .page-body {
@@ -469,19 +471,20 @@ body.dashboard-body {
   max-width: 1480px;
 }
 
-/* Executive Header Card (Quiet Neutral Light Card — Zero Purple Slop & Zero White-on-White Risk) */
+/* Vibrant Brand Executive Header Card (Consistent Navy -> Cambridge Blue + Gold Accent) */
 .dash-welcome-card {
-  background: var(--admin-card);
-  border: 1px solid var(--admin-border);
+  background: linear-gradient(135deg, #032d4e 0%, #064878 60%, #0e73b9 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-md);
-  padding: 20px 24px;
+  padding: 22px 24px;
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  box-shadow: 0 1px 2px rgba(10, 20, 36, 0.04);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(3, 45, 78, 0.14);
 }
 
 .welcome-meta-row {
@@ -495,44 +498,41 @@ body.dashboard-body {
 .date-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
-  background: var(--admin-raised);
-  border: 1px solid var(--admin-border);
-  color: var(--admin-text-secondary);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
   padding: 4px 10px;
   border-radius: var(--radius-xs);
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .role-pill-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
-  background: #fbf4e3;
-  border: 1px solid rgba(154, 103, 4, 0.2);
-  color: var(--admin-gold-dark);
+  background: var(--admin-gold);
+  color: var(--admin-navy-deep);
   padding: 4px 10px;
   border-radius: var(--radius-xs);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .welcome-title {
   font-family: 'Newsreader', Georgia, serif;
   font-size: 28px;
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   margin: 0 0 4px 0;
-  color: var(--admin-navy);
+  color: #ffffff !important;
   line-height: 1.15;
 }
 
 .welcome-sub {
   margin: 0;
-  color: var(--admin-text-secondary);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 14px;
 }
 
@@ -542,10 +542,11 @@ body.dashboard-body {
   flex-wrap: wrap;
 }
 
+/* Primary & Secondary Action Buttons */
 .btn-welcome-primary {
-  background: var(--admin-navy);
+  background: var(--admin-primary);
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 600;
   height: 38px;
   padding: 0 16px;
   border-radius: var(--radius-sm);
@@ -555,18 +556,27 @@ body.dashboard-body {
   align-items: center;
   gap: 8px;
   border: none;
-  transition: background-color 150ms var(--ease);
+  transition: background-color 150ms var(--ease), transform 150ms var(--ease);
 }
 
 .btn-welcome-primary:hover {
-  background: var(--admin-navy-deep);
+  background: var(--admin-navy);
+}
+
+.dash-welcome-card .btn-welcome-primary {
+  background: var(--admin-gold);
+  color: var(--admin-navy-deep);
+}
+
+.dash-welcome-card .btn-welcome-primary:hover {
+  background: #e2a51e;
 }
 
 .btn-welcome-secondary {
-  background: var(--admin-card);
+  background: var(--admin-raised);
   border: 1px solid var(--admin-border-strong);
-  color: var(--admin-text);
-  font-weight: 500;
+  color: var(--admin-navy);
+  font-weight: 600;
   height: 38px;
   padding: 0 16px;
   border-radius: var(--radius-sm);
@@ -579,8 +589,19 @@ body.dashboard-body {
 }
 
 .btn-welcome-secondary:hover {
-  background: var(--admin-raised);
-  border-color: var(--admin-navy);
+  background: #dceaf7;
+  border-color: var(--admin-primary);
+}
+
+.dash-welcome-card .btn-welcome-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+}
+
+.dash-welcome-card .btn-welcome-secondary:hover {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Quick Action Bar & Chips */
@@ -602,14 +623,14 @@ body.dashboard-body {
 
 .quick-chip,
 .quick-action-bar .btn {
-  background: var(--admin-card);
-  border: 1px solid var(--admin-border);
+  background: #ffffff;
+  border: 1px solid var(--admin-border-strong);
   border-radius: var(--radius-sm);
   height: 36px;
-  padding: 0 12px;
-  color: var(--admin-text-secondary);
+  padding: 0 14px;
+  color: var(--admin-navy);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -620,19 +641,19 @@ body.dashboard-body {
 }
 
 .quick-chip i {
-  color: var(--admin-text-muted);
+  color: var(--admin-primary);
   font-size: 13px;
 }
 
 .quick-chip:hover,
 .quick-action-bar .btn:hover {
-  border-color: var(--admin-border-strong);
+  border-color: var(--admin-primary);
   background: var(--admin-raised);
-  color: var(--admin-navy);
+  color: var(--admin-navy-deep);
 }
 
 .quick-chip.chip-pending {
-  border-color: rgba(220, 38, 38, 0.25);
+  border-color: #fca5a5;
   background: #fef2f2;
   color: #b91c1c;
 }
@@ -646,12 +667,12 @@ body.dashboard-body {
   background: #dc2626;
   color: #ffffff;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
 }
 
-/* KPI Stat Cards */
+/* Colorful Brand KPI Stat Cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -664,35 +685,41 @@ body.dashboard-body {
   border-radius: var(--radius-md);
   padding: 18px 20px;
   border: 1px solid var(--admin-border);
-  box-shadow: 0 1px 2px rgba(10, 20, 36, 0.04);
+  border-top: 3px solid var(--admin-primary);
+  box-shadow: 0 2px 8px rgba(14, 115, 185, 0.05);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  transition: border-color 150ms var(--ease);
+  transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
 }
 
 .kpi-card:hover {
-  border-color: var(--admin-border-strong);
+  border-color: var(--admin-primary);
+  box-shadow: 0 6px 18px rgba(14, 115, 185, 0.1);
 }
 
+.kpi-card:nth-child(2) { border-top-color: var(--admin-gold); }
+.kpi-card:nth-child(3) { border-top-color: #0284c7; }
+.kpi-card:nth-child(4) { border-top-color: #16a34a; }
+
 .kpi-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: var(--admin-raised);
-  color: var(--admin-navy);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e0f2fe;
+  color: #0e73b9;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 16px;
   flex-shrink: 0;
   order: 2;
 }
 
-.kpi-icon.gold { background: #fbf4e3; color: var(--admin-gold-dark); }
-.kpi-icon.green { background: #eef7f1; color: var(--admin-positive); }
-.kpi-icon.purple { background: var(--admin-raised); color: var(--admin-navy); }
+.kpi-icon.gold { background: #fef3c7; color: #b45309; }
+.kpi-icon.green { background: #dcfce7; color: #15803d; }
+.kpi-icon.purple { background: #e0f2fe; color: #0284c7; }
 
 .kpi-data {
   order: 1;
@@ -702,9 +729,9 @@ body.dashboard-body {
 .kpi-data h3 {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--admin-text);
+  color: var(--admin-navy-deep);
   margin: 0 0 4px 0;
   line-height: 1.15;
 }
@@ -713,7 +740,7 @@ body.dashboard-body {
   font-size: 13px;
   color: var(--admin-text-muted);
   margin: 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -723,7 +750,7 @@ body.dashboard-body {
   background: var(--admin-card);
   border-radius: var(--radius-md);
   border: 1px solid var(--admin-border);
-  box-shadow: 0 1px 2px rgba(10, 20, 36, 0.04);
+  box-shadow: 0 2px 8px rgba(14, 115, 185, 0.04);
   padding: 20px 24px;
   margin-bottom: 20px;
   min-width: 0;
@@ -769,7 +796,7 @@ body.dashboard-body {
   background: var(--admin-bg);
 }
 .table-responsive::-webkit-scrollbar-thumb {
-  background: rgba(23, 23, 23, 0.16);
+  background: #bfd3e8;
   border-radius: 6px;
 }
 
@@ -782,11 +809,11 @@ body.dashboard-body {
 
 .data-table th {
   background: var(--admin-raised);
-  color: var(--admin-text-secondary);
-  font-weight: 500;
+  color: var(--admin-navy);
+  font-weight: 600;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--admin-border);
-  font-size: 12px;
+  border-bottom: 1px solid var(--admin-border-strong);
+  font-size: 12.5px;
   white-space: nowrap;
 }
 
@@ -802,24 +829,24 @@ body.dashboard-body {
 }
 
 .data-table tbody tr:hover {
-  background: #fafaf8;
+  background: #f8fbff;
 }
 
 /* Status Badges */
 .badge {
   display: inline-block;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-xs);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.badge-success { background: #eef7f1; color: #15803d; }
-.badge-warning { background: #fbf4e3; color: #9a6704; }
-.badge-danger { background: #fef2f2; color: #b91c1c; }
-.badge-info { background: #ebf3fa; color: #082447; }
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+.badge-info { background: #e0f2fe; color: #0369a1; }
 
 /* Buttons General */
 .btn {
@@ -859,7 +886,7 @@ body.dashboard-body {
     max-width: 84vw;
     z-index: 10002 !important;
     transform: translateX(-100%);
-    box-shadow: 10px 0 36px rgba(6, 28, 56, 0.35);
+    box-shadow: 10px 0 36px rgba(3, 45, 78, 0.35);
     display: flex !important;
     flex-direction: column !important;
   }
@@ -914,11 +941,11 @@ body.dashboard-body {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-sm);
-    background: #fef2f2 !important;
+    background: #fee2e2 !important;
     color: #dc2626 !important;
     font-size: 14px !important;
     text-decoration: none !important;
-    border: 1px solid rgba(220, 38, 38, 0.25) !important;
+    border: 1px solid #fecaca !important;
     flex-shrink: 0;
   }
 
@@ -1104,7 +1131,7 @@ body.dashboard-body {
     left: 0;
     right: 0;
     height: 60px;
-    background: var(--admin-card);
+    background: #ffffff;
     border-top: 1px solid var(--admin-border);
     display: flex;
     justify-content: space-around;
@@ -1136,7 +1163,7 @@ body.dashboard-body {
   }
 
   .mobile-nav-item.active {
-    color: var(--admin-navy);
+    color: var(--admin-primary);
     font-weight: 600;
   }
 
@@ -1147,7 +1174,7 @@ body.dashboard-body {
   }
 
   .dash-welcome-card {
-    padding: 16px !important;
+    padding: 18px 16px !important;
   }
 
   .welcome-title {

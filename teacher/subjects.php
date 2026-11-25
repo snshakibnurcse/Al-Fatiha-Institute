@@ -140,7 +140,7 @@ $studentsTaughtCount = $totalStudentsTaught->fetchColumn();
       <label style="display: block; font-size: 13px; font-weight: 500; color: var(--admin-text); margin-bottom: 6px;">
         Search Subject Name or Code
       </label>
-      <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Subject name or code" class="form-control">
+      <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" class="form-control">
     </div>
 
     <div style="flex: 1.5; min-width: 180px;">

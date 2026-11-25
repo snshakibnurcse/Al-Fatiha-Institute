@@ -127,7 +127,7 @@ foreach ($attStmt->fetchAll() as $row) {
                   </div>
                 </td>
                 <td>
-                  <input type="text" name="remarks[<?= $st['id'] ?>]" value="<?= htmlspecialchars($curr_rem) ?>" placeholder="Optional note" class="form-control" style="height: 34px; padding: 0 10px; font-size: 13px;">
+                  <input type="text" name="remarks[<?= $st['id'] ?>]" value="<?= htmlspecialchars($curr_rem) ?>" class="form-control" style="height: 34px; padding: 0 10px; font-size: 13px;">
                 </td>
               </tr>
             <?php endforeach; ?>

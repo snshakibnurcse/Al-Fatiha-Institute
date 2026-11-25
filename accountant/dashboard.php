@@ -127,15 +127,15 @@ $netBalance = $totalIncome - $totalExpense;
   </div>
   <div class="welcome-actions">
     <a href="fees.php?action=issue_invoice" class="btn-welcome-primary">
-      <i class="fas fa-plus"></i> Issue Invoice
+      Issue Invoice
     </a>
     <a href="fees.php" class="btn-welcome-secondary">
       Fees &amp; Due Tracker
     </a>
-    <a href="expenses.php?action=add" class="btn-welcome-secondary" style="color: #dc2626; border-color: rgba(220,38,38,0.25);">
+    <a href="expenses.php?action=add" class="btn-welcome-secondary" style="background: #dc2626; border-color: #dc2626; color: #ffffff !important;">
       Add Expense
     </a>
-    <a href="income.php?action=add" class="btn-welcome-secondary" style="color: #15803d; border-color: rgba(22,163,74,0.25);">
+    <a href="income.php?action=add" class="btn-welcome-secondary" style="background: #16a34a; border-color: #16a34a; color: #ffffff !important;">
       Add Income
     </a>
   </div>
@@ -365,14 +365,14 @@ $netBalance = $totalIncome - $totalExpense;
           {
             label: 'Income (৳)',
             data: incData,
-            backgroundColor: '#082447',
-            borderRadius: 4
+            backgroundColor: '#10b981',
+            borderRadius: 5
           },
           {
             label: 'Expense (৳)',
             data: expData,
-            backgroundColor: '#d4d4d8',
-            borderRadius: 4
+            backgroundColor: '#ef4444',
+            borderRadius: 5
           }
         ]
       },
@@ -384,14 +384,14 @@ $netBalance = $totalIncome - $totalExpense;
         },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(23,23,23,0.06)' } }
+          y: { beginAtZero: true, grid: { color: 'rgba(14,115,185,0.08)' } }
         }
       }
     });
 
     const expLabels = <?= json_encode(array_column($catExpenses, 'category')) ?>;
     const expTotals = <?= json_encode(array_map('floatval', array_column($catExpenses, 'total'))) ?>;
-    const colors = ['#082447', '#0e73b9', '#e5a922', '#16a34a', '#737373', '#a3a3a3', '#d4d4d8'];
+    const colors = ['#0e73b9', '#f3b527', '#10b981', '#ef4444', '#0284c7', '#d97706', '#64748b'];
 
     const ctx2 = document.getElementById('expCategoryChart').getContext('2d');
     new Chart(ctx2, {

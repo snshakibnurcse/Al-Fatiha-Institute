@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 $db = get_db_connection();
 
-// Fetch latest notices for strip & notice board
+// Fetch latest notices for ticker & widget
 $noticeStmt = $db->query("SELECT * FROM notices ORDER BY published_date DESC LIMIT 5");
 $notices = $noticeStmt->fetchAll();
 
@@ -13,255 +13,200 @@ include __DIR__ . '/includes/header.php';
 <section class="hero-section">
   <div class="container hero-grid">
     <div class="hero-content">
-      <span class="hero-eyebrow">Cambridge Early Years &amp; Islamic Ethos · Cox's Bazar</span>
-      <h1>Nurturing young minds with Cambridge clarity and Islamic character</h1>
+      <h2><i class="fas fa-star" style="color: var(--accent-gold);"></i> Premier Kindergarten & Early Primary</h2>
+      <h1>Nurturing Young Minds with <span>Cambridge Excellence</span> & Islamic Values</h1>
       <p>
-        At AL FATIHA INSTITUTE, children from Play Group through Class 2 build strong foundations in Cambridge English, mathematics, and science alongside Quranic Tajweed and daily Arabic.
+        At <strong>AL FATIHA INSTITUTE</strong>, we provide a world-class Cambridge International curriculum foundation combined with authentic Islamic Tarbiyah, Quranic Tajweed, and Arabic language immersion for children in <strong>Play, Nursery, KG, Class 1, and Class 2</strong>.
       </p>
       <div class="hero-buttons">
-        <a href="admissions.php" class="btn btn-gold">Apply for 2027 Session</a>
-        <a href="academics.php" class="btn btn-outline-dark">Explore Curriculum</a>
+        <a href="admissions.php" class="btn btn-gold"><i class="fas fa-user-plus"></i> Online Admission 2027</a>
+        <a href="academics.php" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.4);"><i class="fas fa-book-open"></i> Explore Curriculum</a>
       </div>
 
-      <div class="hero-meta-strip">
-        <div class="hero-meta-item">
-          <strong>Cambridge Early Years &amp; Primary</strong>
-          <span>Structured phonics, numeracy, and inquiry-based science</span>
+      <div class="hero-badges">
+        <div class="hero-badge-item">
+          <i class="fas fa-graduation-cap"></i>
+          <div>
+            <strong>Cambridge Primary</strong>
+            <span>Global Standard Phonics & Numeracy</span>
+          </div>
         </div>
-        <div class="hero-meta-item">
-          <strong>Tajweed &amp; Spoken Arabic</strong>
-          <span>Daily Makharij, short Surahs, and practical Sunnah habits</span>
+        <div class="hero-badge-item">
+          <i class="fas fa-quran"></i>
+          <div>
+            <strong>Arabic & Tajweed</strong>
+            <span>Daily Hifz & Sunnah Integration</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Hero Moment: 2027 Prospectus Snapshot -->
-    <div class="prospectus-card">
-      <div class="prospectus-head">
-        <div class="prospectus-brand">
-          <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Crest">
-          <div>
-            <strong>Academic Prospectus 2027</strong>
-            <span>Play Group – Class Two</span>
-          </div>
+    <div class="hero-card-preview">
+      <div class="hero-image-wrap">
+        <img src="assets/images/logo.png?v=2" alt="AL FATIHA INSTITUTE Logo" class="logo-hero">
+        <h3 style="color: #ffffff; font-size: 1.4rem; margin-bottom: 0.5rem;">AL FATIHA INSTITUTE</h3>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 1rem;">Cox's Bazar • Established 2025</p>
+        
+        <div class="floating-pill">
+          <i class="fas fa-award"></i>
+          <span style="text-align: left;">
+            <strong style="display: block; font-size: 0.9rem;">Admissions Open 2027</strong>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Play, Nursery, KG, Class 1 & Class 2</small>
+          </span>
         </div>
-        <span class="status-tag">Admissions open</span>
-      </div>
-
-      <div class="prospectus-rows">
-        <a href="academics.php#play" class="prospectus-row">
-          <div class="prospectus-row-left">
-            <span class="prospectus-idx">01</span>
-            <span class="prospectus-row-title">Play Group · Early Sensory</span>
-          </div>
-          <span class="prospectus-row-age">2.5–3.5 yrs</span>
-        </a>
-        <a href="academics.php#nursery" class="prospectus-row">
-          <div class="prospectus-row-left">
-            <span class="prospectus-idx">02</span>
-            <span class="prospectus-row-title">Nursery · Foundation Literacy</span>
-          </div>
-          <span class="prospectus-row-age">3.5–4.5 yrs</span>
-        </a>
-        <a href="academics.php#kg" class="prospectus-row">
-          <div class="prospectus-row-left">
-            <span class="prospectus-idx">03</span>
-            <span class="prospectus-row-title">Kindergarten · Active Reading</span>
-          </div>
-          <span class="prospectus-row-age">4.5–5.5 yrs</span>
-        </a>
-        <a href="academics.php#class1" class="prospectus-row">
-          <div class="prospectus-row-left">
-            <span class="prospectus-idx">04</span>
-            <span class="prospectus-row-title">Class One · Cambridge Stage 1</span>
-          </div>
-          <span class="prospectus-row-age">5.5–6.5 yrs</span>
-        </a>
-        <a href="academics.php#class1" class="prospectus-row">
-          <div class="prospectus-row-left">
-            <span class="prospectus-idx">05</span>
-            <span class="prospectus-row-title">Class Two · Cambridge Stage 2</span>
-          </div>
-          <span class="prospectus-row-age">6.5–7.5 yrs</span>
-        </a>
-      </div>
-
-      <div class="prospectus-foot">
-        <span>Tekpara Campus · 1:15 ratio</span>
-        <a href="admissions.php#apply-form">Start application &rarr;</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Notice Strip -->
-<div class="notice-strip">
-  <div class="container notice-strip-wrap">
-    <div class="notice-strip-left">
-      <span class="notice-strip-tag">Latest notice</span>
-      <?php if (!empty($notices)): $latest = $notices[0]; ?>
-        <div class="notice-strip-text">
-          <span class="notice-strip-date"><?= date('d M Y', strtotime($latest['published_date'])) ?></span>
-          <strong><?= htmlspecialchars($latest['title']) ?></strong>
-        </div>
+<!-- Notice Ticker Bar -->
+<div class="ticker-bar">
+  <div class="container ticker-wrap">
+    <span class="ticker-label"><i class="fas fa-bullhorn"></i> Latest Notice</span>
+    <div class="ticker-content">
+      <?php if (!empty($notices)): ?>
+        <?php foreach ($notices as $n): ?>
+          <span style="margin-right: 3rem;">
+            <strong>[<?= date('d M', strtotime($n['published_date'])) ?>]</strong> <?= htmlspecialchars($n['title']) ?> &nbsp;•&nbsp;
+          </span>
+        <?php endforeach; ?>
       <?php else: ?>
-        <div class="notice-strip-text">Admissions open for the 2027 academic session (Play Group to Class 2)</div>
+        <span>Welcome to AL FATIHA INSTITUTE - Admission open for 2027 academic session!</span>
       <?php endif; ?>
     </div>
-    <a href="notices.php" class="notice-strip-link">All notices &rarr;</a>
   </div>
 </div>
 
-<!-- Four Core Pillars -->
+<!-- Four Core Pillars Section -->
 <section class="section-padding">
   <div class="container">
     <div class="section-title-wrap">
-      <span class="eyebrow">01 · Educational Framework</span>
-      <h2 class="section-title">Foundations of balanced early schooling</h2>
-      <p class="section-desc">Academic rigor and moral formation taught side by side in calm, structured classrooms.</p>
+      <span class="sub-badge"><i class="fas fa-compass"></i> Why Choose Us</span>
+      <h2 class="section-title">Foundations of Holistic Education</h2>
+      <p class="section-desc">We combine academic brilliance with pure moral and spiritual growth to empower your child's golden early learning years.</p>
     </div>
 
     <div class="pillars-grid">
       <div class="pillar-card">
-        <div class="pillar-top">
-          <span class="pillar-num">01</span>
-          <span class="pillar-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </span>
-        </div>
+        <div class="pillar-icon"><i class="fas fa-book-reader"></i></div>
         <h3>Cambridge Curriculum</h3>
-        <p>EYFS and Cambridge Primary standards focused on English phonics, reading comprehension, and mathematical reasoning.</p>
+        <p>British Early Years Foundation Stage (EYFS) and Cambridge Primary standards focusing on analytical thinking, English fluency, and mathematical problem-solving.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-top">
-          <span class="pillar-num">02</span>
-          <span class="pillar-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-          </span>
-        </div>
-        <h3>Islamic Ethos &amp; Tarbiyah</h3>
-        <p>Character formation rooted in Akhlaq, daily Sunnah adab, Prophetic stories, and clear foundational Aqeedah.</p>
+        <div class="pillar-icon"><i class="fas fa-quran"></i></div>
+        <h3>Islamic Ethos & Tarbiyah</h3>
+        <p>Comprehensive Islamic character development focusing on Akhlaq, Daily Sunnah adab, Quranic stories, and basic Aqeedah designed for young minds.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-top">
-          <span class="pillar-num">03</span>
-          <span class="pillar-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
-          </span>
-        </div>
-        <h3>Arabic &amp; Tajweed Hifz</h3>
-        <p>Accurate letter articulation (Makharij), applied Tajweed rules, practical Arabic vocabulary, and paced Surah memorization.</p>
+        <div class="pillar-icon"><i class="fas fa-language"></i></div>
+        <h3>Arabic & Tajweed Hifz</h3>
+        <p>Interactive Arabic language vocabulary acquisition, proper Makharij, Tajweed rules, and age-appropriate Surah memorization with daily practice.</p>
       </div>
 
       <div class="pillar-card">
-        <div class="pillar-top">
-          <span class="pillar-num">04</span>
-          <span class="pillar-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </span>
-        </div>
+        <div class="pillar-icon"><i class="fas fa-shield-alt"></i></div>
         <h3>Child-Centric Campus</h3>
-        <p>Air-conditioned classrooms, continuous CCTV monitoring, and attentive educators maintaining a 1:15 ratio.</p>
+        <p>Safe, CCTV-monitored, air-conditioned activity rooms, hygienic play zones, and caring female & male educators maintaining a 1:15 teacher-student ratio.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Academic Programs -->
-<section class="section-padding section-surface">
+<!-- Academic Programs Section -->
+<section class="section-padding programs-section">
   <div class="container">
     <div class="section-title-wrap">
-      <span class="eyebrow">02 · Academic Structure</span>
-      <h2 class="section-title">Kindergarten and early primary classes</h2>
-      <p class="section-desc">Age-appropriate stages guiding children from sensory discovery to Cambridge Primary Stage 2.</p>
+      <span class="sub-badge gold"><i class="fas fa-layer-group"></i> Academic Structure</span>
+      <h2 class="section-title">Our Kindergarten & Early Primary Classes</h2>
+      <p class="section-desc">Tailored developmental stages from toddler playgroup to primary Class Two.</p>
     </div>
 
     <div class="programs-grid">
+      <!-- Play Group -->
       <div class="program-card">
-        <div>
-          <div class="program-header">
-            <span class="program-age-tag">Age 2.5–3.5 yrs</span>
-            <h3>Play Group</h3>
-            <p class="program-sub">Early childhood sensory learning</p>
-          </div>
-          <ul class="program-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Phonics &amp; alphabet sounds</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Arabic letters &amp; daily Duas</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Fine motor &amp; creative play</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Classroom etiquette &amp; sharing</li>
-          </ul>
+        <span class="program-badge">Age 2.5 - 3.5 Yrs</span>
+        <div class="program-header">
+          <div class="program-icon"><i class="fas fa-shapes"></i></div>
+          <h3>Play Group</h3>
+          <p class="program-age">Early Childhood Sensory Learning</p>
         </div>
-        <a href="admissions.php?class=1" class="btn btn-outline btn-block">Apply for Play</a>
+        <ul class="program-features">
+          <li><i class="fas fa-check-circle"></i> Phonics & Alphabet Sounds</li>
+          <li><i class="fas fa-check-circle"></i> Basic Arabic Letters & Duas</li>
+          <li><i class="fas fa-check-circle"></i> Motor Skills & Creative Play</li>
+          <li><i class="fas fa-check-circle"></i> Social Habit Building</li>
+        </ul>
+        <a href="admissions.php?class=1" class="btn btn-outline btn-block"><i class="fas fa-paper-plane"></i> Apply for Play</a>
       </div>
 
+      <!-- Nursery -->
       <div class="program-card">
-        <div>
-          <div class="program-header">
-            <span class="program-age-tag">Age 3.5–4.5 yrs</span>
-            <h3>Nursery</h3>
-            <p class="program-sub">Foundation literacy &amp; numeracy</p>
-          </div>
-          <ul class="program-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> English CVC words &amp; reading</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Counting 1–100 &amp; shapes</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Short Surahs &amp; daily Sunnah</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Art &amp; nature observation</li>
-          </ul>
+        <span class="program-badge">Age 3.5 - 4.5 Yrs</span>
+        <div class="program-header">
+          <div class="program-icon"><i class="fas fa-child"></i></div>
+          <h3>Nursery</h3>
+          <p class="program-age">Foundation Literacy & Numeracy</p>
         </div>
-        <a href="admissions.php?class=2" class="btn btn-outline btn-block">Apply for Nursery</a>
+        <ul class="program-features">
+          <li><i class="fas fa-check-circle"></i> English CVC Words & Reading</li>
+          <li><i class="fas fa-check-circle"></i> Counting 1-100 & Shapes</li>
+          <li><i class="fas fa-check-circle"></i> Short Surahs & Daily Sunnah</li>
+          <li><i class="fas fa-check-circle"></i> Art & Environmental Exploration</li>
+        </ul>
+        <a href="admissions.php?class=2" class="btn btn-outline btn-block"><i class="fas fa-paper-plane"></i> Apply for Nursery</a>
       </div>
 
+      <!-- KG -->
       <div class="program-card">
-        <div>
-          <div class="program-header">
-            <span class="program-age-tag">Age 4.5–5.5 yrs</span>
-            <h3>Kindergarten</h3>
-            <p class="program-sub">Active learner preparation</p>
-          </div>
-          <ul class="program-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Sentence building &amp; vocabulary</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Addition &amp; subtraction</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Arabic reading with Harakat</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Stories of the Prophets</li>
-          </ul>
+        <span class="program-badge">Age 4.5 - 5.5 Yrs</span>
+        <div class="program-header">
+          <div class="program-icon"><i class="fas fa-school"></i></div>
+          <h3>Kindergarten (KG)</h3>
+          <p class="program-age">Active Learner Preparation</p>
         </div>
-        <a href="admissions.php?class=3" class="btn btn-outline btn-block">Apply for KG</a>
+        <ul class="program-features">
+          <li><i class="fas fa-check-circle"></i> Sentence Construction & Vocabulary</li>
+          <li><i class="fas fa-check-circle"></i> Basic Addition & Subtraction</li>
+          <li><i class="fas fa-check-circle"></i> Arabic Reading with Harakat</li>
+          <li><i class="fas fa-check-circle"></i> Islamic History Stories for Kids</li>
+        </ul>
+        <a href="admissions.php?class=3" class="btn btn-outline btn-block"><i class="fas fa-paper-plane"></i> Apply for KG</a>
       </div>
 
+      <!-- Class One -->
       <div class="program-card">
-        <div>
-          <div class="program-header">
-            <span class="program-age-tag">Age 5.5–6.5 yrs</span>
-            <h3>Class One</h3>
-            <p class="program-sub">Cambridge Primary Stage 1</p>
-          </div>
-          <ul class="program-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Cambridge English &amp; Math</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Cambridge Primary Science</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Quran recitation with Tajweed</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Basic conversational Arabic</li>
-          </ul>
+        <span class="program-badge">Age 5.5 - 6.5 Yrs</span>
+        <div class="program-header">
+          <div class="program-icon"><i class="fas fa-book-reader"></i></div>
+          <h3>Class One</h3>
+          <p class="program-age">Cambridge Primary Stage 1</p>
         </div>
-        <a href="admissions.php?class=4" class="btn btn-primary btn-block">Apply for Class 1</a>
+        <ul class="program-features">
+          <li><i class="fas fa-check-circle"></i> Cambridge Primary English & Math</li>
+          <li><i class="fas fa-check-circle"></i> Cambridge Primary Science</li>
+          <li><i class="fas fa-check-circle"></i> Quran Recitation with Tajweed</li>
+          <li><i class="fas fa-check-circle"></i> Basic Conversational Arabic</li>
+        </ul>
+        <a href="admissions.php?class=4" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Class 1</a>
       </div>
 
+      <!-- Class Two -->
       <div class="program-card">
-        <div>
-          <div class="program-header">
-            <span class="program-age-tag">Age 6.5–7.5 yrs</span>
-            <h3>Class Two</h3>
-            <p class="program-sub">Cambridge Primary Stage 2</p>
-          </div>
-          <ul class="program-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Reading &amp; comprehension</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Science experiments &amp; logic</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Juz Amma Hifz progression</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg> Islamic ethics &amp; leadership</li>
-          </ul>
+        <span class="program-badge">Age 6.5 - 7.5 Yrs</span>
+        <div class="program-header">
+          <div class="program-icon"><i class="fas fa-graduation-cap"></i></div>
+          <h3>Class Two</h3>
+          <p class="program-age">Cambridge Primary Stage 2</p>
         </div>
-        <a href="admissions.php?class=5" class="btn btn-primary btn-block">Apply for Class 2</a>
+        <ul class="program-features">
+          <li><i class="fas fa-check-circle"></i> Advanced Reading & Comprehension</li>
+          <li><i class="fas fa-check-circle"></i> Science Experiments & Logic</li>
+          <li><i class="fas fa-check-circle"></i> Juz Amma Hifz Progress</li>
+          <li><i class="fas fa-check-circle"></i> Islamic Ethics & Leadership</li>
+        </ul>
+        <a href="admissions.php?class=5" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Apply for Class 2</a>
       </div>
     </div>
   </div>
@@ -271,82 +216,84 @@ include __DIR__ . '/includes/header.php';
 <section class="section-padding islamic-banner-section">
   <div class="container islamic-grid">
     <div class="islamic-content">
-      <span class="eyebrow eyebrow-light">03 · Islamic Ethos</span>
-      <div class="arabic-header arabic-text" lang="ar" dir="rtl">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
-      <h2>Arabic and Islamic values in daily learning</h2>
-      <p class="islamic-lead">
-        Early childhood is the natural time to cultivate love for Allah, respect for parents, and principled conduct. Alongside Cambridge subjects, every student practices:
+      <span class="sub-badge gold"><i class="fas fa-mosque"></i> Islamic Priority</span>
+      <h2 class="arabic-header arabic-text">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</h2>
+      <h2>Arabic & Islamic Ethos in Daily Learning</h2>
+      <p style="color: rgba(255,255,255,0.85); font-size: 1.05rem; line-height: 1.7;">
+        We believe early childhood is the most crucial phase to instill love for Allah (SWT), the Prophet (ﷺ), and noble character. Along with Cambridge English subjects, every child receives:
       </p>
 
       <ul class="islamic-list">
         <li>
-          <span class="islamic-list-num">01</span>
+          <i class="fas fa-quran"></i>
           <div>
-            <strong>Tajweed &amp; Hifz Program</strong>
-            <span>Clear Arabic articulation (Makharij) and step-by-step memorization of Juz Amma.</span>
+            <strong>Tajweed & Hifz Program</strong>
+            <span>Proper pronunciation of Arabic letters (Makharij) and gradual memorization of Juz Amma.</span>
           </div>
         </li>
         <li>
-          <span class="islamic-list-num">02</span>
+          <i class="fas fa-hands-praying"></i>
           <div>
-            <strong>Daily Sunnah &amp; Duas</strong>
-            <span>Practical routines for greeting with Salam, mealtime etiquette, and guided Salah preparation.</span>
+            <strong>Daily Sunnah & Duas</strong>
+            <span>Practical routines for eating, greeting (Salam), entering classroom, and age-appropriate Salah practice.</span>
           </div>
         </li>
         <li>
-          <span class="islamic-list-num">03</span>
+          <i class="fas fa-comments"></i>
           <div>
-            <strong>Spoken Arabic Vocabulary</strong>
-            <span>Everyday Arabic words for family, nature, numbers, and polite classroom phrases.</span>
+            <strong>Arabic Language Vocabulary</strong>
+            <span>Learning everyday Arabic words for animals, fruits, family, and simple conversational sentences.</span>
           </div>
         </li>
       </ul>
     </div>
 
     <div class="islamic-card-box">
-      <div class="quran-quote arabic-text" lang="ar" dir="rtl">"رَبِّ زِدْنِي عِلْمًا"</div>
+      <i class="fas fa-quote-left" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 1rem;"></i>
+      <div class="quran-quote arabic-text">"رَبِّ زِدْنِي عِلْمًا"</div>
       <div class="translation-quote">
-        "O my Sustainer! Increase me in knowledge."
-        <span class="translation-source">Surah Taha 20:114</span>
+        "O my Sustainer! Increase me in knowledge." <br>
+        <small style="color: var(--accent-gold); font-size: 0.85rem; font-style: normal;">(Surah Taha 20:114)</small>
       </div>
 
-      <div class="islamic-card-divider">
-        <h4>Character alongside academic clarity</h4>
-        <p>Educators model honesty, patience, kindness, and curiosity across every lesson.</p>
+      <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.15);">
+        <h4 style="color: #ffffff; margin-bottom: 0.5rem; font-size: 1.1rem;">Nurturing Morals Alongside Cambridge Standards</h4>
+        <p style="color: rgba(255,255,255,0.75); font-size: 0.88rem;">Our teachers lead by example, cultivating honesty, kindness, respect for parents, and love for knowledge.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Key Figures Strip -->
+<!-- Live Stats Counter -->
 <section class="stats-section">
   <div class="container stats-grid">
     <div class="stat-item">
-      <h3 class="counter-number" data-target="250">250</h3>
-      <p>Enrolled students</p>
+      <h3 class="counter-number" data-target="250">0</h3>
+      <p>Happy Students</p>
     </div>
     <div class="stat-item">
-      <h3 class="counter-number" data-target="18">18</h3>
-      <p>Dedicated educators</p>
+      <h3 class="counter-number" data-target="18">0</h3>
+      <p>Dedicated Educators</p>
     </div>
     <div class="stat-item">
-      <h3 class="counter-number" data-target="5">5</h3>
-      <p>Academic stages (Play–Class 2)</p>
+      <h3 class="counter-number" data-target="5">0</h3>
+      <p>Academic Classes</p>
     </div>
     <div class="stat-item">
-      <h3>1:15</h3>
-      <p>Teacher-to-student ratio</p>
+      <h3>100%</h3>
+      <p>Cambridge & Islamic Care</p>
     </div>
   </div>
 </section>
 
-<!-- Notices & Upcoming Activities -->
+<!-- Notices & Events Dual Section -->
 <section class="section-padding">
   <div class="container dual-section-grid">
+    <!-- Public Notice Board Box -->
     <div class="notice-box">
       <div class="box-header">
-        <h3>Notice Board</h3>
-        <a href="notices.php">View all &rarr;</a>
+        <h3><i class="fas fa-bullhorn"></i> Notice Board</h3>
+        <a href="notices.php" style="color: var(--primary); font-weight: 700; font-size: 0.88rem;">View All <i class="fas fa-arrow-right"></i></a>
       </div>
 
       <?php if (!empty($notices)): ?>
@@ -354,7 +301,7 @@ include __DIR__ . '/includes/header.php';
           <div class="notice-item">
             <div class="notice-date">
               <strong><?= date('d', strtotime($item['published_date'])) ?></strong>
-              <span><?= strtoupper(date('M', strtotime($item['published_date']))) ?></span>
+              <span><?= date('M', strtotime($item['published_date'])) ?></span>
             </div>
             <div class="notice-info">
               <h4><a href="notices.php#notice-<?= $item['id'] ?>"><?= htmlspecialchars($item['title']) ?></a></h4>
@@ -363,58 +310,63 @@ include __DIR__ . '/includes/header.php';
           </div>
         <?php endforeach; ?>
       <?php else: ?>
-        <p class="section-desc">No active notices published yet.</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">No active notices published yet.</p>
       <?php endif; ?>
     </div>
 
+    <!-- School Events & Highlights -->
     <div class="event-box">
       <div class="box-header">
-        <h3>Upcoming Activities</h3>
-        <a href="gallery.php">Campus gallery &rarr;</a>
+        <h3><i class="fas fa-calendar-alt"></i> Upcoming Activities</h3>
+        <a href="gallery.php" style="color: var(--primary); font-weight: 700; font-size: 0.88rem;">Campus Life <i class="fas fa-arrow-right"></i></a>
       </div>
 
       <div class="notice-item">
-        <div class="notice-date">
+        <div class="notice-date" style="background: var(--accent-gold-light); color: var(--accent-gold-dark);">
           <strong>15</strong>
           <span>OCT</span>
         </div>
         <div class="notice-info">
-          <h4>Quran Recitation &amp; Tajweed Exhibition</h4>
-          <p>Students present Quran recitation fluency and Arabic poems for parents.</p>
+          <h4>Quran Recitation & Tajweed Exhibition</h4>
+          <p>Children will showcase their Quran recitation fluency and Arabic poem recitation for parents.</p>
         </div>
       </div>
 
       <div class="notice-item">
-        <div class="notice-date">
+        <div class="notice-date" style="background: var(--sky-blue-light); color: var(--sky-blue);">
           <strong>28</strong>
           <span>OCT</span>
         </div>
         <div class="notice-info">
-          <h4>Cambridge Phonics &amp; Science Fair</h4>
-          <p>Sensory experiments, shape building, and reading stations for Play through KG.</p>
+          <h4>Cambridge Phonics & Science Fun Fair</h4>
+          <p>Interactive sensory experiments, shape building, and word puzzles organized for Play, Nursery & KG.</p>
         </div>
       </div>
 
       <div class="notice-item">
-        <div class="notice-date">
+        <div class="notice-date" style="background: var(--primary-light); color: var(--primary-dark);">
           <strong>10</strong>
           <span>NOV</span>
         </div>
         <div class="notice-info">
-          <h4>Parent–Teacher Progress Review</h4>
-          <p>First-term academic reports and developmental conversations with class teachers.</p>
+          <h4>Parents-Teacher Progress Meeting</h4>
+          <p>First term academic report cards and developmental discussion with class teachers.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Bottom Call to Action -->
-<section class="cta-section">
+<!-- Call to Action Banner -->
+<section style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; padding: 4rem 0; text-align: center;">
   <div class="container">
-    <h2>Begin your child's learning journey</h2>
-    <p>Online applications are open for Play Group, Nursery, KG, Class 1, and Class 2 at our Cox's Bazar campus.</p>
-    <a href="admissions.php" class="btn btn-gold">Submit Admission Application</a>
+    <h2 style="color: #ffffff; font-size: 2.2rem; margin-bottom: 0.8rem;">Give Your Child the Best Start in Life</h2>
+    <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 650px; margin: 0 auto 2rem auto;">
+      Apply online today for Play Group, Nursery, KG, Class 1, or Class 2 admissions at AL FATIHA INSTITUTE, Cox's Bazar.
+    </p>
+    <a href="admissions.php" class="btn btn-gold" style="font-size: 1.1rem; padding: 1rem 2.2rem;">
+      <i class="fas fa-edit"></i> Submit Admission Application
+    </a>
   </div>
 </section>
 

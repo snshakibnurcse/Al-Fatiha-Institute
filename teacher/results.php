@@ -316,7 +316,7 @@ if ($teacherData) {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label>Marks Obtained *</label>
-            <input type="number" name="marks_obtained" id="marksObtained" step="0.5" min="0" class="form-control" placeholder="85.5" required style="font-family: 'IBM Plex Mono', monospace; font-weight: 500;">
+            <input type="number" name="marks_obtained" id="marksObtained" step="0.5" min="0" class="form-control" required style="font-family: 'IBM Plex Mono', monospace; font-weight: 500;">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label>Maximum Marks *</label>
@@ -327,7 +327,7 @@ if ($teacherData) {
         <!-- Teacher Remarks -->
         <div class="form-group">
           <label>Teacher Assessment Remarks</label>
-          <input type="text" name="teacher_remarks" id="teacherRemarks" value="Excellent progress & active class participation" class="form-control" placeholder="Assessment remarks">
+          <input type="text" name="teacher_remarks" id="teacherRemarks" value="Excellent progress & active class participation" class="form-control">
         </div>
 
         <button type="submit" name="save_results" id="submitBtn" class="btn-welcome-primary btn-block" style="height: 42px; justify-content: center; cursor: pointer;">

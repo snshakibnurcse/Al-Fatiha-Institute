@@ -40,17 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
     if (!empty($username) && !empty($password)) {
         $db = get_db_connection();
-        // Case-insensitive username or email lookup
         $stmt = $db->prepare("SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?) LIMIT 1");
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
 
         if ($user) {
-            // Check status
             if (!empty($user['status']) && strtolower($user['status']) === 'inactive') {
                 $error = 'Your account (@' . htmlspecialchars($user['username']) . ') is currently inactive. Please contact the administrator.';
             } elseif (password_verify($password, $user['password'])) {
-                // Fail-safe role normalization
                 $role = $user['role'] ?? '';
                 if ($user['id'] == 1 || strtolower($user['username']) === 'admin') {
                     $role = 'super_admin';
@@ -60,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $role = 'admin';
                 }
 
-                // If role was empty or outdated in the database, repair it immediately
                 if (($user['role'] ?? '') !== $role) {
                     try {
                         $db->prepare("UPDATE users SET role = ? WHERE id = ?")->execute([$role, $user['id']]);
@@ -103,22 +99,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   <meta name="description" content="Unified Login Portal for AL FATIHA INSTITUTE">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/images/logo.png?v=2">
   <style>
     :root {
-      --navy-deep: #061c38;
-      --navy: #082447;
-      --accent-gold: #e5a922;
-      --accent-gold-dark: #9a6704;
-      --bg-body: #f8f7f4;
+      --navy-deep: #032d4e;
+      --navy: #064878;
+      --primary: #0e73b9;
+      --accent-gold: #f3b527;
+      --bg-body: #eef5fc;
       --bg-surface: #ffffff;
-      --bg-raised: #f1efe9;
-      --text-main: #161a20;
-      --text-secondary: #4a515d;
-      --text-muted: #666d7a;
-      --border-color: rgba(22, 26, 32, 0.1);
-      --border-strong: rgba(22, 26, 32, 0.18);
+      --text-main: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: #dbe7f3;
+      --border-strong: #bfd3e8;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
@@ -145,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
     }
 
-    /* Top Utility Header */
+    /* Top Bar */
     .auth-topbar {
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
@@ -169,13 +164,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--primary);
     }
 
     .back-link:hover {
-      color: var(--navy);
+      color: var(--navy-deep);
     }
 
     .topbar-meta {
@@ -184,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       color: var(--text-muted);
     }
 
-    /* Main Split Card */
+    /* Split Auth Container */
     .auth-wrapper {
       flex: 1;
       display: flex;
@@ -199,16 +194,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(10, 20, 36, 0.06);
+      box-shadow: 0 12px 32px rgba(6, 72, 120, 0.1);
       overflow: hidden;
       display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
+      grid-template-columns: 0.92fr 1.08fr;
     }
 
-    /* Left Identity Panel */
+    /* Left Brand Panel */
     .auth-aside {
-      background: var(--navy);
-      color: #f7f5f0;
+      background: linear-gradient(155deg, #032d4e 0%, #064878 58%, #0e73b9 100%);
+      color: #ffffff;
       padding: 40px 32px;
       display: flex;
       flex-direction: column;
@@ -217,8 +212,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 
     .aside-logo {
-      width: 56px;
-      height: 56px;
+      width: 64px;
+      height: 64px;
       object-fit: contain;
       margin-bottom: 20px;
     }
@@ -229,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       font-size: 12px;
       color: var(--accent-gold);
       margin-bottom: 8px;
+      font-weight: 500;
     }
 
     .aside-title {
@@ -236,29 +232,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       font-size: 28px;
       font-weight: 500;
       line-height: 1.15;
-      letter-spacing: -0.02em;
-      color: #f7f5f0;
+      color: #ffffff;
       margin-bottom: 12px;
     }
 
     .aside-desc {
       font-size: 14px;
       line-height: 1.6;
-      color: rgba(247, 245, 240, 0.74);
+      color: rgba(255, 255, 255, 0.85);
     }
 
     .aside-footer {
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
       font-size: 13px;
-      color: rgba(247, 245, 240, 0.68);
+      color: rgba(255, 255, 255, 0.78);
       line-height: 1.5;
     }
 
     .aside-footer strong {
       display: block;
-      font-weight: 500;
-      color: #f7f5f0;
+      font-weight: 600;
+      color: var(--accent-gold);
       margin-bottom: 2px;
     }
 
@@ -274,45 +269,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       font-family: 'Newsreader', Georgia, serif;
       font-size: 30px;
       font-weight: 500;
-      letter-spacing: -0.02em;
-      color: var(--navy);
+      color: var(--navy-deep);
       margin-bottom: 6px;
     }
 
     .auth-subtitle {
       font-size: 14px;
       color: var(--text-secondary);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .alert-error {
       background: #fef2f2;
       color: #b91c1c;
-      border: 1px solid rgba(220, 38, 38, 0.25);
+      border: 1px solid #fecaca;
       padding: 12px 14px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       font-size: 13.5px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
       line-height: 1.45;
     }
 
-    .alert-error svg {
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .form-group label {
       display: block;
       font-size: 13px;
-      font-weight: 500;
-      color: var(--text-main);
+      font-weight: 600;
+      color: var(--navy-deep);
       margin-bottom: 6px;
     }
 
@@ -330,15 +316,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
-      background: var(--bg-surface);
+      background: #ffffff;
       color: var(--text-main);
       transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
     }
 
     .form-control:focus {
       outline: none;
-      border-color: var(--navy);
-      box-shadow: 0 0 0 3px rgba(8, 36, 71, 0.09);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 115, 185, 0.14);
     }
 
     .password-toggle-btn {
@@ -357,17 +343,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 
     .password-toggle-btn:hover {
-      color: var(--navy);
+      color: var(--primary);
     }
 
     .btn-login {
       width: 100%;
       height: 44px;
-      background: var(--navy);
+      background: var(--primary);
       color: #ffffff;
       font-family: inherit;
-      font-weight: 500;
-      font-size: 14px;
+      font-weight: 600;
+      font-size: 14.5px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -379,7 +365,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 
     .btn-login:hover {
-      background: var(--navy-deep);
+      background: var(--navy);
     }
 
     .btn-login:active {
@@ -399,8 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 
     .auth-footer-note a {
-      color: var(--navy);
-      font-weight: 500;
+      color: var(--primary);
+      font-weight: 600;
     }
 
     .auth-footer-note a:hover {
@@ -475,12 +461,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
       <section class="auth-form-panel">
         <h1>Sign in</h1>
-        <p class="auth-subtitle">Enter your username or email and password.</p>
+        <p class="auth-subtitle">Enter your account credentials to continue.</p>
 
         <?php if ($error): ?>
           <div class="alert-error" role="alert">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span><?= htmlspecialchars($error) ?></span>
+            <?= htmlspecialchars($error) ?>
           </div>
         <?php endif; ?>
 
@@ -488,14 +473,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
           <div class="form-group">
             <label for="username">Username or Email</label>
             <div class="input-wrapper">
-              <input type="text" id="username" name="username" class="form-control" placeholder="Username or email" required autofocus value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
+              <input type="text" id="username" name="username" class="form-control" required autofocus value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
             </div>
           </div>
 
           <div class="form-group">
             <label for="password">Password</label>
             <div class="input-wrapper">
-              <input type="password" id="password" name="password" class="form-control" placeholder="Password" required style="padding-right: 42px;">
+              <input type="password" id="password" name="password" class="form-control" required style="padding-right: 42px;">
               <button type="button" class="password-toggle-btn" id="passwordToggleBtn" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
                 <svg id="toggleIconShow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 <svg id="toggleIconHide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>

@@ -40,7 +40,7 @@ $roleTag = $isSuperAdmin ? 'Super Administrator' : ($isPrincipal ? 'Principal' :
   </div>
   <div class="welcome-actions">
     <a href="fees.php?action=issue_invoice" class="btn-welcome-primary">
-      <i class="fas fa-plus"></i> Issue Invoice
+      Issue Invoice
     </a>
     <a href="students.php" class="btn-welcome-secondary">
       Students Directory

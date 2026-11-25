@@ -33,7 +33,7 @@ if ($selected_class_id > 0) {
         <?php endforeach; ?>
       </select>
 
-      <input type="text" id="tableSearch" placeholder="Search name, roll, phone" class="form-control" style="width: 210px; height: 38px; padding: 0 12px;">
+      <input type="text" id="tableSearch" placeholder="Search" class="form-control" style="width: 210px; height: 38px; padding: 0 12px;">
 
       <?php if ($selected_class_id > 0): ?>
         <a href="students.php" class="btn-welcome-secondary" style="height: 38px;">

@@ -147,21 +147,31 @@ include __DIR__ . '/includes/header.php';
      HERO BANNER SECTION
      ======================================================== -->
 <section class="smart-hero-section">
-  <div class="container">
-    <span class="eyebrow eyebrow-light" style="margin-bottom: 12px;">Admission Session 2027–2028 · Open</span>
+  <div class="smart-hero-particles">
+    <div class="particle p-1"></div>
+    <div class="particle p-2"></div>
+    <div class="particle p-3"></div>
+  </div>
+  <div class="container" style="position: relative; z-index: 2;">
+    <div class="smart-hero-badge">
+      <i class="fas fa-certificate text-gold"></i>
+      <span>ADMISSION SESSION 2027 &ndash; 2028</span>
+      <span class="badge-dot"></span>
+      <span class="badge-status">OPEN</span>
+    </div>
     <h1 class="smart-hero-title">
       Online Student Admission Portal
     </h1>
     <p class="smart-hero-subtitle">
-      AL FATIHA INSTITUTE · Cambridge Curriculum &amp; Islamic Ethos · Cox's Bazar
+      Al Fatiha Institute &bull; Cambridge Curriculum &amp; Islamic Ethos &bull; Cox's Bazar
     </p>
 
-    <!-- Quick Feature Summary -->
+    <!-- Quick Feature Chips -->
     <div class="smart-feature-chips">
-      <span class="feature-chip">5-Step Form</span>
-      <span class="feature-chip">Auto-Age Calculation</span>
-      <span class="feature-chip">Verified Record</span>
-      <span class="feature-chip">Printable Application Slip</span>
+      <span class="feature-chip"><i class="fas fa-bolt"></i> 5-Step Smart Wizard</span>
+      <span class="feature-chip"><i class="fas fa-calculator"></i> Auto-Age Calculation</span>
+      <span class="feature-chip"><i class="fas fa-shield-alt"></i> Verified Online Record</span>
+      <span class="feature-chip"><i class="fas fa-print"></i> Instant Printable Slip</span>
     </div>
   </div>
 </section>
@@ -169,7 +179,7 @@ include __DIR__ . '/includes/header.php';
 <!-- ========================================================
      TUITION & ELIGIBILITY QUICK TABLE
      ======================================================== -->
-<section class="section-padding" style="background: var(--bg-body); padding: 40px 0 32px 0;">
+<section class="section-padding" style="background: #f8fafc; padding: 2.5rem 0 1.5rem 0;">
   <div class="container">
     <div class="fee-accordion-wrap">
       <details class="smart-fee-details">
@@ -1416,63 +1426,125 @@ include __DIR__ . '/includes/header.php';
    Fonts & Core Variables
    ---------------------------------------------------- */
 :root {
-  --portal-primary: #082447;
+  --portal-primary: #064878;
   --portal-blue: #0e73b9;
-  --portal-blue-light: #ebf3fa;
-  --portal-cyan: #0e73b9;
-  --portal-gold: #e5a922;
-  --portal-gold-dark: #9a6704;
-  --portal-dark: #061c38;
-  --portal-text: #161a20;
-  --portal-muted: #666d7a;
-  --portal-border: rgba(22, 26, 32, 0.14);
-  --portal-border-light: rgba(22, 26, 32, 0.09);
+  --portal-blue-light: #eaf4fb;
+  --portal-cyan: #3ac0f6;
+  --portal-gold: #f3b527;
+  --portal-gold-dark: #b45309;
+  --portal-dark: #032d4e;
+  --portal-text: #1e293b;
+  --portal-muted: #64748b;
+  --portal-border: #cbd5e1;
+  --portal-border-light: #e2e8f0;
   --portal-card-bg: #ffffff;
-  --portal-emerald: #16a34a;
+  --portal-emerald: #10b981;
 }
 
 /* ----------------------------------------------------
    Hero Banner Styling
    ---------------------------------------------------- */
 .smart-hero-section {
-  background: var(--navy);
-  color: var(--text-on-dark);
-  padding: 64px 0 56px 0;
+  background: linear-gradient(135deg, #032d4e 0%, #064878 50%, #0e73b9 100%);
+  color: #ffffff;
+  padding: 4.2rem 0 3.8rem 0;
   text-align: center;
-  border-bottom: 1px solid var(--border-on-dark);
+  position: relative;
+  overflow: hidden;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
+.smart-hero-particles .particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+}
+.particle.p-1 {
+  width: 320px;
+  height: 320px;
+  top: -80px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(243, 181, 39, 0.22) 0%, transparent 70%);
+}
+.particle.p-2 {
+  width: 280px;
+  height: 280px;
+  bottom: -60px;
+  left: -40px;
+  background: radial-gradient(circle, rgba(58, 192, 246, 0.22) 0%, transparent 70%);
+}
+.particle.p-3 {
+  width: 200px;
+  height: 200px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+}
+.smart-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 18px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
 .text-gold { color: var(--portal-gold); }
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+.badge-status {
+  background: var(--portal-gold);
+  color: #032d4e;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 900;
+}
 .smart-hero-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 42px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  margin: 0 0 12px 0;
-  color: var(--text-on-dark);
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.85rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.8rem 0;
+  color: #ffffff;
 }
 .smart-hero-subtitle {
-  font-size: 16px;
-  color: var(--text-on-dark-muted);
-  max-width: 640px;
-  margin: 0 auto 24px auto;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 680px;
+  margin: 0 auto 1.8rem auto;
   line-height: 1.6;
 }
 .smart-feature-chips {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 .feature-chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-on-dark-muted);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+.feature-chip i {
+  color: var(--portal-gold);
+  margin-right: 4px;
 }
 
 /* ----------------------------------------------------
@@ -1583,9 +1655,9 @@ details[open] .summary-arrow {
 
 /* Portal Head */
 .smart-portal-head {
-  background: var(--bg-raised);
+  background: linear-gradient(135deg, #f8fafc 0%, #eaf4fb 100%);
   border-bottom: 1px solid var(--portal-border-light);
-  padding: 28px 32px 20px 32px;
+  padding: 2.2rem 2.4rem 1.4rem 2.4rem;
 }
 .portal-branding-bar {
   display: flex;
@@ -1601,27 +1673,31 @@ details[open] .summary-arrow {
   gap: 16px;
 }
 .brand-crest {
-  width: 52px;
-  height: 52px;
-  background: var(--portal-primary);
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, var(--portal-blue), var(--portal-primary));
   color: #ffffff;
-  border-radius: 12px;
+  border-radius: 16px;
   display: grid;
   place-items: center;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
+  box-shadow: 0 8px 20px rgba(14, 115, 185, 0.28);
 }
 .portal-tag {
   display: inline-block;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--portal-gold-dark);
-  font-size: 11px;
-  font-weight: 500;
+  background: rgba(243, 181, 39, 0.2);
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 10px;
+  border-radius: 14px;
   margin-bottom: 4px;
 }
 .portal-main-heading {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 28px;
-  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
   color: var(--portal-dark);
   margin: 0;
   letter-spacing: -0.02em;
@@ -1707,9 +1783,9 @@ details[open] .summary-arrow {
 }
 .tracker-fill {
   height: 100%;
-  background: var(--portal-primary);
+  background: linear-gradient(90deg, #3ac0f6, #0e73b9, #f3b527);
   border-radius: 20px;
-  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ----------------------------------------------------
@@ -1760,8 +1836,9 @@ details[open] .summary-arrow {
   background: #f8fafc;
 }
 .nav-step-tab.active {
-  background: var(--portal-primary);
+  background: linear-gradient(135deg, var(--portal-blue) 0%, var(--portal-primary) 100%);
   border-color: var(--portal-primary);
+  box-shadow: 0 4px 15px rgba(14, 115, 185, 0.28);
 }
 .nav-step-tab.active .tab-bubble {
   background: #ffffff;
