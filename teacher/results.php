@@ -15,7 +15,6 @@ if ($user_role === 'teacher') {
     $tchStmt->execute([$user_id]);
     $teacherData = $tchStmt->fetch();
 } else {
-    // If Super Admin / Principal / Admin previews
     $tid = intval($_GET['teacher_id'] ?? 0);
     if ($tid > 0) {
         $tchStmt = $db->prepare("SELECT * FROM teachers WHERE id = ?");
@@ -80,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
     $max_marks = floatval($_POST['max_marks'] ?? 100);
     $teacher_remarks = sanitize($_POST['teacher_remarks'] ?? 'Good performance');
 
-    // Strict Authorization Verification:
     if ($user_role === 'teacher') {
         if (!$teacherData) {
             $err = "Unauthorized: No teacher profile found for your account.";
@@ -94,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
             if ($marks_obtained < 0 || $marks_obtained > $max_marks) {
                 $err = "Marks obtained must be between 0 and maximum marks (" . $max_marks . ").";
             } else {
-                // Verify student belongs to the class of the selected subject
                 $chkStudent = $db->prepare("
                     SELECT s.id 
                     FROM students s 
@@ -106,7 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
                     $err = "The selected student does not belong to the class of this subject.";
                 } else {
                     try {
-                        // Check if grade already recorded for this student, subject, and term (Upsert)
                         $existingStmt = $db->prepare("
                             SELECT id FROM results 
                             WHERE student_id = ? AND subject_id = ? AND exam_term = ?
@@ -121,14 +117,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
                                 WHERE id = ?
                             ");
                             $upd->execute([$marks_obtained, $max_marks, $teacher_remarks, $existingId]);
-                            $msg = "Exam marks updated successfully!";
+                            $msg = "Exam marks updated successfully.";
                         } else {
                             $ins = $db->prepare("
                                 INSERT INTO results (student_id, subject_id, exam_term, marks_obtained, max_marks, teacher_remarks) 
                                 VALUES (?, ?, ?, ?, ?, ?)
                             ");
                             $ins->execute([$student_id, $subject_id, $exam_term, $marks_obtained, $max_marks, $teacher_remarks]);
-                            $msg = "Exam marks recorded successfully!";
+                            $msg = "Exam marks recorded successfully.";
                         }
                     } catch (PDOException $e) {
                         $err = "Failed to record marks: " . $e->getMessage();
@@ -147,15 +143,6 @@ if ($req_subject_id > 0 && in_array($req_subject_id, $assignedSubjectIds)) {
     $selected_subject_id = $req_subject_id;
 } else {
     $selected_subject_id = !empty($subjects) ? $subjects[0]['id'] : 0;
-}
-
-// Find selected subject item
-$selected_subject_item = null;
-foreach ($subjects as $sb) {
-    if ($sb['id'] == $selected_subject_id) {
-        $selected_subject_item = $sb;
-        break;
-    }
 }
 
 // 6. Fetch eligible students (strictly for classes of assigned subjects)
@@ -212,127 +199,113 @@ if ($teacherData) {
 }
 ?>
 
-<!-- Teacher Header Overview Banner -->
-<div style="background: linear-gradient(135deg, #032d4e 0%, #064878 100%); color: #ffffff; padding: 1.6rem 2rem; border-radius: 16px; margin-bottom: 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 8px 24px rgba(3, 45, 78, 0.15);">
+<!-- Teacher Header Overview Card -->
+<div class="dash-welcome-card">
   <div>
-    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 0.5rem;">
-      <i class="fas fa-pen-to-square" style="color: #f3b527;"></i> FACULTY MARKS ENTRY PORTAL
+    <div class="welcome-meta-row">
+      <span class="date-badge">Marks Entry Portal</span>
+      <span class="role-pill-tag"><?= count($subjects) ?> Assigned <?= count($subjects) === 1 ? 'Subject' : 'Subjects' ?></span>
     </div>
-    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; margin: 0 0 0.25rem 0; color: #ffffff;">
+    <h2 class="welcome-title">
       <?= htmlspecialchars($teacherData ? $teacherData['full_name'] : get_current_user_name()) ?>
     </h2>
-    <p style="margin: 0; color: rgba(255, 255, 255, 0.85); font-size: 0.9rem;">
-      <?= $teacherData ? 'Teacher ID: <code>' . htmlspecialchars($teacherData['teacher_code']) . '</code> &bull; Specialty: ' . htmlspecialchars($teacherData['specialty']) : 'Administrative Evaluation Mode' ?>
+    <p class="welcome-sub">
+      <?= $teacherData ? htmlspecialchars($teacherData['teacher_code']) . ' · ' . htmlspecialchars($teacherData['specialty']) : 'Administrative Evaluation Mode' ?>
     </p>
   </div>
-  <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-    <span class="badge" style="background: #f3b527; color: #032d4e; font-weight: 800; padding: 0.55rem 1rem; border-radius: 10px; font-size: 0.85rem;">
-      <i class="fas fa-book-bookmark"></i> <?= count($subjects) ?> Assigned <?= count($subjects) === 1 ? 'Subject' : 'Subjects' ?>
-    </span>
-    <a href="subjects.php" class="btn" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.55rem 0.95rem; border-radius: 10px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">
-      <i class="fas fa-arrow-left"></i> My Curriculum
+  <div class="welcome-actions">
+    <a href="subjects.php" class="btn-welcome-secondary">
+      &larr; My Curriculum
     </a>
   </div>
 </div>
 
 <?php if ($msg): ?>
-  <div class="alert-msg alert-success" style="background: #dcfce7; border: 1.5px solid #86efac; color: #166534; padding: 0.9rem 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-    <i class="fas fa-check-circle" style="font-size: 1.15rem;"></i> <?= htmlspecialchars($msg) ?>
+  <div class="alert-msg alert-success">
+    <i class="fas fa-check-circle"></i> <span><?= htmlspecialchars($msg) ?></span>
   </div>
 <?php endif; ?>
 
 <?php if ($err): ?>
-  <div class="alert-msg alert-danger" style="background: #fee2e2; border: 1.5px solid #fca5a5; color: #991b1b; padding: 0.9rem 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-    <i class="fas fa-exclamation-triangle" style="font-size: 1.15rem;"></i> <?= htmlspecialchars($err) ?>
+  <div class="alert-msg alert-danger">
+    <i class="fas fa-exclamation-triangle"></i> <span><?= htmlspecialchars($err) ?></span>
   </div>
 <?php endif; ?>
 
 <?php if ($user_role === 'teacher' && empty($subjects)): ?>
-  <!-- Warning when teacher has zero assigned subjects -->
-  <div class="card-box" style="background: #ffffff; border-radius: 16px; padding: 3rem 1.5rem; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
-    <div style="width: 72px; height: 72px; border-radius: 50%; background: #fef3c7; color: #d97706; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem;">
-      <i class="fas fa-lock"></i>
-    </div>
-    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #032d4e; margin-bottom: 0.5rem; font-weight: 800;">No Subjects Assigned Yet</h3>
-    <p style="color: #64748b; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.5; font-size: 0.95rem;">
-      You currently do not have any subjects assigned to your faculty profile. Student mark entry is restricted exclusively to allocated subjects. Please contact the Head of School / Principal to assign your curriculum subjects.
+  <div class="card-box" style="padding: 48px 24px; text-align: center;">
+    <h3 style="font-size: 20px; color: var(--admin-navy); margin-bottom: 8px; font-weight: 600;">No Subjects Assigned Yet</h3>
+    <p style="color: var(--admin-text-muted); max-width: 480px; margin: 0 auto 20px auto; font-size: 14px;">
+      Student mark entry is restricted exclusively to allocated subjects. Please contact the Principal to assign your curriculum subjects.
     </p>
-    <a href="dashboard.php" class="btn" style="background: var(--admin-primary); color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-      <i class="fas fa-th-large"></i> Return to Teacher Overview
-    </a>
+    <a href="dashboard.php" class="btn-welcome-primary">Return to Teacher Overview</a>
   </div>
 <?php else: ?>
 
-  <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.8rem; align-items: start;">
-    
+  <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; align-items: start;">
+
     <!-- Mark Entry Form Card -->
-    <div class="card-box" style="background: #ffffff; border-radius: 16px; padding: 1.75rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
-      <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.4rem;">
-        <h3 style="font-family: 'Outfit', sans-serif; margin: 0 0 0.3rem 0; font-size: 1.25rem; color: #032d4e; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-          <i class="fas fa-pen-nib" style="color: var(--admin-primary);"></i> Record Student Marks
-        </h3>
-        <p style="margin: 0; font-size: 0.84rem; color: #64748b;">
-          Select your assigned subject and target student to record or update examination scores.
-        </p>
+    <div class="card-box">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Record Student Marks</h3>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--admin-text-muted);">
+            Select assigned subject and enrolled student.
+          </p>
+        </div>
       </div>
 
       <form method="POST" id="marksEntryForm">
-        
+
         <!-- Subject Selection (Strictly Assigned Subjects Only) -->
-        <div class="form-group" style="margin-bottom: 1.25rem;">
-          <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem;">
-            <span><i class="fas fa-book" style="color: var(--admin-primary); margin-right: 4px;"></i> Assigned Subject *</span>
+        <div class="form-group">
+          <label style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Assigned Subject *</span>
             <?php if (count($subjects) === 1): ?>
-              <span style="font-size: 0.74rem; font-weight: 700; color: #059669; background: #d1fae5; padding: 2px 8px; border-radius: 12px;">
-                <i class="fas fa-check-circle"></i> 1 Assigned Subject
-              </span>
+              <span class="badge badge-success">1 assigned</span>
             <?php endif; ?>
           </label>
-          
-          <select name="subject_id" id="subjectSelect" class="form-control" required onchange="handleSubjectChange()" style="border-radius: 10px; font-weight: 600; padding: 0.7rem 0.85rem;">
+
+          <select name="subject_id" id="subjectSelect" class="form-control" required onchange="handleSubjectChange()">
             <?php foreach ($subjects as $sb): ?>
               <option value="<?= $sb['id'] ?>" 
                       data-class-id="<?= $sb['class_id'] ?>" 
                       data-class-name="<?= htmlspecialchars($sb['class_name']) ?>"
                       data-max-marks="<?= $sb['total_marks'] ?? 100 ?>"
                       <?= ($selected_subject_id == $sb['id']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($sb['subject_name']) ?> &bull; <?= htmlspecialchars($sb['class_name']) ?> (<?= htmlspecialchars($sb['subject_code']) ?>)
+                <?= htmlspecialchars($sb['subject_name']) ?> · <?= htmlspecialchars($sb['class_name']) ?> (<?= htmlspecialchars($sb['subject_code']) ?>)
               </option>
             <?php endforeach; ?>
           </select>
-          <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
-            <i class="fas fa-shield-alt" style="color: #10b981;"></i> Only subjects allocated to your account are accessible.
+          <small style="color: var(--admin-text-muted); font-size: 12px; display: block; margin-top: 4px;">
+            Only subjects allocated to your account are shown.
           </small>
         </div>
 
         <!-- Student Selection (Auto-filtered to the chosen subject's class) -->
-        <div class="form-group" style="margin-bottom: 1.25rem;">
-          <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem;">
-            <span><i class="fas fa-user-graduate" style="color: var(--admin-primary); margin-right: 4px;"></i> Enrolled Student *</span>
-            <span id="studentCountBadge" style="font-size: 0.74rem; font-weight: 700; color: #032d4e; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">
-              Filtering Class...
-            </span>
+        <div class="form-group">
+          <label style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Enrolled Student *</span>
+            <span id="studentCountBadge" class="badge badge-info">Filtering class</span>
           </label>
-          
-          <select name="student_id" id="studentSelect" class="form-control" required style="border-radius: 10px; padding: 0.7rem 0.85rem;">
-            <option value="">-- Choose Enrolled Student --</option>
+
+          <select name="student_id" id="studentSelect" class="form-control" required>
+            <option value="">Choose enrolled student</option>
             <?php foreach ($students as $st): ?>
               <option value="<?= $st['id'] ?>" data-class-id="<?= $st['class_id'] ?>">
-                <?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?> (Roll #<?= $st['roll_no'] ?> &bull; <?= $st['student_id'] ?> &bull; <?= htmlspecialchars($st['class_name']) ?>)
+                <?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?> (Roll #<?= $st['roll_no'] ?> · <?= $st['student_id'] ?> · <?= htmlspecialchars($st['class_name']) ?>)
               </option>
             <?php endforeach; ?>
           </select>
-          <div id="noStudentNotice" style="display: none; color: #b91c1c; font-size: 0.8rem; margin-top: 5px; font-weight: 600;">
-            <i class="fas fa-info-circle"></i> No active students currently enrolled in this subject's class.
+          <div id="noStudentNotice" style="display: none; color: var(--admin-negative); font-size: 12.5px; margin-top: 6px; font-weight: 500;">
+            No active students currently enrolled in this subject's class.
           </div>
         </div>
 
         <!-- Exam Term Selection -->
-        <div class="form-group" style="margin-bottom: 1.25rem;">
-          <label style="font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem; display: block;">
-            <i class="fas fa-calendar-alt" style="color: var(--admin-primary); margin-right: 4px;"></i> Examination Term *
-          </label>
-          <select name="exam_term" id="examTerm" class="form-control" required style="border-radius: 10px; padding: 0.7rem 0.85rem;">
+        <div class="form-group">
+          <label>Examination Term *</label>
+          <select name="exam_term" id="examTerm" class="form-control" required>
             <option value="First Term">First Term Examination</option>
             <option value="Mid Term" selected>Mid Term Examination</option>
             <option value="Final Exam">Final Examination</option>
@@ -340,88 +313,76 @@ if ($teacherData) {
         </div>
 
         <!-- Score Inputs -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem; display: block;">
-              <i class="fas fa-calculator" style="color: var(--admin-primary); margin-right: 4px;"></i> Marks Obtained *
-            </label>
-            <input type="number" name="marks_obtained" id="marksObtained" step="0.5" min="0" class="form-control" placeholder="e.g. 85.5" required style="border-radius: 10px; font-weight: 700; font-size: 1.05rem;">
+            <label>Marks Obtained *</label>
+            <input type="number" name="marks_obtained" id="marksObtained" step="0.5" min="0" class="form-control" placeholder="85.5" required style="font-family: 'IBM Plex Mono', monospace; font-weight: 500;">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem; display: block;">
-              <i class="fas fa-hashtag" style="color: var(--admin-primary); margin-right: 4px;"></i> Maximum Marks *
-            </label>
-            <input type="number" name="max_marks" id="maxMarks" value="100" min="1" class="form-control" required style="border-radius: 10px; font-weight: 700; font-size: 1.05rem;">
+            <label>Maximum Marks *</label>
+            <input type="number" name="max_marks" id="maxMarks" value="100" min="1" class="form-control" required style="font-family: 'IBM Plex Mono', monospace; font-weight: 500;">
           </div>
         </div>
 
         <!-- Teacher Remarks -->
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label style="font-weight: 700; font-size: 0.86rem; color: #1e293b; margin-bottom: 0.45rem; display: block;">
-            <i class="fas fa-comment-dots" style="color: var(--admin-primary); margin-right: 4px;"></i> Teacher Assessment Remarks
-          </label>
-          <input type="text" name="teacher_remarks" id="teacherRemarks" value="Excellent progress & active class participation" class="form-control" placeholder="Enter constructive feedback or remarks" style="border-radius: 10px;">
+        <div class="form-group">
+          <label>Teacher Assessment Remarks</label>
+          <input type="text" name="teacher_remarks" id="teacherRemarks" value="Excellent progress & active class participation" class="form-control" placeholder="Assessment remarks">
         </div>
 
-        <button type="submit" name="save_results" id="submitBtn" class="btn btn-block" style="background: linear-gradient(135deg, #f3b527 0%, #cd8707 100%); color: #032d4e; font-family: 'Outfit', sans-serif; font-size: 1rem; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; padding: 0.85rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(205, 135, 7, 0.3); transition: all 0.2s ease;">
+        <button type="submit" name="save_results" id="submitBtn" class="btn-welcome-primary btn-block" style="height: 42px; justify-content: center; cursor: pointer;">
           <i class="fas fa-save"></i> Save Student Marks
         </button>
       </form>
     </div>
 
     <!-- Recent Recorded Grades Directory -->
-    <div class="card-box" style="background: #ffffff; border-radius: 16px; padding: 1.75rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
-      <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <div class="card-box">
+      <div class="card-header">
         <div>
-          <h3 style="font-family: 'Outfit', sans-serif; margin: 0 0 0.2rem 0; font-size: 1.25rem; color: #032d4e; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-clipboard-list" style="color: var(--admin-primary);"></i> My Recorded Grades
-          </h3>
-          <p style="margin: 0; font-size: 0.84rem; color: #64748b;">
-            Grades submitted for your assigned curriculum subjects.
+          <h3 class="card-title">My Recorded Grades</h3>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--admin-text-muted);">
+            Grades submitted for your assigned subjects.
           </p>
         </div>
-        <span class="badge badge-info" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 8px;">
-          <?= count($recentResults) ?> Entries
-        </span>
+        <span class="badge badge-info"><?= count($recentResults) ?> Entries</span>
       </div>
 
       <div class="table-responsive">
-        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <table class="data-table">
           <thead>
-            <tr style="background: #f8fafc; text-align: left;">
-              <th style="padding: 0.7rem 0.6rem;">Student</th>
-              <th style="padding: 0.7rem 0.6rem;">Class</th>
-              <th style="padding: 0.7rem 0.6rem;">Subject</th>
-              <th style="padding: 0.7rem 0.6rem;">Term</th>
-              <th style="padding: 0.7rem 0.6rem;">Marks</th>
-              <th style="padding: 0.7rem 0.6rem;">Grade</th>
-              <th style="padding: 0.7rem 0.6rem; text-align: center;">Action</th>
+            <tr>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Term</th>
+              <th>Marks</th>
+              <th>Grade</th>
+              <th style="text-align: center;">Action</th>
             </tr>
           </thead>
           <tbody>
             <?php if (!empty($recentResults)): ?>
               <?php foreach ($recentResults as $rr): ?>
                 <?php $gInfo = calculate_grade($rr['marks_obtained'], $rr['max_marks']); ?>
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 0.75rem 0.6rem;">
+                <tr>
+                  <td>
                     <strong><?= htmlspecialchars($rr['first_name'] . ' ' . $rr['last_name']) ?></strong>
-                    <div style="font-size: 0.75rem; color: #64748b;"><code><?= htmlspecialchars($rr['st_code']) ?></code> (#<?= $rr['roll_no'] ?>)</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--admin-text-muted);"><?= htmlspecialchars($rr['st_code']) ?> (#<?= $rr['roll_no'] ?>)</div>
                   </td>
-                  <td style="padding: 0.75rem 0.6rem;"><?= htmlspecialchars($rr['class_name']) ?></td>
-                  <td style="padding: 0.75rem 0.6rem;"><?= htmlspecialchars($rr['subject_name']) ?></td>
-                  <td style="padding: 0.75rem 0.6rem;">
-                    <span class="badge badge-info" style="font-size: 0.74rem; font-weight: 700;"><?= htmlspecialchars($rr['exam_term']) ?></span>
+                  <td><?= htmlspecialchars($rr['class_name']) ?></td>
+                  <td><?= htmlspecialchars($rr['subject_name']) ?></td>
+                  <td><span class="badge badge-info"><?= htmlspecialchars($rr['exam_term']) ?></span></td>
+                  <td style="font-family: 'IBM Plex Mono', monospace;">
+                    <strong><?= $rr['marks_obtained'] ?></strong> <span style="color: var(--admin-text-muted);">/ <?= $rr['max_marks'] ?></span>
                   </td>
-                  <td style="padding: 0.75rem 0.6rem;">
-                    <strong><?= $rr['marks_obtained'] ?></strong> <span style="color: #94a3b8; font-size: 0.78rem;">/ <?= $rr['max_marks'] ?></span>
+                  <td>
+                    <span class="badge <?= $gInfo['class'] ?>"><?= $gInfo['grade'] ?></span>
                   </td>
-                  <td style="padding: 0.75rem 0.6rem;">
-                    <span class="badge <?= $gInfo['class'] ?>" style="font-size: 0.75rem; font-weight: 800;"><?= $gInfo['grade'] ?></span>
-                  </td>
-                  <td style="padding: 0.75rem 0.6rem; text-align: center;">
+                  <td style="text-align: center;">
                     <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this grade record?');">
                       <input type="hidden" name="result_id" value="<?= $rr['id'] ?>">
-                      <button type="submit" name="delete_result" class="btn" style="background: #fee2e2; color: #dc2626; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.78rem; cursor: pointer;" title="Delete Record">
+                      <button type="submit" name="delete_result" class="btn" style="background: #fef2f2; color: #dc2626; border: 1px solid rgba(220,38,38,0.2); padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;" title="Delete Record">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     </form>
@@ -430,8 +391,7 @@ if ($teacherData) {
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="7" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8;">
-                  <i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
+                <td colspan="7" style="text-align: center; padding: 36px 16px; color: var(--admin-text-muted);">
                   No examination marks recorded yet for your assigned subjects.
                 </td>
               </tr>
@@ -505,7 +465,6 @@ if ($teacherData) {
       }
     }
 
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       handleSubjectChange();
     });

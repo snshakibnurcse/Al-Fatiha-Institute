@@ -12,7 +12,7 @@ $user_name = get_current_user_name();
   <title>Teacher Portal | AL FATIHA INSTITUTE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=2">
   <link rel="icon" type="image/png" href="../assets/images/logo.png?v=2">
 </head>
 <body class="dashboard-body">
@@ -23,7 +23,7 @@ $user_name = get_current_user_name();
       <img src="../assets/images/logo.png?v=2" alt="AFI Logo">
       <div>
         <strong>AL FATIHA</strong>
-        <span>TEACHER PORTAL</span>
+        <span>Teacher Portal</span>
       </div>
       <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
         <i class="fas fa-times"></i>
@@ -31,11 +31,14 @@ $user_name = get_current_user_name();
     </div>
 
     <ul class="sidebar-menu">
+      <li class="sidebar-section-label">Overview</li>
       <li>
         <a href="dashboard.php" class="<?= ($current_script == 'dashboard.php') ? 'active' : '' ?>">
           <i class="fas fa-th-large"></i> <span>Teacher Overview</span>
         </a>
       </li>
+
+      <li class="sidebar-section-label">Teaching</li>
       <li>
         <a href="subjects.php" class="<?= ($current_script == 'subjects.php') ? 'active' : '' ?>">
           <i class="fas fa-book-open"></i> <span>My Assigned Subjects</span>
@@ -48,9 +51,11 @@ $user_name = get_current_user_name();
       </li>
       <li>
         <a href="results.php" class="<?= ($current_script == 'results.php') ? 'active' : '' ?>">
-          <i class="fas fa-pen-to-square"></i> <span>Input Marks & Grades</span>
+          <i class="fas fa-pen-to-square"></i> <span>Input Marks &amp; Grades</span>
         </a>
       </li>
+
+      <li class="sidebar-section-label">Classes</li>
       <li>
         <a href="students.php" class="<?= ($current_script == 'students.php') ? 'active' : '' ?>">
           <i class="fas fa-user-graduate"></i> <span>Class Roster</span>
@@ -65,14 +70,16 @@ $user_name = get_current_user_name();
 
     <div class="sidebar-footer">
       <div class="user-profile-badge">
-        <div class="user-avatar" style="background: var(--admin-gold); color: var(--admin-deep-navy);">T</div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($user_name ?: 'T', 0, 1)) ?>
+        </div>
         <div class="user-info">
           <strong><?= htmlspecialchars($user_name) ?></strong>
           <span>Faculty Educator</span>
         </div>
       </div>
       <a href="logout.php" class="sidebar-logout-btn">
-        <i class="fas fa-sign-out-alt"></i> <span>Logout Session</span>
+        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
       </a>
     </div>
   </aside>
@@ -88,13 +95,13 @@ $user_name = get_current_user_name();
           <i class="fas fa-bars"></i>
         </button>
         <div class="page-title">
-          <h2>Teacher Management Portal</h2>
+          <h2>Teacher Portal</h2>
         </div>
       </div>
 
       <div class="top-actions">
-        <a href="../index.php" target="_blank" class="btn btn-view-site" style="background: var(--admin-bg); color: var(--admin-text); padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-          <i class="fas fa-external-link-alt"></i> <span class="hide-mobile">View Website</span>
+        <a href="../index.php" target="_blank" class="btn-view-site">
+          <i class="fas fa-external-link-alt"></i> <span class="hide-mobile">Website</span>
         </a>
         <a href="logout.php" class="btn-logout-mobile" title="Logout">
           <i class="fas fa-sign-out-alt"></i>
