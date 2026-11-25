@@ -113,6 +113,13 @@ $user_role = get_current_user_role();
         </a>
       </li>
 
+      <li class="sidebar-section-label">HR &amp; Payroll</li>
+      <li>
+        <a href="../hr/dashboard.php">
+          <i class="fas fa-id-badge"></i> <span>HR &amp; Payroll Portal</span>
+        </a>
+      </li>
+
       <li class="sidebar-section-label">Communication</li>
       <li>
         <a href="notices.php" class="<?= ($current_script == 'notices.php') ? 'active' : '' ?>">

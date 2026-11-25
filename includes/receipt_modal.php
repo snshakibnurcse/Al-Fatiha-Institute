@@ -655,23 +655,26 @@ function openReceiptModal(data, monthName) {
   }
 
   // Robust Student ID Extraction:
-  // 1) First check student_code (e.g. AFI-PG-001, AFI-C1-001)
+  // 1) First check student_code (e.g. 202701001 or legacy AFI-PG-001)
   var studentId = data.student_code || '';
   
-  // 2) If not in student_code, check if student_id is an alphanumeric code
-  if (!studentId && data.student_id && String(data.student_id).indexOf('AFI-') !== -1) {
-    studentId = String(data.student_id);
+  // 2) If not in student_code, check if student_id is a formatted ID (AFI-* or 9+ digit session+class+roll code)
+  if (!studentId && data.student_id) {
+    var rawSid = String(data.student_id).trim();
+    if (rawSid.indexOf('AFI-') !== -1 || /^\d{7,}$/.test(rawSid)) {
+      studentId = rawSid;
+    }
   }
   
-  // 3) If studentId is missing or purely numeric (e.g. database foreign key "20"), check window.currentStudentData
-  if ((!studentId || /^\d+$/.test(String(studentId).trim())) && window.currentStudentData && window.currentStudentData.student_id) {
+  // 3) If studentId is missing or short internal PK numeric (e.g. database foreign key "20"), check window.currentStudentData
+  if ((!studentId || /^\d{1,6}$/.test(String(studentId).trim())) && window.currentStudentData && window.currentStudentData.student_id) {
     studentId = window.currentStudentData.student_id;
   }
   
-  // 4) Fallback formatting if still numeric
+  // 4) Fallback formatting if still short numeric PK
   if (!studentId) {
     studentId = data.student_id ? ('AFI-ST-' + String(data.student_id).padStart(3, '0')) : 'AFI-ST';
-  } else if (/^\d+$/.test(String(studentId).trim())) {
+  } else if (/^\d{1,6}$/.test(String(studentId).trim())) {
     studentId = 'AFI-ST-' + String(studentId).trim().padStart(3, '0');
   }
 

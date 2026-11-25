@@ -8,11 +8,20 @@ $err = '';
 // Handle Add Teacher
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
     $full_name = sanitize($_POST['full_name'] ?? '');
+    $role_type = sanitize($_POST['role_type'] ?? 'teacher');
+    if (!in_array($role_type, ['teacher', 'assistant_teacher', 'principal'], true)) {
+        $role_type = 'teacher';
+    }
+    $defs = hr_role_definitions();
+    $designation = $defs[$role_type]['label'];
+    $user_role = $defs[$role_type]['user_role'] ?? 'teacher';
+
     $email = sanitize($_POST['email'] ?? '');
     $phone = sanitize($_POST['phone'] ?? '');
     $qualification = sanitize($_POST['qualification'] ?? '');
     $specialty = sanitize($_POST['specialty'] ?? '');
     $joining_date = sanitize($_POST['joining_date'] ?? date('Y-m-d'));
+    $basic_salary = floatval($_POST['basic_salary'] ?? 0);
     $username = sanitize($_POST['username'] ?? '');
     $password = $_POST['password'] ?? 'teacher123';
 
@@ -38,17 +47,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
 
             // 1. Create User
             $pass_hash = password_hash($password, PASSWORD_BCRYPT);
-            $userStmt = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, 'teacher', ?, ?, 'active')");
-            $userStmt->execute([$username, $pass_hash, $email, $full_name, $phone]);
-            $user_id = $db->lastInsertId();
+            $userStmt = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
+            $userStmt->execute([$username, $pass_hash, $email, $user_role, $full_name, $phone]);
+            $user_id = intval($db->lastInsertId());
 
-            // 2. Create Teacher
-            $teacher_code = 'TCH-' . date('Y') . '-' . rand(10, 99);
-            $tchStmt = $db->prepare("INSERT INTO teachers (user_id, teacher_code, full_name, qualification, specialty, email, phone, joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $tchStmt->execute([$user_id, $teacher_code, $full_name, $qualification, $specialty, $email, $phone, $joining_date]);
+            // 2. Generate Role-Prefixed ID & Insert into Unified Employees Directory
+            $teacher_code = generate_employee_code($role_type);
+            $empStmt = $db->prepare("
+                INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, phone, email, qualification, specialty, joining_date, basic_salary, status)
+                VALUES (?, ?, ?, ?, ?, 'Academic', ?, ?, ?, ?, ?, ?, 'Active')
+            ");
+            $empStmt->execute([$teacher_code, $user_id, $full_name, $role_type, $designation, $phone, $email, $qualification, $specialty, $joining_date, $basic_salary]);
+            $employee_pk = intval($db->lastInsertId());
+            record_employee_role_history($employee_pk, $teacher_code, $role_type, $designation, $joining_date, 'Initial Faculty Registration');
+
+            // 3. Sync Teacher Record
+            $tchStmt = $db->prepare("INSERT INTO teachers (user_id, employee_id, teacher_code, designation, full_name, qualification, specialty, email, phone, joining_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')");
+            $tchStmt->execute([$user_id, $employee_pk, $teacher_code, $designation, $full_name, $qualification, $specialty, $email, $phone, $joining_date]);
+            $newTeacherPk = intval($db->lastInsertId());
+            $db->prepare("UPDATE employees SET teacher_id = ? WHERE id = ?")->execute([$newTeacherPk, $employee_pk]);
 
             $db->commit();
-            $msg = "Teacher <strong>" . htmlspecialchars($full_name) . "</strong> ($teacher_code) added successfully! Login Username: <code>$username</code>";
+            $msg = "$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$teacher_code</code>) added successfully! Login Username: <code>$username</code>";
         } catch (Exception $e) {
             $db->rollBack();
             $err = "Failed to add teacher: " . $e->getMessage();
@@ -60,6 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
     $teacher_id = intval($_POST['teacher_id'] ?? 0);
     $user_id = intval($_POST['user_id'] ?? 0);
+    $role_type = sanitize($_POST['role_type'] ?? 'teacher');
+    if (!in_array($role_type, ['teacher', 'assistant_teacher', 'principal'], true)) {
+        $role_type = 'teacher';
+    }
+    $defs = hr_role_definitions();
+    $designation = $defs[$role_type]['label'];
+    $user_role = $defs[$role_type]['user_role'] ?? 'teacher';
+
     $full_name = sanitize($_POST['full_name'] ?? '');
     $email = sanitize($_POST['email'] ?? '');
     $phone = sanitize($_POST['phone'] ?? '');
@@ -76,6 +104,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
         try {
             $db->beginTransaction();
 
+            $curTchStmt = $db->prepare("SELECT * FROM teachers WHERE id = ? LIMIT 1");
+            $curTchStmt->execute([$teacher_id]);
+            $curTch = $curTchStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$curTch) throw new Exception("Teacher record not found.");
+
             // Check if username is taken by another user
             $userChk = $db->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? LIMIT 1");
             $userChk->execute([$username, $user_id]);
@@ -90,44 +123,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
                 throw new Exception("Email address '$email' is already in use by another account.");
             }
 
-            // 1. Update Teacher record
-            $updTch = $db->prepare("
-                UPDATE teachers 
-                SET full_name = ?, qualification = ?, specialty = ?, email = ?, phone = ?, joining_date = ? 
-                WHERE id = ?
-            ");
-            $updTch->execute([$full_name, $qualification, $specialty, $email, $phone, $joining_date, $teacher_id]);
+            // Update code if role prefix changed (e.g., Assistant Teacher -> Teacher)
+            $newCode = $curTch['teacher_code'];
+            $expectedPrefix = $defs[$role_type]['prefix'];
+            if (strpos($newCode, $expectedPrefix) !== 0) {
+                $newCode = generate_employee_code($role_type);
+            }
 
-            // 2. Update User record
+            // 1. Update User record
             if ($user_id > 0) {
                 if (!empty($password)) {
                     $pass_hash = password_hash($password, PASSWORD_BCRYPT);
-                    $updUsr = $db->prepare("
-                        UPDATE users 
-                        SET full_name = ?, username = ?, email = ?, phone = ?, status = ?, password = ? 
-                        WHERE id = ?
-                    ");
-                    $updUsr->execute([$full_name, $username, $email, $phone, $status, $pass_hash, $user_id]);
+                    $updUsr = $db->prepare("UPDATE users SET full_name = ?, username = ?, email = ?, phone = ?, role = ?, status = ?, password = ? WHERE id = ?");
+                    $updUsr->execute([$full_name, $username, $email, $phone, $user_role, $status, $pass_hash, $user_id]);
                 } else {
-                    $updUsr = $db->prepare("
-                        UPDATE users 
-                        SET full_name = ?, username = ?, email = ?, phone = ?, status = ? 
-                        WHERE id = ?
-                    ");
-                    $updUsr->execute([$full_name, $username, $email, $phone, $status, $user_id]);
+                    $updUsr = $db->prepare("UPDATE users SET full_name = ?, username = ?, email = ?, phone = ?, role = ?, status = ? WHERE id = ?");
+                    $updUsr->execute([$full_name, $username, $email, $phone, $user_role, $status, $user_id]);
                 }
             } else {
-                // If teacher had no user record linked yet, create one now
                 $defaultPass = !empty($password) ? $password : 'teacher123';
                 $pass_hash = password_hash($defaultPass, PASSWORD_BCRYPT);
-                $newUsr = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, 'teacher', ?, ?, ?)");
-                $newUsr->execute([$username, $pass_hash, $email, $full_name, $phone, $status]);
-                $newUserId = $db->lastInsertId();
-                $db->prepare("UPDATE teachers SET user_id = ? WHERE id = ?")->execute([$newUserId, $teacher_id]);
+                $newUsr = $db->prepare("INSERT INTO users (username, password, email, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $newUsr->execute([$username, $pass_hash, $email, $user_role, $full_name, $phone, $status]);
+                $user_id = intval($db->lastInsertId());
             }
 
+            // 2. Update Employee record (create if missing)
+            $empStatus = ($status === 'active') ? 'Active' : 'Resigned';
+            $empId = intval($curTch['employee_id'] ?? 0);
+            if ($empId > 0) {
+                $db->prepare("UPDATE employees SET user_id = ?, employee_code = ?, full_name = ?, role_type = ?, designation = ?, phone = ?, email = ?, qualification = ?, specialty = ?, joining_date = ?, status = ? WHERE id = ?")
+                   ->execute([$user_id, $newCode, $full_name, $role_type, $designation, $phone, $email, $qualification, $specialty, $joining_date, $empStatus, $empId]);
+            } else {
+                $db->prepare("INSERT INTO employees (employee_code, user_id, teacher_id, full_name, role_type, designation, department, phone, email, qualification, specialty, joining_date, status) VALUES (?, ?, ?, ?, ?, ?, 'Academic', ?, ?, ?, ?, ?, ?)")
+                   ->execute([$newCode, $user_id, $teacher_id, $full_name, $role_type, $designation, $phone, $email, $qualification, $specialty, $joining_date, $empStatus]);
+                $empId = intval($db->lastInsertId());
+            }
+            if ($newCode !== $curTch['teacher_code']) {
+                record_employee_role_history($empId, $newCode, $role_type, $designation, date('Y-m-d'), 'Role / Designation updated from Teachers Directory');
+            }
+
+            // 3. Update Teacher record
+            $tchStatus = ($status === 'active') ? 'Active' : 'Inactive';
+            $updTch = $db->prepare("
+                UPDATE teachers 
+                SET user_id = ?, employee_id = ?, teacher_code = ?, designation = ?, full_name = ?, qualification = ?, specialty = ?, email = ?, phone = ?, joining_date = ?, status = ?
+                WHERE id = ?
+            ");
+            $updTch->execute([$user_id, $empId, $newCode, $designation, $full_name, $qualification, $specialty, $email, $phone, $joining_date, $tchStatus, $teacher_id]);
+
             $db->commit();
-            $msg = "Teacher <strong>" . htmlspecialchars($full_name) . "</strong> updated successfully!";
+            $msg = "$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$newCode</code>) updated successfully!";
         } catch (Exception $e) {
             $db->rollBack();
             $err = "Failed to update teacher: " . $e->getMessage();
@@ -135,32 +181,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
     }
 }
 
-// Handle Delete Teacher
+// Handle Delete Teacher Safely
 if (isset($_GET['delete'])) {
     $del_id = intval($_GET['delete']);
-    try {
-        $db->beginTransaction();
-        $tch = $db->prepare("SELECT user_id, full_name FROM teachers WHERE id = ?");
-        $tch->execute([$del_id]);
-        $teacherData = $tch->fetch();
-        if ($teacherData) {
-            $db->prepare("DELETE FROM teachers WHERE id = ?")->execute([$del_id]);
-            if (!empty($teacherData['user_id'])) {
-                $db->prepare("DELETE FROM users WHERE id = ? AND role = 'teacher'")->execute([$teacherData['user_id']]);
-            }
-            $db->commit();
-            $msg = "Teacher <strong>" . htmlspecialchars($teacherData['full_name']) . "</strong> removed successfully.";
-        }
-    } catch (Exception $e) {
-        $db->rollBack();
-        $err = "Failed to delete teacher: " . $e->getMessage();
+    $res = safe_delete_teacher_by_id($del_id);
+    if ($res['success']) {
+        $msg = $res['message'];
+    } else {
+        $err = $res['message'];
     }
 }
 
 $teachers = $db->query("
-    SELECT t.*, u.username, u.status as user_status 
+    SELECT t.*, u.username, u.status as user_status, e.role_type
     FROM teachers t 
     LEFT JOIN users u ON t.user_id = u.id 
+    LEFT JOIN employees e ON t.employee_id = e.id
     ORDER BY t.id ASC
 ")->fetchAll();
 ?>
@@ -191,8 +227,8 @@ $teachers = $db->query("
     <table class="data-table">
       <thead>
         <tr>
-          <th style="width: 100px;">Code</th>
-          <th>Full Name</th>
+          <th style="width: 115px;">Teacher ID</th>
+          <th>Full Name &amp; Role</th>
           <th>Specialty</th>
           <th>Qualification</th>
           <th>Email &amp; Phone</th>
@@ -208,8 +244,9 @@ $teachers = $db->query("
               <td><code style="font-weight: 700; color: #0284c7;"><?= htmlspecialchars($t['teacher_code']) ?></code></td>
               <td>
                 <strong style="color: var(--admin-deep-navy); font-size: 0.95rem; display: block;"><?= htmlspecialchars($t['full_name']) ?></strong>
+                <span class="badge" style="background: #eef2ff; color: #4338ca; font-size: 0.72rem; font-weight: 700; margin-top: 2px;"><?= htmlspecialchars($t['designation'] ?? 'Teacher') ?></span>
                 <?php if (!empty($t['joining_date'])): ?>
-                  <small style="color: #64748b; font-size: 0.74rem;"><i class="fas fa-calendar-alt"></i> Joined: <?= format_date($t['joining_date']) ?></small>
+                  <small style="color: #64748b; font-size: 0.74rem; margin-left: 4px;"><i class="fas fa-calendar-alt"></i> <?= format_date($t['joining_date']) ?></small>
                 <?php endif; ?>
               </td>
               <td><span class="badge badge-info" style="font-weight: 700; font-size: 0.8rem;"><?= htmlspecialchars($t['specialty']) ?></span></td>
@@ -262,9 +299,19 @@ $teachers = $db->query("
     </div>
 
     <form method="POST">
-      <div class="form-group">
-        <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
-        <input type="text" name="full_name" class="form-control" required style="border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
+          <input type="text" name="full_name" class="form-control" required style="border-radius: 8px;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Faculty Role / Designation *</label>
+          <select name="role_type" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+            <option value="teacher">Teacher (AFI-TC)</option>
+            <option value="assistant_teacher">Assistant Teacher (AFI-AT)</option>
+            <option value="principal">Principal (AFI-PR)</option>
+          </select>
+        </div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.8rem;">
@@ -294,7 +341,10 @@ $teachers = $db->query("
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Joining Date</label>
           <input type="date" name="joining_date" class="form-control" value="<?= date('Y-m-d') ?>" style="border-radius: 8px;">
         </div>
-        <div></div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Basic Monthly Salary (৳)</label>
+          <input type="number" name="basic_salary" class="form-control" value="0" min="0" step="100" style="border-radius: 8px;">
+        </div>
       </div>
 
       <div style="margin-top: 1.2rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
@@ -343,10 +393,18 @@ $teachers = $db->query("
       <input type="hidden" name="teacher_id" id="editTeacherId">
       <input type="hidden" name="user_id" id="editUserId">
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Full Name *</label>
           <input type="text" name="full_name" id="editFullName" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Faculty Role *</label>
+          <select name="role_type" id="editRoleType" class="form-control" required style="border-radius: 8px; font-weight: 600;">
+            <option value="teacher">Teacher (AFI-TC)</option>
+            <option value="assistant_teacher">Assistant Teacher (AFI-AT)</option>
+            <option value="principal">Principal (AFI-PR)</option>
+          </select>
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: #334155; font-size: 0.85rem;">Teacher Code</label>
@@ -441,6 +499,7 @@ function openEditTeacherModal(tch) {
   document.getElementById('editUserId').value = tch.user_id || '';
   document.getElementById('editFullName').value = tch.full_name || '';
   document.getElementById('editTeacherCode').value = tch.teacher_code || '';
+  document.getElementById('editRoleType').value = tch.role_type || (tch.designation && tch.designation.toLowerCase().includes('assistant') ? 'assistant_teacher' : (tch.designation && tch.designation.toLowerCase().includes('principal') ? 'principal' : 'teacher'));
   document.getElementById('editEmail').value = tch.email || '';
   document.getElementById('editPhone').value = tch.phone || '';
   document.getElementById('editQualification').value = tch.qualification || '';

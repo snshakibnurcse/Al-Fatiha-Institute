@@ -69,8 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
         try {
             $db->beginTransaction();
 
-            // 1. Generate Class-Based Fixed Student ID (Format: AFI-[CLASS_CODE]-[ROLL])
-            $student_id = generate_student_id_for_class($class_id, $roll_no);
+            // 1. Resolve session & generate 9-digit Student ID: [SESSION_YEAR][CLASS_CODE][ROLL]
+            if ($roll_no <= 0) {
+                $roll_no = get_next_class_roll($class_id, $admission_session);
+            }
+            $student_id = generate_student_id_for_class($class_id, $roll_no, null, $admission_session);
 
             // 2. Parent Account Creation
             $parent_user_id = null;
@@ -100,14 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
                 blood_group, religion, nationality, birth_reg_no, permanent_address,
                 father_occupation, father_phone, father_nid, mother_occupation, mother_phone,
                 emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
-                previous_school, medical_notes, admission_session
+                previous_school, medical_notes, admission_session, current_session
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, 'Active', ?,
                 ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
                 ?, ?, ?,
-                ?, ?, ?
+                ?, ?, ?, ?
             )");
 
             $stmt->execute([
@@ -139,8 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_student'])) {
                 $emergency_contact_relation ?: null,
                 $previous_school ?: null,
                 $medical_notes ?: null,
+                $admission_session,
                 $admission_session
             ]);
+
+            $newStudentPk = intval($db->lastInsertId());
+            record_student_academic_snapshot($newStudentPk, $admission_session, $class_id, $roll_no, $student_id, 'Active', 'Initial Admission');
 
             $db->commit();
             set_flash_msg("Running Student <strong>$first_name $last_name</strong> admitted successfully! Generated Student ID: <strong>$student_id</strong> (Roll: #$roll_no)$parent_info_msg", 'success');
@@ -161,8 +168,14 @@ if (isset($_GET['delete'])) {
     redirect('students.php');
 }
 
-// Fetch Students with Class info
-$students = $db->query("SELECT s.*, c.class_name FROM students s JOIN classes c ON s.class_id = c.id ORDER BY s.class_id ASC, s.roll_no ASC")->fetchAll();
+// Fetch Students with Class info & past ID history for search
+$students = $db->query("
+    SELECT s.*, c.class_name, c.class_code,
+           (SELECT GROUP_CONCAT(DISTINCT student_id_code SEPARATOR ' ') FROM student_academic_history sah WHERE sah.student_pk = s.id) as past_ids
+    FROM students s 
+    JOIN classes c ON s.class_id = c.id 
+    ORDER BY s.class_id ASC, s.roll_no ASC
+")->fetchAll();
 $classes = $db->query("SELECT * FROM classes ORDER BY id ASC")->fetchAll();
 
 // Load Layout for HTML Rendering
@@ -208,11 +221,17 @@ require_once __DIR__ . '/layout.php';
         <?php if (!empty($students)): ?>
           <?php foreach ($students as $st): ?>
             <tr>
-              <td><code><?= htmlspecialchars($st['student_id']) ?></code></td>
+              <td>
+                <code><?= htmlspecialchars($st['student_id']) ?></code>
+                <?php if (!empty($st['past_ids'])): ?>
+                  <span style="display:none;"><?= htmlspecialchars($st['past_ids']) ?></span>
+                <?php endif; ?>
+              </td>
               <td>
                 <a href="student_profile.php?id=<?= $st['id'] ?>" style="color: var(--admin-primary); text-decoration: none; font-weight: 700;">
                   <?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?>
                 </a>
+                <br><small style="color: #64748b;">Session: <?= htmlspecialchars($st['current_session'] ?? $st['admission_session'] ?? '2027') ?></small>
               </td>
               <td><span class="badge badge-info"><?= htmlspecialchars($st['class_name']) ?></span></td>
               <td><strong>#<?= $st['roll_no'] ?></strong></td>
@@ -246,10 +265,10 @@ require_once __DIR__ . '/layout.php';
           <h3 style="font-family: 'Outfit', sans-serif; color: var(--admin-primary-dark); font-size: 1.35rem; margin: 0;">
             <i class="fas fa-user-plus" style="color: var(--admin-primary);"></i> Running &amp; New Student Admission
           </h3>
-          <span class="badge badge-info">SESSION <?= (int)date('Y') + 1 ?></span>
+          <span class="badge badge-info">SESSION <?= get_default_academic_session() ?></span>
         </div>
         <p style="color: var(--admin-text-muted); font-size: 0.85rem; margin: 0.35rem 0 0 0;">
-          Admit running or new school students. Auto-generates Student ID (<code>AFI-<?= (int)date('Y') + 1 ?>-XXX</code>).
+          Admit running or new school students. Auto-generates 9-digit Student ID (<code>[YEAR][CLASS][ROLL]</code>, e.g., <code><?= get_default_academic_session() ?>01001</code>).
         </p>
       </div>
       <button type="button" style="background: #f1f5f9; border: none; font-size: 1.3rem; cursor: pointer; color: var(--admin-text-muted); width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center;" onclick="closeModal('addStudentModal')">&times;</button>

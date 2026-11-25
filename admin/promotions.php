@@ -7,12 +7,25 @@ $err = '';
 
 // Get parameters
 $source_class_id = intval($_GET['source_class_id'] ?? 1);
-$target_class_id = intval($_GET['target_class_id'] ?? ($source_class_id + 1));
+$target_class_id = $_GET['target_class_id'] ?? ($source_class_id + 1);
+if ($target_class_id !== 'graduate') {
+    $target_class_id = intval($target_class_id);
+}
+$defaultNextSession = (string)(intval(get_default_academic_session()) + 1);
+$target_session = preg_replace('/\D/', '', sanitize($_GET['target_session'] ?? $defaultNextSession));
+if (strlen($target_session) !== 4) {
+    $target_session = $defaultNextSession;
+}
 
 // Handle Batch Student Promotion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_promotion'])) {
     $src_id = intval($_POST['source_class_id']);
     $tgt_id = sanitize($_POST['target_class_id']); // Can be integer or 'graduate'
+    $post_target_session = preg_replace('/\D/', '', sanitize($_POST['target_session'] ?? $target_session));
+    if (strlen($post_target_session) !== 4) {
+        $post_target_session = $defaultNextSession;
+    }
+    $target_session = $post_target_session;
     $selected_students = $_POST['student_ids'] ?? [];
     $reassign_rolls = isset($_POST['reassign_rolls']) && $_POST['reassign_rolls'] == '1';
 
@@ -22,36 +35,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_promotion']))
         try {
             $db->beginTransaction();
             $count = 0;
-            $rollCounter = 1;
+
+            $fetchCurrStmt = $db->prepare("SELECT id, student_id, class_id, roll_no, admission_session, current_session FROM students WHERE id = ? LIMIT 1");
+            $srcClassName = $db->query("SELECT class_name FROM classes WHERE id = " . intval($src_id))->fetchColumn() ?: 'Previous Class';
 
             if ($tgt_id === 'graduate') {
                 $updStmt = $db->prepare("UPDATE students SET status = 'Graduated' WHERE id = ?");
                 foreach ($selected_students as $st_id) {
-                    $updStmt->execute([intval($st_id)]);
+                    $st_pk = intval($st_id);
+                    $fetchCurrStmt->execute([$st_pk]);
+                    $curr = $fetchCurrStmt->fetch(PDO::FETCH_ASSOC);
+                    if ($curr) {
+                        $oldSess = $curr['current_session'] ?: ($curr['admission_session'] ?: get_default_academic_session());
+                        record_student_academic_snapshot($st_pk, $oldSess, $curr['class_id'], $curr['roll_no'], $curr['student_id'], 'Graduated', "Graduated from $srcClassName");
+                        $db->prepare("UPDATE student_academic_history SET status = 'Graduated', remarks = ? WHERE student_pk = ? AND student_id_code = ?")
+                           ->execute(["Graduated from $srcClassName", $st_pk, $curr['student_id']]);
+                    }
+                    $updStmt->execute([$st_pk]);
                     $count++;
                 }
-                $msg = "Successfully graduated <strong>$count</strong> student(s)!";
+                $msg = "Successfully graduated <strong>$count</strong> student(s)! Academic history preserved.";
             } else {
                 $target_id = intval($tgt_id);
-                $updStmt = $db->prepare("UPDATE students SET class_id = ?, roll_no = ?, student_id = ?, status = 'Active' WHERE id = ?");
-                
-                // Get starting roll number for target class
-                if (!$reassign_rolls) {
-                    $maxRoll = $db->query("SELECT MAX(roll_no) FROM students WHERE class_id = $target_id")->fetchColumn() ?: 0;
-                    $rollCounter = $maxRoll + 1;
+                $targetClassName = $db->query("SELECT class_name FROM classes WHERE id = $target_id")->fetchColumn() ?: 'Next Class';
+                $updStmt = $db->prepare("UPDATE students SET class_id = ?, roll_no = ?, student_id = ?, current_session = ?, status = 'Active' WHERE id = ?");
+
+                $rollCounter = get_next_class_roll($target_id, $target_session);
+                if ($reassign_rolls) {
+                    // Check if any existing students in target session+class already exist; if empty starts at 1, else continues from next available roll
+                    $rollCounter = get_next_class_roll($target_id, $target_session);
                 }
 
                 foreach ($selected_students as $st_id) {
                     $st_pk = intval($st_id);
-                    $newRoll = $reassign_rolls ? $rollCounter : $rollCounter++;
-                    $newStudentId = generate_student_id_for_class($target_id, $newRoll, $st_pk);
-                    $updStmt->execute([$target_id, $newRoll, $newStudentId, $st_pk]);
-                    if ($reassign_rolls) $rollCounter++;
+                    $fetchCurrStmt->execute([$st_pk]);
+                    $curr = $fetchCurrStmt->fetch(PDO::FETCH_ASSOC);
+                    if (!$curr) continue;
+
+                    $oldSess = $curr['current_session'] ?: ($curr['admission_session'] ?: get_default_academic_session());
+                    // Preserve historical enrollment snapshot & mark old record as Promoted
+                    record_student_academic_snapshot($st_pk, $oldSess, $curr['class_id'], $curr['roll_no'], $curr['student_id'], 'Promoted', "Promoted from $srcClassName ($oldSess) to $targetClassName ($target_session)");
+                    $db->prepare("UPDATE student_academic_history SET status = 'Promoted', remarks = ? WHERE student_pk = ? AND student_id_code = ?")
+                       ->execute(["Promoted from $srcClassName ($oldSess) to $targetClassName ($target_session)", $st_pk, $curr['student_id']]);
+
+                    $newRoll = $reassign_rolls ? $rollCounter : (intval($curr['roll_no']) ?: $rollCounter);
+                    $newStudentId = generate_student_id_for_class($target_id, $newRoll, $st_pk, $target_session);
+                    // Derive actual assigned roll from generated 3-digit suffix in case requested roll collided in target session+class
+                    $assignedRoll = intval(substr($newStudentId, -3)) ?: $newRoll;
+
+                    $updStmt->execute([$target_id, $assignedRoll, $newStudentId, $target_session, $st_pk]);
+                    record_student_academic_snapshot($st_pk, $target_session, $target_id, $assignedRoll, $newStudentId, 'Active', "Promoted into $targetClassName ($target_session)");
+
+                    $rollCounter = max($rollCounter, $assignedRoll) + 1;
                     $count++;
                 }
-                
-                $targetClassName = $db->query("SELECT class_name FROM classes WHERE id = $target_id")->fetchColumn();
-                $msg = "Successfully promoted <strong>$count</strong> student(s) to <strong>" . htmlspecialchars($targetClassName) . "</strong> with automatically updated Student IDs!";
+
+                $msg = "Successfully promoted <strong>$count</strong> student(s) to <strong>" . htmlspecialchars($targetClassName) . " (Session $target_session)</strong> with updated IDs &amp; preserved history!";
             }
 
             $db->commit();
@@ -100,13 +139,13 @@ $srcStudents = $srcStudentsStmt->fetchAll();
     <h3 class="card-title"><i class="fas fa-random"></i> Step 1: Select Session Classes</h3>
   </div>
 
-  <form method="GET" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1.5rem; align-items: flex-end;">
+  <form method="GET" style="display: grid; grid-template-columns: 1fr 1fr 160px auto; gap: 1.2rem; align-items: flex-end;">
     <div class="form-group" style="margin: 0;">
       <label style="font-weight: 700; color: var(--admin-primary-dark);">Source Class (Current) *</label>
       <select name="source_class_id" class="form-control" onchange="this.form.submit()" style="padding: 0.75rem;">
         <?php foreach ($classes as $c): ?>
           <option value="<?= $c['id'] ?>" <?= $source_class_id == $c['id'] ? 'selected' : '' ?>>
-            <?= htmlspecialchars($c['class_name']) ?> (Section: <?= $c['section'] ?>)
+            [<?= htmlspecialchars($c['class_code'] ?: str_pad((string)$c['id'], 2, '0', STR_PAD_LEFT)) ?>] <?= htmlspecialchars($c['class_name']) ?> (Section: <?= $c['section'] ?>)
           </option>
         <?php endforeach; ?>
       </select>
@@ -117,11 +156,16 @@ $srcStudents = $srcStudentsStmt->fetchAll();
       <select name="target_class_id" class="form-control" style="padding: 0.75rem;">
         <?php foreach ($classes as $c): ?>
           <option value="<?= $c['id'] ?>" <?= $target_class_id == $c['id'] ? 'selected' : '' ?>>
-            Promote to: <?= htmlspecialchars($c['class_name']) ?>
+            Promote to: [<?= htmlspecialchars($c['class_code'] ?: str_pad((string)$c['id'], 2, '0', STR_PAD_LEFT)) ?>] <?= htmlspecialchars($c['class_name']) ?>
           </option>
         <?php endforeach; ?>
-        <option value="graduate" <?= $target_class_id === 'graduate' ? 'selected' : '' ?>>🎓 Graduate Students (Final Year)</option>
+        <option value="graduate" <?= $target_class_id === 'graduate' ? 'selected' : '' ?>>Graduate Students (Final Year)</option>
       </select>
+    </div>
+
+    <div class="form-group" style="margin: 0;">
+      <label style="font-weight: 700; color: var(--admin-primary-dark);">New Session Year *</label>
+      <input type="text" name="target_session" value="<?= htmlspecialchars($target_session) ?>" maxlength="4" pattern="\d{4}" class="form-control" style="padding: 0.75rem; font-weight: 700; font-family: monospace;" required>
     </div>
 
     <div>
@@ -135,7 +179,8 @@ $srcStudents = $srcStudentsStmt->fetchAll();
 <!-- Step 2: Student Promotion List -->
 <form method="POST">
   <input type="hidden" name="source_class_id" value="<?= $source_class_id ?>">
-  <input type="hidden" name="target_class_id" value="<?= $target_class_id ?>">
+  <input type="hidden" name="target_class_id" value="<?= htmlspecialchars($target_class_id) ?>">
+  <input type="hidden" name="target_session" value="<?= htmlspecialchars($target_session) ?>">
 
   <div class="card-box">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">

@@ -2,7 +2,15 @@
 require_once __DIR__ . '/layout.php';
 $db = get_db_connection();
 
-$results = $db->query("SELECT r.*, s.student_id, s.first_name, s.last_name, s.roll_no, sub.subject_name, c.class_name FROM results r JOIN students s ON r.student_id = s.id JOIN subjects sub ON r.subject_id = sub.id JOIN classes c ON s.class_id = c.id ORDER BY r.id DESC")->fetchAll();
+$results = $db->query("
+    SELECT r.*, s.student_id, s.first_name, s.last_name, s.roll_no, sub.subject_name,
+           c.class_name, COALESCE(r.session_year, s.current_session, s.admission_session) as record_session
+    FROM results r
+    JOIN students s ON r.student_id = s.id
+    JOIN subjects sub ON r.subject_id = sub.id
+    JOIN classes c ON COALESCE(r.class_id, sub.class_id) = c.id
+    ORDER BY r.id DESC
+")->fetchAll();
 ?>
 
 <div class="card-box">

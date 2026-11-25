@@ -28,9 +28,10 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                 $parentStmt->execute([$parent_username, $parent_password_hash, $appData['email'] ?: 'parent@example.com', $appData['father_name'], $appData['phone']]);
                 $parent_user_id = $db->lastInsertId();
 
-                // 2. Generate Roll No & Class-Based Fixed Student ID (Format: AFI-[CLASS_CODE]-[ROLL])
-                $roll_no = get_next_class_roll($appData['target_class_id']);
-                $student_code = generate_student_id_for_class($appData['target_class_id'], $roll_no);
+                // 2. Generate Roll No & 9-digit Session-Class-Roll Student ID
+                $admission_session = get_default_academic_session();
+                $roll_no = get_next_class_roll($appData['target_class_id'], $admission_session);
+                $student_code = generate_student_id_for_class($appData['target_class_id'], $roll_no, null, $admission_session);
 
                 // Split child name
                 $nameParts = explode(' ', trim($appData['child_name']), 2);
@@ -54,14 +55,14 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                     blood_group, religion, nationality, birth_reg_no, permanent_address,
                     father_occupation, father_phone, father_nid, mother_occupation, mother_phone,
                     emergency_contact_name, emergency_contact_phone, emergency_contact_relation,
-                    previous_school, medical_notes, admission_session
+                    previous_school, medical_notes, admission_session, current_session
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, 'Active', CURRENT_DATE(),
                     ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?,
                     ?, ?, ?,
-                    ?, ?, '2027'
+                    ?, ?, ?, ?
                 )");
 
                 $studentStmt->execute([
@@ -91,8 +92,13 @@ if (isset($_GET['action']) && isset($_GET['app_id'])) {
                     $appData['emergency_phone'] ?? $appData['phone'],
                     $appData['emergency_relationship'] ?? 'Father',
                     $appData['previous_school'] ?? null,
-                    $medical_notes
+                    $medical_notes,
+                    $admission_session,
+                    $admission_session
                 ]);
+
+                $newStudentPk = intval($db->lastInsertId());
+                record_student_academic_snapshot($newStudentPk, $admission_session, $appData['target_class_id'], $roll_no, $student_code, 'Active', 'Online Admission Approved');
 
                 // 4. Update Admission Status
                 $db->prepare("UPDATE admissions SET status = 'Approved' WHERE id = ?")->execute([$app_id]);

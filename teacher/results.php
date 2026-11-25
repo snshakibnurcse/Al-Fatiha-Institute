@@ -93,37 +93,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
                 $err = "Marks obtained must be between 0 and maximum marks (" . $max_marks . ").";
             } else {
                 $chkStudent = $db->prepare("
-                    SELECT s.id 
+                    SELECT s.id, s.class_id, COALESCE(s.current_session, s.admission_session, ?) as active_session
                     FROM students s 
                     JOIN subjects sub ON s.class_id = sub.class_id 
                     WHERE s.id = ? AND sub.id = ?
                 ");
-                $chkStudent->execute([$student_id, $subject_id]);
-                if (!$chkStudent->fetch()) {
+                $chkStudent->execute([get_default_academic_session(), $student_id, $subject_id]);
+                $stMeta = $chkStudent->fetch(PDO::FETCH_ASSOC);
+                if (!$stMeta) {
                     $err = "The selected student does not belong to the class of this subject.";
                 } else {
                     try {
+                        $resSession = $stMeta['active_session'];
+                        $resClassId = intval($stMeta['class_id']);
                         $existingStmt = $db->prepare("
                             SELECT id FROM results 
                             WHERE student_id = ? AND subject_id = ? AND exam_term = ?
+                              AND COALESCE(session_year, ?) = ?
                         ");
-                        $existingStmt->execute([$student_id, $subject_id, $exam_term]);
+                        $existingStmt->execute([$student_id, $subject_id, $exam_term, $resSession, $resSession]);
                         $existingId = $existingStmt->fetchColumn();
 
                         if ($existingId) {
                             $upd = $db->prepare("
                                 UPDATE results 
-                                SET marks_obtained = ?, max_marks = ?, teacher_remarks = ? 
+                                SET marks_obtained = ?, max_marks = ?, teacher_remarks = ?, session_year = ?, class_id = ?
                                 WHERE id = ?
                             ");
-                            $upd->execute([$marks_obtained, $max_marks, $teacher_remarks, $existingId]);
+                            $upd->execute([$marks_obtained, $max_marks, $teacher_remarks, $resSession, $resClassId, $existingId]);
                             $msg = "Exam marks updated successfully.";
                         } else {
                             $ins = $db->prepare("
-                                INSERT INTO results (student_id, subject_id, exam_term, marks_obtained, max_marks, teacher_remarks) 
-                                VALUES (?, ?, ?, ?, ?, ?)
+                                INSERT INTO results (student_id, subject_id, exam_term, session_year, class_id, marks_obtained, max_marks, teacher_remarks) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                             ");
-                            $ins->execute([$student_id, $subject_id, $exam_term, $marks_obtained, $max_marks, $teacher_remarks]);
+                            $ins->execute([$student_id, $subject_id, $exam_term, $resSession, $resClassId, $marks_obtained, $max_marks, $teacher_remarks]);
                             $msg = "Exam marks recorded successfully.";
                         }
                     } catch (PDOException $e) {

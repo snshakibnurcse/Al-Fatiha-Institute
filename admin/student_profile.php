@@ -283,16 +283,30 @@ foreach ($fees as &$f) {
 }
 unset($f);
 
-// Fetch Exam Results
+// Fetch Exam Results (preserve historical class & session names)
 $resultsStmt = $db->prepare("
-    SELECT r.*, sub.subject_name 
+    SELECT r.*, sub.subject_name,
+           c.class_name as exam_class_name,
+           COALESCE(r.session_year, ?) as exam_session
     FROM results r 
     JOIN subjects sub ON r.subject_id = sub.id 
+    LEFT JOIN classes c ON COALESCE(r.class_id, sub.class_id) = c.id
     WHERE r.student_id = ? 
-    ORDER BY r.exam_term ASC, r.id ASC
+    ORDER BY exam_session DESC, r.exam_term ASC, r.id ASC
 ");
-$resultsStmt->execute([$student_pk]);
+$resultsStmt->execute([$student['current_session'] ?? $student['admission_session'] ?? '2027', $student_pk]);
 $results = $resultsStmt->fetchAll();
+
+// Fetch Academic Promotion & Enrollment History
+$historyStmt = $db->prepare("
+    SELECT sah.*, c.class_name, c.class_code
+    FROM student_academic_history sah
+    JOIN classes c ON sah.class_id = c.id
+    WHERE sah.student_pk = ?
+    ORDER BY sah.session_year DESC, sah.id DESC
+");
+$historyStmt->execute([$student_pk]);
+$academicHistory = $historyStmt->fetchAll();
 
 // Calculate Result Stats
 $totalObtained = 0;
@@ -544,6 +558,7 @@ require_once __DIR__ . '/layout.php';
       <table class="data-table">
         <thead>
           <tr>
+            <th>Session &amp; Class</th>
             <th>Exam Term</th>
             <th>Subject / Curriculum Area</th>
             <th>Max Marks</th>
@@ -558,6 +573,7 @@ require_once __DIR__ . '/layout.php';
             <?php foreach ($results as $r): ?>
               <?php $g = calculate_grade($r['marks_obtained'], $r['max_marks']); ?>
               <tr>
+                <td><small class="badge" style="background:#f1f5f9;color:#334155;"><?= htmlspecialchars($r['exam_session'] ?? '') ?> &bull; <?= htmlspecialchars($r['exam_class_name'] ?? '') ?></small></td>
                 <td><span class="badge badge-info"><?= htmlspecialchars($r['exam_term']) ?></span></td>
                 <td><strong><?= htmlspecialchars($r['subject_name']) ?></strong></td>
                 <td><?= $r['max_marks'] ?></td>
@@ -568,7 +584,51 @@ require_once __DIR__ . '/layout.php';
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
-            <tr><td colspan="7" style="text-align: center; color: var(--admin-text-muted);">No exam grades recorded yet.</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--admin-text-muted);">No exam grades recorded yet.</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2B. Academic History & Past IDs Timeline -->
+  <div class="card-box">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fas fa-history" style="color: var(--admin-primary);"></i> Academic Session &amp; Promotion History</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Session Year</th>
+            <th>Student ID</th>
+            <th>Class</th>
+            <th>Roll No</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!empty($academicHistory)): ?>
+            <?php foreach ($academicHistory as $ah): ?>
+              <tr>
+                <td><strong><?= htmlspecialchars($ah['session_year']) ?></strong></td>
+                <td><code><?= htmlspecialchars($ah['student_id_code']) ?></code></td>
+                <td><?= htmlspecialchars($ah['class_name']) ?></td>
+                <td>#<?= intval($ah['roll_no']) ?></td>
+                <td><span class="badge <?= $ah['status'] === 'Active' ? 'badge-success' : 'badge-info' ?>"><?= htmlspecialchars($ah['status']) ?></span></td>
+                <td><small style="color:#64748b;"><?= htmlspecialchars($ah['remarks'] ?: '-') ?></small></td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td><strong><?= htmlspecialchars($student['current_session'] ?? $student['admission_session'] ?? '2027') ?></strong></td>
+              <td><code><?= htmlspecialchars($student['student_id']) ?></code></td>
+              <td><?= htmlspecialchars($student['class_name']) ?></td>
+              <td>#<?= intval($student['roll_no']) ?></td>
+              <td><span class="badge badge-success"><?= htmlspecialchars($student['status']) ?></span></td>
+              <td><small style="color:#64748b;">Current Active Enrollment</small></td>
+            </tr>
           <?php endif; ?>
         </tbody>
       </table>

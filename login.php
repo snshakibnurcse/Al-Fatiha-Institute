@@ -18,18 +18,7 @@ if (isset($_GET['logout'])) {
 }
 
 if (is_logged_in()) {
-    $role = get_current_user_role();
-    if (in_array($role, ['super_admin', 'admin', 'principal'])) {
-        redirect('admin/dashboard.php');
-    } elseif ($role === 'teacher') {
-        redirect('teacher/dashboard.php');
-    } elseif ($role === 'parent') {
-        redirect('portal/dashboard.php');
-    } elseif ($role === 'accountant') {
-        redirect('accountant/dashboard.php');
-    } else {
-        redirect('admin/dashboard.php');
-    }
+    redirect_to_role_dashboard('');
 }
 
 $error = '';
@@ -68,17 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $_SESSION['user_role'] = $role;
                 $_SESSION['user_name'] = $user['full_name'];
 
-                if (in_array($role, ['super_admin', 'admin', 'principal'])) {
-                    redirect('admin/dashboard.php');
-                } elseif ($role === 'teacher') {
-                    redirect('teacher/dashboard.php');
-                } elseif ($role === 'parent') {
-                    redirect('portal/dashboard.php');
-                } elseif ($role === 'accountant') {
-                    redirect('accountant/dashboard.php');
-                } else {
-                    redirect('admin/dashboard.php');
-                }
+                redirect_to_role_dashboard('');
             } else {
                 $error = 'Invalid username or password. Please verify your credentials.';
             }

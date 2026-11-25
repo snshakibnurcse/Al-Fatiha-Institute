@@ -10,6 +10,11 @@ $err = '';
 // ========================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_class'])) {
     $class_name = sanitize($_POST['class_name'] ?? '');
+    $class_code = str_pad(preg_replace('/\D/', '', $_POST['class_code'] ?? ''), 2, '0', STR_PAD_LEFT);
+    if ($class_code === '00' || empty(trim($_POST['class_code'] ?? ''))) {
+        $maxCls = intval($db->query("SELECT COALESCE(MAX(CAST(class_code AS UNSIGNED)), 0) FROM classes")->fetchColumn());
+        $class_code = str_pad((string)($maxCls + 1), 2, '0', STR_PAD_LEFT);
+    }
     $age_group = sanitize($_POST['age_group'] ?? '');
     $section = sanitize($_POST['section'] ?? 'A');
     $room_no = sanitize($_POST['room_no'] ?? '');
@@ -20,19 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_class']
     $backup_teacher_id = !empty($_POST['backup_teacher_id']) ? intval($_POST['backup_teacher_id']) : null;
 
     if (!empty($class_name)) {
-        // Check duplicate class name
-        $chk = $db->prepare("SELECT id FROM classes WHERE class_name = ? LIMIT 1");
-        $chk->execute([$class_name]);
+        // Check duplicate class name or class_code
+        $chk = $db->prepare("SELECT id FROM classes WHERE class_name = ? OR class_code = ? LIMIT 1");
+        $chk->execute([$class_name, $class_code]);
         if ($chk->fetch()) {
-            $err = "Class name '<strong>" . htmlspecialchars($class_name) . "</strong>' already exists.";
+            $err = "Class name '<strong>" . htmlspecialchars($class_name) . "</strong>' or Class Code <code>$class_code</code> already exists.";
         } else {
             try {
                 $ins = $db->prepare("
-                    INSERT INTO classes (class_name, age_group, section, room_no, tuition_fee, admission_fee, book_kit_fee, primary_teacher_id, backup_teacher_id) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO classes (class_code, class_name, age_group, section, room_no, tuition_fee, admission_fee, book_kit_fee, primary_teacher_id, backup_teacher_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                $ins->execute([$class_name, $age_group, $section, $room_no, $tuition_fee, $admission_fee, $book_kit_fee, $primary_teacher_id, $backup_teacher_id]);
-                $msg = "New class '<strong>" . htmlspecialchars($class_name) . "</strong>' added successfully! You can now assign subjects and enroll students.";
+                $ins->execute([$class_code, $class_name, $age_group, $section, $room_no, $tuition_fee, $admission_fee, $book_kit_fee, $primary_teacher_id, $backup_teacher_id]);
+                $msg = "New class '<strong>" . htmlspecialchars($class_name) . "</strong>' (Code: <code>$class_code</code>) added successfully!";
             } catch (Exception $e) {
                 $err = "Error adding class: " . $e->getMessage();
             }
@@ -47,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_class']
 // ========================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_class_config'])) {
     $class_id = intval($_POST['class_id']);
+    $class_code = str_pad(preg_replace('/\D/', '', $_POST['class_code'] ?? ''), 2, '0', STR_PAD_LEFT);
     $class_name = sanitize($_POST['class_name'] ?? '');
     $age_group = sanitize($_POST['age_group'] ?? '');
     $new_fee = floatval($_POST['tuition_fee']);
@@ -57,13 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_class_config']
     $room_no = sanitize($_POST['room_no'] ?? '');
 
     try {
+        if ($class_code === '00' || empty(trim($_POST['class_code'] ?? ''))) {
+            $class_code = str_pad((string)$class_id, 2, '0', STR_PAD_LEFT);
+        }
         $stmt = $db->prepare("
             UPDATE classes 
-            SET class_name = ?, age_group = ?, tuition_fee = ?, admission_fee = ?, book_kit_fee = ?, primary_teacher_id = ?, backup_teacher_id = ?, room_no = ? 
+            SET class_code = ?, class_name = ?, age_group = ?, tuition_fee = ?, admission_fee = ?, book_kit_fee = ?, primary_teacher_id = ?, backup_teacher_id = ?, room_no = ? 
             WHERE id = ?
         ");
-        $stmt->execute([$class_name, $age_group, $new_fee, $admission_fee, $book_kit_fee, $primary_teacher_id, $backup_teacher_id, $room_no, $class_id]);
-        $msg = "Class '<strong>" . htmlspecialchars($class_name) . "</strong>' configuration & fee structure updated successfully!";
+        $stmt->execute([$class_code, $class_name, $age_group, $new_fee, $admission_fee, $book_kit_fee, $primary_teacher_id, $backup_teacher_id, $room_no, $class_id]);
+        $msg = "Class '<strong>" . htmlspecialchars($class_name) . "</strong>' (Code: <code>$class_code</code>) configuration &amp; fee structure updated successfully!";
     } catch (Exception $e) {
         $err = "Error updating class: " . $e->getMessage();
     }
@@ -152,6 +161,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
           <div>
             <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: var(--admin-deep-navy); font-weight: 800;">
+              <code style="font-size: 0.9rem; background: #e0f2fe; color: #0369a1; padding: 2px 7px; border-radius: 6px; margin-right: 4px;"><?= htmlspecialchars($c['class_code'] ?: str_pad((string)$c['id'], 2, '0', STR_PAD_LEFT)) ?></code>
               <?= htmlspecialchars($c['class_name']) ?>
             </h3>
             <span style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600;">
@@ -233,10 +243,14 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
     <form method="POST" action="classes.php">
       <input type="hidden" name="action_create_class" value="1">
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 1.2rem;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-top: 1.2rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Class Name *</label>
           <input type="text" name="class_name" class="form-control" required style="font-weight: 700;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">2-Digit Code *</label>
+          <input type="text" name="class_code" class="form-control" maxlength="2" pattern="\d{2}" value="<?= str_pad((string)(count($classes) + 1), 2, '0', STR_PAD_LEFT) ?>" required style="font-weight: 700; font-family: monospace;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Section</label>
@@ -325,10 +339,14 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
       <input type="hidden" name="update_class_config" value="1">
       <input type="hidden" name="class_id" id="modalClassId">
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 1rem;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 1rem;">
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Class Title</label>
           <input type="text" name="class_name" id="modalClassNameInput" class="form-control" required style="font-weight: 700;">
+        </div>
+        <div class="form-group">
+          <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">2-Digit Code *</label>
+          <input type="text" name="class_code" id="modalClassCode" class="form-control" maxlength="2" pattern="\d{2}" required style="font-weight: 700; font-family: monospace;">
         </div>
         <div class="form-group">
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Age Group</label>
@@ -407,6 +425,7 @@ $teachers = $db->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAl
   function editClassConfig(cls) {
     document.getElementById('modalClassId').value = cls.id;
     document.getElementById('modalClassName').innerText = cls.class_name;
+    document.getElementById('modalClassCode').value = cls.class_code || String(cls.id).padStart(2, '0');
     document.getElementById('modalClassNameInput').value = cls.class_name;
     document.getElementById('modalAgeGroup').value = cls.age_group || '';
     document.getElementById('modalPrimaryTeacher').value = cls.primary_teacher_id || '';

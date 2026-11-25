@@ -147,6 +147,13 @@ $user_name = get_current_user_name();
         </a>
       </li>
 
+      <li class="sidebar-section-label">HR &amp; Self-Service</li>
+      <li>
+        <a href="my_hr.php" class="<?= ($current_script == 'my_hr.php') ? 'active' : '' ?>">
+          <i class="fas fa-calendar-minus"></i> <span>Leave &amp; Payslips</span>
+        </a>
+      </li>
+
       <li class="sidebar-section-label">External</li>
       <li>
         <a href="../index.php" target="_blank">

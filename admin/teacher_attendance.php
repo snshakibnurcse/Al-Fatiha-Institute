@@ -22,9 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_teacher_attendan
             $del = $db->prepare("DELETE FROM teacher_attendance WHERE teacher_id = ? AND attendance_date = ?");
             $del->execute([$t_pk, $selected_date]);
 
-            // Insert new record
+            // Insert new record in legacy teacher_attendance
             $ins = $db->prepare("INSERT INTO teacher_attendance (teacher_id, attendance_date, status, remarks) VALUES (?, ?, ?, ?)");
             $ins->execute([$t_pk, $selected_date, $status, $rem]);
+
+            // Sync into unified HR employee_attendance if employee_id is linked
+            $empIdStmt = $db->prepare("SELECT employee_id FROM teachers WHERE id = ? LIMIT 1");
+            $empIdStmt->execute([$t_pk]);
+            $empPk = intval($empIdStmt->fetchColumn());
+            if ($empPk > 0) {
+                $mappedStatus = ($status === 'Excused') ? 'On Leave' : $status;
+                $db->prepare("
+                    INSERT INTO employee_attendance (employee_pk, attendance_date, status, remarks, marked_by)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE status = VALUES(status), remarks = VALUES(remarks), marked_by = VALUES(marked_by)
+                ")->execute([$empPk, $selected_date, $mappedStatus, $rem, get_current_user_id()]);
+            }
         }
         $db->commit();
         $msg = "Faculty Teacher Attendance for <strong>" . format_date($selected_date) . "</strong> recorded successfully!";

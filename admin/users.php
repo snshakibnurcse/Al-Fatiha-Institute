@@ -28,8 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
     $linked_student_id = intval($_POST['linked_student_id'] ?? 0);
     $specialty = sanitize($_POST['specialty'] ?? '');
     $qualification = sanitize($_POST['qualification'] ?? '');
+    $teacher_rank = sanitize($_POST['teacher_rank'] ?? 'teacher');
 
-    $allowedRoles = ['super_admin', 'principal', 'admin', 'accountant', 'teacher', 'parent'];
+    $allowedRoles = ['super_admin', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
     if (!in_array($role, $allowedRoles)) {
         $role = 'parent';
     }
@@ -56,27 +57,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
 
             if (empty($err)) {
                 try {
+                    $db->beginTransaction();
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $ins = $db->prepare("
                         INSERT INTO users (username, password, email, role, full_name, phone, status) 
                         VALUES (?, ?, ?, ?, ?, ?, ?)
                     ");
                     $ins->execute([$username, $hashedPassword, $email, $role, $full_name, $phone, $status]);
-                    $newUserId = $db->lastInsertId();
+                    $newUserId = intval($db->lastInsertId());
 
-                    // Role-specific linkages
+                    // Role-specific linkages & Employee Directory Sync
                     if ($role === 'parent' && $linked_student_id > 0) {
                         $db->prepare("UPDATE students SET parent_user_id = ? WHERE id = ?")->execute([$newUserId, $linked_student_id]);
-                    } elseif ($role === 'teacher') {
-                        $tchCode = 'TCH-' . date('Y') . '-' . str_pad($newUserId, 3, '0', STR_PAD_LEFT);
-                        $insTch = $db->prepare("
-                            INSERT INTO teachers (user_id, teacher_code, full_name, qualification, specialty, email, phone, joining_date) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    } elseif (in_array($role, ['principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
+                        $empRoleType = ($role === 'teacher' && $teacher_rank === 'assistant_teacher') ? 'assistant_teacher' : $role;
+                        $defs = hr_role_definitions();
+                        $empCode = generate_employee_code($empRoleType);
+                        $desig = $defs[$empRoleType]['label'] ?? ucfirst($role);
+                        $dept = $defs[$empRoleType]['department'] ?? 'General';
+                        $empStatus = ($status === 'active') ? 'Active' : 'Resigned';
+
+                        $insEmp = $db->prepare("
+                            INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, qualification, specialty, joining_date, status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ");
-                        $insTch->execute([$newUserId, $tchCode, $full_name, $qualification ?: 'B.Ed / M.A', $specialty ?: 'General Faculty', $email, $phone, date('Y-m-d')]);
+                        $insEmp->execute([$empCode, $newUserId, $full_name, $empRoleType, $desig, $dept, $email, $phone, $qualification ?: 'Graduate', $specialty ?: 'General Faculty', date('Y-m-d'), $empStatus]);
+                        $empPk = intval($db->lastInsertId());
+                        record_employee_role_history($empPk, $empCode, $empRoleType, $desig, date('Y-m-d'), 'Created via User Management');
+
+                        if ($role === 'teacher') {
+                            $insTch = $db->prepare("
+                                INSERT INTO teachers (user_id, employee_id, teacher_code, designation, full_name, qualification, specialty, email, phone, joining_date, status) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            ");
+                            $insTch->execute([$newUserId, $empPk, $empCode, $desig, $full_name, $qualification ?: 'B.Ed / M.A', $specialty ?: 'General Faculty', $email, $phone, date('Y-m-d'), $empStatus === 'Active' ? 'Active' : 'Inactive']);
+                            $tchPk = intval($db->lastInsertId());
+                            $db->prepare("UPDATE employees SET teacher_id = ? WHERE id = ?")->execute([$tchPk, $empPk]);
+                        }
                     }
 
-                    $roleLabel = ($role === 'super_admin') ? 'Super Administrator' : (($role === 'principal') ? 'Principal' : ucfirst($role));
+                    $db->commit();
+                    $roleLabel = ($role === 'super_admin') ? 'Super Administrator' : (($role === 'hr') ? 'HR Manager' : (($role === 'principal') ? 'Principal' : ucfirst($role)));
                     $newCredentials = [
                         'name' => $full_name,
                         'username' => $username,
@@ -85,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
                     ];
                     $msg = "New {$roleLabel} account for <strong>" . htmlspecialchars($full_name) . "</strong> created successfully!";
                 } catch (Exception $e) {
+                    if ($db->inTransaction()) $db->rollBack();
                     $err = "Error creating account: " . $e->getMessage();
                 }
             }
@@ -269,11 +291,15 @@ if (isset($_GET['delete_user'])) {
         if ($target) {
             // Unlink from students if parent
             $db->prepare("UPDATE students SET parent_user_id = NULL WHERE parent_user_id = ?")->execute([$delete_id]);
-            // Delete teacher record if teacher
-            $db->prepare("DELETE FROM teachers WHERE user_id = ?")->execute([$delete_id]);
-            // Delete user
-            $db->prepare("DELETE FROM users WHERE id = ?")->execute([$delete_id]);
-            $msg = "User account <strong>" . htmlspecialchars($target['full_name']) . " (@" . htmlspecialchars($target['username']) . ")</strong> deleted successfully.";
+            // Remove employee / teacher cleanly if linked
+            $emp = get_employee_by_user_id($delete_id);
+            if ($emp) {
+                safe_delete_employee($emp['id'], false);
+            } else {
+                $db->prepare("DELETE FROM teachers WHERE user_id = ?")->execute([$delete_id]);
+                $db->prepare("DELETE FROM users WHERE id = ?")->execute([$delete_id]);
+            }
+            $msg = "User account <strong>" . htmlspecialchars($target['full_name']) . " (@" . htmlspecialchars($target['username']) . ")</strong> removed successfully.";
         }
     }
 }
@@ -315,11 +341,14 @@ $sql = "
            st.student_id as student_code,
            st.roll_no as student_roll,
            c.class_name as student_class,
-           t.teacher_code
+           t.teacher_code,
+           e.employee_code,
+           e.designation as emp_designation
     FROM users u
     LEFT JOIN students st ON st.parent_user_id = u.id
     LEFT JOIN classes c ON st.class_id = c.id
     LEFT JOIN teachers t ON t.user_id = u.id
+    LEFT JOIN employees e ON e.user_id = u.id
     WHERE " . implode(' AND ', $where) . "
     ORDER BY (u.id = 1) DESC, (u.role = 'super_admin') DESC, (u.role = 'principal') DESC, u.id DESC
 ";
@@ -547,6 +576,7 @@ $allStudents = $db->query("
         <option value="all" <?= ($roleFilter === 'all') ? 'selected' : '' ?>>All Account Roles</option>
         <option value="super_admin" <?= ($roleFilter === 'super_admin') ? 'selected' : '' ?>>👑 Super Admins</option>
         <option value="principal" <?= ($roleFilter === 'principal') ? 'selected' : '' ?>>🛡️ Principals</option>
+        <option value="hr" <?= ($roleFilter === 'hr') ? 'selected' : '' ?>>👥 HR Managers</option>
         <option value="accountant" <?= ($roleFilter === 'accountant') ? 'selected' : '' ?>>💼 Accountants</option>
         <option value="teacher" <?= ($roleFilter === 'teacher') ? 'selected' : '' ?>>🎓 Teachers</option>
         <option value="parent" <?= ($roleFilter === 'parent') ? 'selected' : '' ?>>👨‍👩‍👧 Guardians / Parents</option>
@@ -680,12 +710,13 @@ $allStudents = $db->query("
                   <?php else: ?>
                     <span style="color: #94a3b8; font-size: 0.78rem; font-style: italic;">No student mapped</span>
                   <?php endif; ?>
-                <?php elseif ($u['role'] === 'teacher'): ?>
+                <?php elseif (in_array($u['role'], ['teacher', 'hr', 'accountant', 'principal', 'admin'], true)): ?>
                   <span style="font-size: 0.82rem; color: #475569;">
-                    Staff Code: <code><?= htmlspecialchars($u['teacher_code'] ?: 'TCH-' . $u['id']) ?></code>
+                    Staff Code: <code><?= htmlspecialchars($u['employee_code'] ?: $u['teacher_code'] ?: 'N/A') ?></code>
+                    <?php if (!empty($u['emp_designation'])): ?>
+                      <br><small style="color:#64748b;"><?= htmlspecialchars($u['emp_designation']) ?></small>
+                    <?php endif; ?>
                   </span>
-                <?php elseif ($u['role'] === 'principal'): ?>
-                  <span style="font-size: 0.8rem; color: #7c3aed; font-weight: 700;"><i class="fas fa-university"></i> Head of School</span>
                 <?php elseif ($u['role'] === 'super_admin'): ?>
                   <span style="font-size: 0.8rem; color: #b45309; font-weight: 700;"><i class="fas fa-shield-alt"></i> Root Admin</span>
                 <?php else: ?>
@@ -808,6 +839,15 @@ $allStudents = $db->query("
             </div>
           </label>
 
+          <!-- HR Manager -->
+          <label class="role-selector-card">
+            <input type="radio" name="role" value="hr" onchange="onRoleChange(this.value)">
+            <div>
+              <strong style="color: #0f766e; display: block;"><i class="fas fa-id-badge"></i> HR Officer</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Staff Directory, Attendance, Leaves &amp; Payroll</small>
+            </div>
+          </label>
+
           <!-- Guardian -->
           <label class="role-selector-card">
             <input type="radio" name="role" value="parent" onchange="onRoleChange(this.value)">
@@ -817,8 +857,8 @@ $allStudents = $db->query("
             </div>
           </label>
 
-          <!-- Super Admin (span 2) -->
-          <label class="role-selector-card" style="grid-column: span 2;">
+          <!-- Super Admin -->
+          <label class="role-selector-card">
             <input type="radio" name="role" value="super_admin" onchange="onRoleChange(this.value)">
             <div>
               <strong style="color: #b45309; display: block;"><i class="fas fa-crown"></i> Super Administrator</strong>
@@ -884,11 +924,24 @@ $allStudents = $db->query("
       <!-- 6. Dynamic Teacher Details Selector -->
       <div id="teacherSection" style="display: none; margin-top: 1rem; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 12px; padding: 12px;">
         <label style="font-weight: 700; color: #0369a1; font-size: 0.85rem; display: block; margin-bottom: 6px;">
-          <i class="fas fa-graduation-cap"></i> Teacher Profile Details
+          <i class="fas fa-graduation-cap"></i> Faculty Role &amp; Profile Details
         </label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <input type="text" name="specialty" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
-          <input type="text" name="qualification" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div>
+            <small style="font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Faculty Rank</small>
+            <select name="teacher_rank" class="form-control" style="background: #ffffff; font-size: 0.85rem; font-weight: 600;">
+              <option value="teacher">Teacher (AFI-TC)</option>
+              <option value="assistant_teacher">Assistant Teacher (AFI-AT)</option>
+            </select>
+          </div>
+          <div>
+            <small style="font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Subject Specialty</small>
+            <input type="text" name="specialty" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
+          </div>
+          <div>
+            <small style="font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Qualification</small>
+            <input type="text" name="qualification" class="form-control" style="background: #ffffff; font-size: 0.85rem;">
+          </div>
         </div>
       </div>
 
@@ -1018,6 +1071,7 @@ $allStudents = $db->query("
           <select name="role" id="editRole" class="form-control" onchange="onEditRoleChange(this.value)">
             <option value="super_admin">👑 Super Administrator</option>
             <option value="principal">🛡️ Principal</option>
+            <option value="hr">👥 HR Officer</option>
             <option value="accountant">💼 Accountant</option>
             <option value="teacher">🎓 Teacher</option>
             <option value="parent">👨‍👩‍👧 Guardian / Parent</option>
