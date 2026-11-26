@@ -37,16 +37,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             if (!empty($user['status']) && strtolower($user['status']) === 'inactive') {
                 $error = 'Your account (@' . htmlspecialchars($user['username']) . ') is currently inactive. Please contact the administrator.';
             } elseif (password_verify($password, $user['password'])) {
-                $role = $user['role'] ?? '';
+                $role = strtolower(trim($user['role'] ?? ''));
+                $empRoleType = '';
+                try {
+                    $eStmt = $db->prepare("SELECT role_type FROM employees WHERE user_id = ? LIMIT 1");
+                    $eStmt->execute([$user['id']]);
+                    $empRoleType = strtolower(trim((string)$eStmt->fetchColumn()));
+                } catch (Exception $e) {}
+
                 if ($user['id'] == 1 || strtolower($user['username']) === 'admin') {
                     $role = 'super_admin';
-                } elseif (empty($role) && stripos($user['username'], 'principal') !== false) {
-                    $role = 'principal';
+                } elseif ($empRoleType === 'hr' && $role !== 'super_admin') {
+                    $role = 'hr';
                 } elseif (empty($role)) {
-                    $role = 'admin';
+                    if (in_array($empRoleType, ['teacher', 'assistant_teacher'], true)) {
+                        $role = 'teacher';
+                    } elseif (in_array($empRoleType, ['principal', 'hr', 'accountant', 'admin'], true)) {
+                        $role = $empRoleType;
+                    } elseif (stripos($user['username'], 'principal') !== false) {
+                        $role = 'principal';
+                    } elseif (stripos($user['username'], 'hr') !== false) {
+                        $role = 'hr';
+                    } else {
+                        $role = 'parent';
+                    }
                 }
 
-                if (($user['role'] ?? '') !== $role) {
+                if (strtolower(trim($user['role'] ?? '')) !== $role) {
                     try {
                         $db->prepare("UPDATE users SET role = ? WHERE id = ?")->execute([$role, $user['id']]);
                     } catch (Exception $e) {}

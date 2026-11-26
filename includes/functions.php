@@ -47,10 +47,36 @@ function is_logged_in() {
 }
 
 function get_current_user_role() {
+    static $synced = false;
     $role = $_SESSION['user_role'] ?? null;
     $uid = $_SESSION['user_id'] ?? null;
     if ($uid == 1 || (isset($_SESSION['username']) && strtolower($_SESSION['username']) === 'admin')) {
         return 'super_admin';
+    }
+    if (!$synced && $uid) {
+        $synced = true;
+        try {
+            $db = get_db_connection();
+            $st = $db->prepare("
+                SELECT u.role, e.role_type
+                FROM users u
+                LEFT JOIN employees e ON e.user_id = u.id
+                WHERE u.id = ? LIMIT 1
+            ");
+            $st->execute([intval($uid)]);
+            $row = $st->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $dbRole = strtolower(trim($row['role'] ?? ''));
+                $empRole = strtolower(trim($row['role_type'] ?? ''));
+                if ($empRole === 'hr' && $dbRole !== 'super_admin') {
+                    $dbRole = 'hr';
+                }
+                if ($dbRole !== '') {
+                    $_SESSION['user_role'] = $dbRole;
+                    $role = $dbRole;
+                }
+            }
+        } catch (Exception $e) {}
     }
     return $role;
 }
@@ -506,6 +532,14 @@ function ensure_latest_db_schema() {
     try {
         $db = get_db_connection();
 
+        // Ensure users.role supports all roles (e.g., 'hr', 'principal', 'super_admin') and is not stuck on legacy ENUM
+        try {
+            $roleCol = $db->query("SHOW COLUMNS FROM `users` LIKE 'role'")->fetch(PDO::FETCH_ASSOC);
+            if ($roleCol && stripos($roleCol['Type'], 'enum') !== false) {
+                $db->exec("ALTER TABLE `users` MODIFY COLUMN `role` VARCHAR(50) NOT NULL DEFAULT 'parent';");
+            }
+        } catch (Exception $e) {}
+
         // Ensure classes table has numeric 2-digit class_code and standard names
         try {
             $db->exec("UPDATE `classes` SET `class_name` = 'Class One' WHERE id = 4 OR `class_name` = 'Year One';");
@@ -807,6 +841,18 @@ function ensure_latest_db_schema() {
             }
 
             $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$migKey]);
+        }
+
+        // 5. One-Time Repair: Fix any HR users whose role was coerced to '' or 'admin' by legacy ENUM
+        $hrFixKey = '2026_11_26_fix_hr_role_v1';
+        $hrFixChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
+        $hrFixChk->execute([$hrFixKey]);
+        if (!$hrFixChk->fetchColumn()) {
+            try {
+                $db->exec("UPDATE users u JOIN employees e ON e.user_id = u.id SET u.role = 'hr' WHERE e.role_type = 'hr' AND u.id != 1 AND u.role != 'super_admin' AND u.role != 'hr';");
+                $db->exec("UPDATE users SET role = 'hr' WHERE (role = '' OR role IS NULL) AND LOWER(username) LIKE '%hr%' AND id != 1;");
+            } catch (Exception $e) {}
+            $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$hrFixKey]);
         }
 
     } catch (Exception $ex) {

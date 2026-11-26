@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])
     $linked_student_id = intval($_POST['linked_student_id'] ?? 0);
     $edit_password = $_POST['edit_password'] ?? '';
 
-    $allowedRoles = ['super_admin', 'principal', 'admin', 'accountant', 'teacher', 'parent'];
+    $allowedRoles = ['super_admin', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
     if (!in_array($role, $allowedRoles)) {
         $role = 'parent';
     }
@@ -231,6 +231,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])
                     $currentUserProfile['username'] = $username;
                     $currentUserProfile['email'] = $email;
                     $currentUserProfile['phone'] = $phone;
+                }
+
+                // Sync linked employee record if staff user
+                if (in_array($role, ['principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
+                    $emp = get_employee_by_user_id($edit_user_id);
+                    $defs = hr_role_definitions();
+                    $empStatus = ($status === 'active') ? 'Active' : 'Resigned';
+                    if ($emp) {
+                        $newEmpRoleType = ($role === 'teacher' && $emp['role_type'] === 'assistant_teacher') ? 'assistant_teacher' : $role;
+                        $desig = ($emp['role_type'] === $newEmpRoleType && !empty($emp['designation'])) ? $emp['designation'] : ($defs[$newEmpRoleType]['label'] ?? ucfirst($role));
+                        $dept = $defs[$newEmpRoleType]['department'] ?? $emp['department'];
+                        $newCode = $emp['employee_code'];
+                        $expectedPrefix = $defs[$newEmpRoleType]['prefix'] ?? '';
+                        if ($expectedPrefix && strpos($newCode, $expectedPrefix) !== 0) {
+                            $newCode = generate_employee_code($newEmpRoleType);
+                            record_employee_role_history($emp['id'], $newCode, $newEmpRoleType, $desig, date('Y-m-d'), 'Role updated from User Management');
+                        }
+                        $db->prepare("UPDATE employees SET employee_code = ?, full_name = ?, role_type = ?, designation = ?, department = ?, email = ?, phone = ?, status = ? WHERE id = ?")
+                           ->execute([$newCode, $full_name, $newEmpRoleType, $desig, $dept, $email ?: null, $phone ?: null, $empStatus, $emp['id']]);
+                        if ($defs[$newEmpRoleType]['is_teacher'] || !empty($emp['teacher_id'])) {
+                            sync_teacher_row_from_employee($emp['id']);
+                        }
+                    } else {
+                        $empCode = generate_employee_code($role);
+                        $desig = $defs[$role]['label'] ?? ucfirst($role);
+                        $dept = $defs[$role]['department'] ?? 'General';
+                        $db->prepare("INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, joining_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)")
+                           ->execute([$empCode, $edit_user_id, $full_name, $role, $desig, $dept, $email ?: null, $phone ?: null, $empStatus]);
+                        $empPk = intval($db->lastInsertId());
+                        record_employee_role_history($empPk, $empCode, $role, $desig, date('Y-m-d'), 'Synced via User Profile Edit');
+                        if ($defs[$role]['is_teacher']) {
+                            sync_teacher_row_from_employee($empPk);
+                        }
+                    }
                 }
 
                 // Update linked student if guardian
@@ -1071,6 +1105,7 @@ $allStudents = $db->query("
           <select name="role" id="editRole" class="form-control" onchange="onEditRoleChange(this.value)">
             <option value="super_admin">👑 Super Administrator</option>
             <option value="principal">🛡️ Principal</option>
+            <option value="admin">🛡️ Admin</option>
             <option value="hr">👥 HR Officer</option>
             <option value="accountant">💼 Accountant</option>
             <option value="teacher">🎓 Teacher</option>
