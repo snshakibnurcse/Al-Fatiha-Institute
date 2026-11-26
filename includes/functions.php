@@ -516,9 +516,8 @@ function mark_fee_as_paid($fee_id, $payment_method = 'Cash', $ref_no = '', $paid
  */
 function ensure_table_column($db, $table, $column, $definition) {
     try {
-        $chk = $db->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
-        $chk->execute([$column]);
-        if (!$chk->fetch()) {
+        $chk = $db->query("SHOW COLUMNS FROM `$table` LIKE " . $db->quote($column));
+        if ($chk && !$chk->fetch()) {
             $db->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition;");
         }
     } catch (Exception $e) {}
@@ -798,12 +797,26 @@ function ensure_latest_db_schema() {
             FOREIGN KEY (`class_id`) REFERENCES `classes`(`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB;");
 
-        // 4. One-Time Clean-Slate Migration for Auto-ID & HR/Payroll Rollout
+        // 4. Create migration tracker table
         $db->exec("CREATE TABLE IF NOT EXISTS `system_migrations` (
             `migration_key` VARCHAR(100) PRIMARY KEY,
             `applied_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
+        // 5. Repair root admin (#1) and any HR users coerced by legacy ENUM BEFORE cleanup deletes 'parent' rows
+        $hrFixKey = '2026_11_26_fix_hr_role_v2';
+        $hrFixChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
+        $hrFixChk->execute([$hrFixKey]);
+        if (!$hrFixChk->fetchColumn()) {
+            try {
+                $db->exec("UPDATE users SET role = 'super_admin' WHERE (id = 1 OR LOWER(username) = 'admin') AND role != 'super_admin';");
+                $db->exec("UPDATE users u JOIN employees e ON e.user_id = u.id SET u.role = 'hr' WHERE e.role_type = 'hr' AND u.id != 1 AND u.role != 'super_admin' AND u.role != 'hr';");
+                $db->exec("UPDATE users SET role = 'hr' WHERE id != 1 AND (role = '' OR role IS NULL OR role = 'parent') AND (LOWER(username) LIKE '%hr%' OR LOWER(full_name) LIKE '%hr manager%' OR LOWER(full_name) LIKE '%hr officer%');");
+            } catch (Exception $e) {}
+            $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$hrFixKey]);
+        }
+
+        // 6. One-Time Clean-Slate Migration for Auto-ID & HR/Payroll Rollout
         $migKey = '2026_11_25_clean_slate_v1';
         $migChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
         $migChk->execute([$migKey]);
@@ -825,45 +838,30 @@ function ensure_latest_db_schema() {
             $db->exec("DELETE FROM users WHERE role IN ('teacher', 'parent');");
             $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
 
-            // Register existing principal/accountant/hr users into employees directory
-            require_once __DIR__ . '/hr_helpers.php';
-            $defs = hr_role_definitions();
-            $coreUsers = $db->query("SELECT id, full_name, email, phone, role FROM users WHERE role IN ('principal', 'accountant', 'hr') ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($coreUsers as $u) {
-                $rType = $u['role'];
-                $code = generate_employee_code($rType);
-                $desig = $defs[$rType]['label'] ?? ucfirst($rType);
-                $dept = $defs[$rType]['department'] ?? 'General';
-                $db->prepare("INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, joining_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), 'Active')")
-                   ->execute([$code, $u['id'], $u['full_name'], $rType, $desig, $dept, $u['email'], $u['phone'] ?: '']);
-                $empPk = intval($db->lastInsertId());
-                record_employee_role_history($empPk, $code, $rType, $desig, date('Y-m-d'), 'Initial employee registration');
-            }
-
             $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$migKey]);
         }
 
-        // 5. One-Time Repair: Fix root admin (#1) and any HR users coerced by legacy ENUM or prior role fallback
-        $hrFixKey = '2026_11_26_fix_hr_role_v2';
-        $hrFixChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
-        $hrFixChk->execute([$hrFixKey]);
-        if (!$hrFixChk->fetchColumn()) {
+        // 7. Ensure every existing principal / accountant / hr user is registered in unified employees directory
+        $syncKey = '2026_11_26_sync_core_employees_v1';
+        $syncChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
+        $syncChk->execute([$syncKey]);
+        if (!$syncChk->fetchColumn()) {
             try {
-                $db->exec("UPDATE users SET role = 'super_admin' WHERE (id = 1 OR LOWER(username) = 'admin') AND role != 'super_admin';");
-                $db->exec("UPDATE users u JOIN employees e ON e.user_id = u.id SET u.role = 'hr' WHERE e.role_type = 'hr' AND u.id != 1 AND u.role != 'super_admin' AND u.role != 'hr';");
-                $db->exec("UPDATE users SET role = 'hr' WHERE id != 1 AND (role = '' OR role IS NULL OR role = 'parent') AND (LOWER(username) LIKE '%hr%' OR LOWER(full_name) LIKE '%hr manager%' OR LOWER(full_name) LIKE '%hr officer%');");
-                // Ensure every hr user has a linked employees row
                 require_once __DIR__ . '/hr_helpers.php';
-                $hrUsers = $db->query("SELECT u.id, u.full_name, u.email, u.phone FROM users u LEFT JOIN employees e ON e.user_id = u.id WHERE u.role = 'hr' AND e.id IS NULL")->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($hrUsers as $hu) {
-                    $hCode = generate_employee_code('hr');
-                    $db->prepare("INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, joining_date, status) VALUES (?, ?, ?, 'hr', 'HR Manager / Officer', 'Human Resources', ?, ?, CURDATE(), 'Active')")
-                       ->execute([$hCode, $hu['id'], $hu['full_name'], $hu['email'], $hu['phone'] ?: '']);
-                    $hPk = intval($db->lastInsertId());
-                    record_employee_role_history($hPk, $hCode, 'hr', 'HR Manager / Officer', date('Y-m-d'), 'Auto-linked HR account');
+                $defs = hr_role_definitions();
+                $coreUsers = $db->query("SELECT u.id, u.full_name, u.email, u.phone, u.role FROM users u LEFT JOIN employees e ON e.user_id = u.id WHERE u.role IN ('principal', 'accountant', 'hr') AND e.id IS NULL ORDER BY u.id ASC")->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($coreUsers as $u) {
+                    $rType = $u['role'];
+                    $code = generate_employee_code($rType);
+                    $desig = $defs[$rType]['label'] ?? ucfirst($rType);
+                    $dept = $defs[$rType]['department'] ?? 'General';
+                    $db->prepare("INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, joining_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), 'Active')")
+                       ->execute([$code, $u['id'], $u['full_name'], $rType, $desig, $dept, $u['email'], $u['phone'] ?: '']);
+                    $empPk = intval($db->lastInsertId());
+                    record_employee_role_history($empPk, $code, $rType, $desig, date('Y-m-d'), 'Initial employee registration');
                 }
             } catch (Exception $e) {}
-            $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$hrFixKey]);
+            $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$syncKey]);
         }
 
     } catch (Exception $ex) {
