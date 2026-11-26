@@ -70,6 +70,8 @@ function get_current_user_role() {
                 $empRole = strtolower(trim($row['role_type'] ?? ''));
                 if ($empRole === 'hr' && $dbRole !== 'super_admin') {
                     $dbRole = 'hr';
+                } elseif ($empRole === 'chairman' && $dbRole !== 'super_admin') {
+                    $dbRole = 'chairman';
                 }
                 if ($dbRole !== '') {
                     $_SESSION['user_role'] = $dbRole;
@@ -118,6 +120,9 @@ function get_role_dashboard_path($role = null) {
     if (in_array($r, ['super_admin', 'admin', 'principal'], true)) {
         return 'admin/dashboard.php';
     }
+    if ($r === 'chairman') {
+        return 'chairman/dashboard.php';
+    }
     if ($r === 'hr') {
         return 'hr/dashboard.php';
     }
@@ -137,6 +142,15 @@ function redirect_to_role_dashboard($prefix = '') {
     redirect($prefix . get_role_dashboard_path());
 }
 
+function require_chairman() {
+    if (!is_logged_in()) {
+        redirect('../login.php');
+    }
+    if (!in_array(get_current_user_role(), ['chairman', 'super_admin', 'admin'], true)) {
+        redirect_to_role_dashboard('../');
+    }
+}
+
 function require_admin() {
     if (!is_logged_in()) {
         redirect('../login.php');
@@ -150,7 +164,7 @@ function is_hr_or_admin() {
     if (!is_logged_in()) return false;
     $uid = get_current_user_id();
     $role = get_current_user_role();
-    return ($uid == 1 || in_array($role, ['hr', 'super_admin', 'admin', 'principal']));
+    return ($uid == 1 || in_array($role, ['hr', 'super_admin', 'admin'], true));
 }
 
 function require_hr() {
@@ -167,6 +181,9 @@ function require_super_admin() {
         redirect('../login.php');
     }
     if (!is_super_admin()) {
+        if (!is_admin_or_principal()) {
+            redirect_to_role_dashboard('../');
+        }
         if (function_exists('set_flash_msg')) {
             set_flash_msg("Access Denied: Only Super Administrator can access User Management.", "danger");
         }
@@ -796,6 +813,14 @@ function ensure_latest_db_schema() {
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (`class_id`) REFERENCES `classes`(`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB;");
+
+        // Ensure employees.role_type is VARCHAR(50) so roles like 'chairman' save without ENUM truncation
+        try {
+            $empCol = $db->query("SHOW COLUMNS FROM `employees` LIKE 'role_type'")->fetch(PDO::FETCH_ASSOC);
+            if ($empCol && stripos($empCol['Type'], 'enum') !== false) {
+                $db->exec("ALTER TABLE `employees` MODIFY COLUMN `role_type` VARCHAR(50) NOT NULL DEFAULT 'support_staff';");
+            }
+        } catch (Exception $e) {}
 
         // 4. Create migration tracker table
         $db->exec("CREATE TABLE IF NOT EXISTS `system_migrations` (

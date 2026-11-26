@@ -13,6 +13,13 @@
 
 function hr_role_definitions() {
     return [
+        'chairman' => [
+            'prefix'      => 'AFI-CH-',
+            'label'       => 'Chairman',
+            'department'  => 'Board & Governance',
+            'user_role'   => 'chairman',
+            'is_teacher'  => false,
+        ],
         'principal' => [
             'prefix'      => 'AFI-PR-',
             'label'       => 'Principal',

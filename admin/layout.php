@@ -113,12 +113,19 @@ $user_role = get_current_user_role();
         </a>
       </li>
 
-      <li class="sidebar-section-label">HR &amp; Payroll</li>
+      <?php if (is_super_admin()): ?>
+      <li class="sidebar-section-label">HR &amp; Executive</li>
       <li>
         <a href="../hr/dashboard.php">
           <i class="fas fa-id-badge"></i> <span>HR &amp; Payroll Portal</span>
         </a>
       </li>
+      <li>
+        <a href="../chairman/dashboard.php">
+          <i class="fas fa-landmark"></i> <span>Chairman Monitor</span>
+        </a>
+      </li>
+      <?php endif; ?>
 
       <li class="sidebar-section-label">Communication</li>
       <li>

@@ -20,9 +20,9 @@ if (!$slip) {
     die("Payslip not found.");
 }
 
-// Restrict access: HR/Admin/Principal can view any slip; employees can only view their own slip
+// Restrict access: HR and System Admin can view any slip; other employees can only view their own slip
 $role = get_current_user_role();
-if (!in_array($role, ['hr', 'super_admin', 'admin', 'principal'], true)) {
+if (!in_array($role, ['hr', 'super_admin', 'admin'], true)) {
     if (intval($slip['user_id']) !== intval(get_current_user_id())) {
         die("Access Denied: You can only view your own payslip.");
     }

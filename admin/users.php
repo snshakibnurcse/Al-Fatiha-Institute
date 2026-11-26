@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
     $qualification = sanitize($_POST['qualification'] ?? '');
     $teacher_rank = sanitize($_POST['teacher_rank'] ?? 'teacher');
 
-    $allowedRoles = ['super_admin', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
+    $allowedRoles = ['super_admin', 'chairman', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
     if (!in_array($role, $allowedRoles)) {
         $role = 'parent';
     }
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_create_user'])
                     // Role-specific linkages & Employee Directory Sync
                     if ($role === 'parent' && $linked_student_id > 0) {
                         $db->prepare("UPDATE students SET parent_user_id = ? WHERE id = ?")->execute([$newUserId, $linked_student_id]);
-                    } elseif (in_array($role, ['principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
+                    } elseif (in_array($role, ['chairman', 'principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
                         $empRoleType = ($role === 'teacher' && $teacher_rank === 'assistant_teacher') ? 'assistant_teacher' : $role;
                         $defs = hr_role_definitions();
                         $empCode = generate_employee_code($empRoleType);
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])
     $linked_student_id = intval($_POST['linked_student_id'] ?? 0);
     $edit_password = $_POST['edit_password'] ?? '';
 
-    $allowedRoles = ['super_admin', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
+    $allowedRoles = ['super_admin', 'chairman', 'principal', 'admin', 'hr', 'accountant', 'teacher', 'parent'];
     if (!in_array($role, $allowedRoles)) {
         $role = 'parent';
     }
@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_update_user'])
                 }
 
                 // Sync linked employee record if staff user
-                if (in_array($role, ['principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
+                if (in_array($role, ['chairman', 'principal', 'hr', 'accountant', 'admin', 'teacher'], true)) {
                     $emp = get_employee_by_user_id($edit_user_id);
                     $defs = hr_role_definitions();
                     $empStatus = ($status === 'active') ? 'Active' : 'Resigned';
@@ -396,6 +396,7 @@ $countsStmt = $db->query("
     SELECT 
         COUNT(*) as total_users,
         SUM(CASE WHEN role='super_admin' THEN 1 ELSE 0 END) as total_super_admins,
+        SUM(CASE WHEN role='chairman' THEN 1 ELSE 0 END) as total_chairman,
         SUM(CASE WHEN role='principal' THEN 1 ELSE 0 END) as total_principals,
         SUM(CASE WHEN role='hr' THEN 1 ELSE 0 END) as total_hr,
         SUM(CASE WHEN role='accountant' THEN 1 ELSE 0 END) as total_accountants,
@@ -537,6 +538,18 @@ $allStudents = $db->query("
     </div>
   </a>
 
+  <!-- Chairman -->
+  <a href="users.php?role=chairman" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'chairman' ? '#032d4e' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: #e2e8f0; color: #032d4e; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+      <i class="fas fa-landmark"></i>
+    </div>
+    <div>
+      <span style="font-size: 0.75rem; font-weight: 700; color: #032d4e; text-transform: uppercase;">Chairman</span>
+      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #032d4e; font-weight: 800;"><?= intval($stats['total_chairman'] ?? 0) ?></h3>
+      <small style="color: #64748b; font-size: 0.72rem;">Executive Monitor</small>
+    </div>
+  </a>
+
   <!-- Principals -->
   <a href="users.php?role=principal" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'principal' ? '#8b5cf6' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
     <div style="width: 48px; height: 48px; border-radius: 12px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
@@ -622,6 +635,7 @@ $allStudents = $db->query("
       <select name="role" class="form-control" onchange="this.form.submit()">
         <option value="all" <?= ($roleFilter === 'all') ? 'selected' : '' ?>>All Account Roles</option>
         <option value="super_admin" <?= ($roleFilter === 'super_admin') ? 'selected' : '' ?>>👑 Super Admins</option>
+        <option value="chairman" <?= ($roleFilter === 'chairman') ? 'selected' : '' ?>>🏛️ Chairman</option>
         <option value="principal" <?= ($roleFilter === 'principal') ? 'selected' : '' ?>>🛡️ Principals</option>
         <option value="hr" <?= ($roleFilter === 'hr') ? 'selected' : '' ?>>👥 HR Managers</option>
         <option value="accountant" <?= ($roleFilter === 'accountant') ? 'selected' : '' ?>>💼 Accountants</option>
@@ -714,6 +728,10 @@ $allStudents = $db->query("
                   <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-crown text-gold"></i> Super Admin
                   </span>
+                <?php elseif ($dispRole === 'chairman'): ?>
+                  <span class="badge" style="background: #032d4e; color: #ffffff; border: 1px solid #064878; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                    <i class="fas fa-landmark"></i> Chairman
+                  </span>
                 <?php elseif ($dispRole === 'principal'): ?>
                   <span class="badge" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-user-shield"></i> Principal
@@ -766,7 +784,7 @@ $allStudents = $db->query("
                   <?php else: ?>
                     <span style="color: #94a3b8; font-size: 0.78rem; font-style: italic;">No student mapped</span>
                   <?php endif; ?>
-                <?php elseif (in_array($u['role'], ['teacher', 'hr', 'accountant', 'principal', 'admin'], true)): ?>
+                <?php elseif (in_array($u['role'], ['teacher', 'hr', 'chairman', 'accountant', 'principal', 'admin'], true)): ?>
                   <span style="font-size: 0.82rem; color: #475569;">
                     Staff Code: <code><?= htmlspecialchars($u['employee_code'] ?: $u['teacher_code'] ?: 'N/A') ?></code>
                     <?php if (!empty($u['emp_designation'])): ?>
@@ -910,6 +928,15 @@ $allStudents = $db->query("
             <div>
               <strong style="color: #d97706; display: block;"><i class="fas fa-user-friends"></i> Guardian / Parent</strong>
               <small style="color: #64748b; font-size: 0.72rem;">Student progress &amp; Fee tracking</small>
+            </div>
+          </label>
+
+          <!-- Chairman -->
+          <label class="role-selector-card">
+            <input type="radio" name="role" value="chairman" onchange="onRoleChange(this.value)">
+            <div>
+              <strong style="color: #032d4e; display: block;"><i class="fas fa-landmark"></i> Chairman</strong>
+              <small style="color: #64748b; font-size: 0.72rem;">Read-only Executive Monitor (Finance, Staff &amp; Students)</small>
             </div>
           </label>
 
@@ -1126,6 +1153,7 @@ $allStudents = $db->query("
           <label style="font-weight: 700; color: var(--admin-deep-navy); font-size: 0.85rem;">Role Assigned</label>
           <select name="role" id="editRole" class="form-control" onchange="onEditRoleChange(this.value)">
             <option value="super_admin">👑 Super Administrator</option>
+            <option value="chairman">🏛️ Chairman (Read-Only Monitor)</option>
             <option value="principal">🛡️ Principal</option>
             <option value="admin">🛡️ Admin</option>
             <option value="hr">👥 HR Officer</option>
@@ -1198,6 +1226,7 @@ $allStudents = $db->query("
   font-weight: 800; flex-shrink: 0;
 }
 .user-avatar-badge.role-super_admin { background: #fef3c7; color: #b45309; border: 1.5px solid #fde68a; font-size: 1rem; }
+.user-avatar-badge.role-chairman { background: #032d4e; color: #f3b527; border: 1.5px solid #064878; font-size: 1rem; }
 .user-avatar-badge.role-principal { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; font-size: 1rem; }
 .user-avatar-badge.role-admin { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; }
 .user-avatar-badge.role-hr { background: #ccfbf1; color: #0f766e; border: 1.5px solid #99f6e4; }

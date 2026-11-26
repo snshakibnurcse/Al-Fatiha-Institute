@@ -41,7 +41,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
           <?php 
             $user_role = function_exists('get_current_user_role') ? get_current_user_role() : ($_SESSION['user_role'] ?? 'user');
             $dash_url = function_exists('get_role_dashboard_path') ? get_role_dashboard_path($user_role) : 'portal/dashboard.php';
-            $roleLabel = ($user_role === 'super_admin') ? 'Super Admin' : (($user_role === 'hr') ? 'HR Officer' : (($user_role === 'principal') ? 'Principal' : ucfirst($user_role)));
+            $roleLabel = ($user_role === 'super_admin') ? 'Super Admin' : (($user_role === 'hr') ? 'HR Officer' : (($user_role === 'chairman') ? 'Chairman' : (($user_role === 'principal') ? 'Principal' : ucfirst($user_role))));
           ?>
           <a href="<?= $dash_url ?>" class="portal-link"><i class="fas fa-user-circle"></i> Dashboard (<?= htmlspecialchars($roleLabel) ?>)</a>
           <a href="login.php?logout=1" style="color: #f87171; font-size: 0.8rem; font-weight: 700; margin-left: 0.5rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>

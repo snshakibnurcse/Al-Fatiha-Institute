@@ -49,10 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $role = 'super_admin';
                 } elseif ($empRoleType === 'hr' && $role !== 'super_admin') {
                     $role = 'hr';
+                } elseif ($empRoleType === 'chairman' && $role !== 'super_admin') {
+                    $role = 'chairman';
                 } elseif (empty($role)) {
                     if (in_array($empRoleType, ['teacher', 'assistant_teacher'], true)) {
                         $role = 'teacher';
-                    } elseif (in_array($empRoleType, ['principal', 'hr', 'accountant', 'admin'], true)) {
+                    } elseif (in_array($empRoleType, ['principal', 'hr', 'chairman', 'accountant', 'admin'], true)) {
                         $role = $empRoleType;
                     } elseif (stripos($user['username'], 'principal') !== false) {
                         $role = 'principal';

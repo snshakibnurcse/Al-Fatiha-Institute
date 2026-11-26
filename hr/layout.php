@@ -5,7 +5,7 @@ require_hr();
 $current_script = basename($_SERVER['PHP_SELF']);
 $user_name = get_current_user_name();
 $user_role = get_current_user_role();
-$can_access_admin = in_array($user_role, ['super_admin', 'admin', 'principal'], true);
+$can_access_admin = in_array($user_role, ['super_admin', 'admin'], true);
 ?>
 <!DOCTYPE html>
 <html lang="en">
