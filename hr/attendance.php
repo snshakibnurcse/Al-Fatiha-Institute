@@ -1,9 +1,15 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_hr();
 $db = get_db_connection();
 
 $msg = '';
 $err = '';
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
+
 $selected_date = sanitize($_POST['attendance_date'] ?? $_GET['attendance_date'] ?? date('Y-m-d'));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_staff_attendance'])) {
@@ -39,13 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_staff_attendance
             }
         }
         $db->commit();
-        $msg = "Staff attendance for <strong>" . format_date($selected_date) . "</strong> saved successfully!";
+        set_flash_msg("Staff attendance for <strong>" . format_date($selected_date) . "</strong> saved successfully!", 'success');
     } catch (Exception $e) {
         if ($db->inTransaction()) $db->rollBack();
-        $err = "Failed to save attendance: " . $e->getMessage();
+        set_flash_msg("Failed to save attendance: " . $e->getMessage(), 'danger');
     }
+    redirect('attendance.php?attendance_date=' . urlencode($selected_date));
 }
 
+require_once __DIR__ . '/layout.php';
 $employees = $db->query("SELECT * FROM employees WHERE status IN ('Active', 'On Leave') ORDER BY role_type ASC, employee_code ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $existing = [];

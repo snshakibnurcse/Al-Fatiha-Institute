@@ -1,9 +1,14 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_hr();
 $db = get_db_connection();
 
 $msg = '';
 $err = '';
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
 
 // 1. Handle Apply Leave (by HR on behalf of any employee)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_add_leave'])) {
@@ -15,11 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_add_leave'])) 
     $autoApprove = isset($_POST['auto_approve']) && $_POST['auto_approve'] === '1';
 
     if ($empPk <= 0 || $leaveTypeId <= 0 || empty($startDate) || empty($endDate) || empty($reason)) {
-        $err = "Please select employee, leave type, start/end dates, and provide reason.";
+        set_flash_msg("Please select employee, leave type, start/end dates, and provide reason.", 'danger');
     } else {
         $days = hr_count_leave_days($startDate, $endDate);
         if ($days <= 0) {
-            $err = "End date must be on or after start date.";
+            set_flash_msg("End date must be on or after start date.", 'danger');
         } else {
             try {
                 $ins = $db->prepare("INSERT INTO leave_requests (employee_pk, leave_type_id, start_date, end_date, total_days, reason, status, applied_by_user_id) VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)");
@@ -28,15 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_add_leave'])) 
 
                 if ($autoApprove) {
                     $rev = hr_review_leave_request($reqId, 'Approved', get_current_user_id(), 'Recorded and approved by HR');
-                    $msg = $rev['message'];
+                    set_flash_msg($rev['message'], $rev['success'] ? 'success' : 'danger');
                 } else {
-                    $msg = "Leave application submitted ($days day(s)) and awaiting review.";
+                    set_flash_msg("Leave application submitted ($days day(s)) and awaiting review.", 'success');
                 }
             } catch (Exception $e) {
-                $err = "Failed to log leave: " . $e->getMessage();
+                set_flash_msg("Failed to log leave: " . $e->getMessage(), 'danger');
             }
         }
     }
+    redirect('leaves.php');
 }
 
 // 2. Handle Approve / Reject Leave Request
@@ -45,11 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_review_leave']
     $decision = sanitize($_POST['decision'] ?? '');
     $notes = sanitize($_POST['review_notes'] ?? '');
     $res = hr_review_leave_request($reqId, $decision, get_current_user_id(), $notes);
-    if ($res['success']) {
-        $msg = $res['message'];
-    } else {
-        $err = $res['message'];
-    }
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('leaves.php');
 }
 
 // 3. Handle Add / Update Leave Type Policy
@@ -62,13 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_save_leave_typ
         try {
             $db->prepare("INSERT INTO leave_types (name, is_paid, annual_quota, description, status) VALUES (?, ?, ?, ?, 'Active')")
                ->execute([$ltName, $isPaid, $quota, $desc]);
-            $msg = "Leave type '<strong>" . htmlspecialchars($ltName) . "</strong>' added.";
+            set_flash_msg("Leave type '<strong>" . htmlspecialchars($ltName) . "</strong>' added.", 'success');
         } catch (Exception $e) {
-            $err = "Failed to add leave type: " . $e->getMessage();
+            set_flash_msg("Failed to add leave type: " . $e->getMessage(), 'danger');
         }
     }
+    redirect('leaves.php');
 }
 
+require_once __DIR__ . '/layout.php';
 $employees = $db->query("SELECT id, employee_code, full_name, designation FROM employees WHERE status IN ('Active','On Leave') ORDER BY employee_code ASC")->fetchAll(PDO::FETCH_ASSOC);
 $leaveTypes = $db->query("SELECT * FROM leave_types ORDER BY is_paid DESC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
 $requests = $db->query("

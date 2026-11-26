@@ -1,9 +1,14 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_admin();
 $db = get_db_connection();
 
 $msg = '';
 $err = '';
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
 
 // Handle Add Teacher
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
@@ -26,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
     $password = $_POST['password'] ?? 'teacher123';
 
     if (empty($full_name) || empty($email) || empty($phone) || empty($username) || empty($specialty)) {
-        $err = "Please fill in all required fields (Name, Email, Phone, Specialty, Username).";
+        set_flash_msg("Please fill in all required fields (Name, Email, Phone, Specialty, Username).", 'danger');
     } else {
         try {
             $db->beginTransaction();
@@ -68,12 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_teacher'])) {
             $db->prepare("UPDATE employees SET teacher_id = ? WHERE id = ?")->execute([$newTeacherPk, $employee_pk]);
 
             $db->commit();
-            $msg = "$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$teacher_code</code>) added successfully! Login Username: <code>$username</code>";
+            set_flash_msg("$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$teacher_code</code>) added successfully! Login Username: <code>$username</code>", 'success');
         } catch (Exception $e) {
             $db->rollBack();
-            $err = "Failed to add teacher: " . $e->getMessage();
+            set_flash_msg("Failed to add teacher: " . $e->getMessage(), 'danger');
         }
     }
+    redirect('teachers.php');
 }
 
 // Handle Edit Teacher
@@ -99,7 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
     $status = sanitize($_POST['status'] ?? 'active');
 
     if ($teacher_id <= 0 || empty($full_name) || empty($email) || empty($phone) || empty($username) || empty($specialty)) {
-        $err = "Please fill in all required fields (Name, Email, Phone, Specialty, Username).";
+        set_flash_msg("Please fill in all required fields (Name, Email, Phone, Specialty, Username).", 'danger');
+        redirect('teachers.php');
     } else {
         try {
             $db->beginTransaction();
@@ -173,24 +180,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_teacher'])) {
             $updTch->execute([$user_id, $empId, $newCode, $designation, $full_name, $qualification, $specialty, $email, $phone, $joining_date, $tchStatus, $teacher_id]);
 
             $db->commit();
-            $msg = "$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$newCode</code>) updated successfully!";
+            set_flash_msg("$designation <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$newCode</code>) updated successfully!", 'success');
         } catch (Exception $e) {
             $db->rollBack();
-            $err = "Failed to update teacher: " . $e->getMessage();
+            set_flash_msg("Failed to update teacher: " . $e->getMessage(), 'danger');
         }
     }
+    redirect('teachers.php');
 }
 
 // Handle Delete Teacher Safely
 if (isset($_GET['delete'])) {
     $del_id = intval($_GET['delete']);
     $res = safe_delete_teacher_by_id($del_id);
-    if ($res['success']) {
-        $msg = $res['message'];
-    } else {
-        $err = $res['message'];
-    }
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('teachers.php');
 }
+
+require_once __DIR__ . '/layout.php';
 
 $teachers = $db->query("
     SELECT t.*, u.username, u.status as user_status, e.role_type

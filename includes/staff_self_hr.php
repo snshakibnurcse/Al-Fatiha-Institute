@@ -7,8 +7,12 @@ $db = get_db_connection();
 $uid = intval(get_current_user_id());
 $emp = get_employee_by_user_id($uid);
 
+$flash = get_flash_msg();
 $msg = '';
 $err = '';
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
 
 if ($emp && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_apply_my_leave'])) {
     $ltId = intval($_POST['leave_type_id'] ?? 0);
@@ -17,21 +21,22 @@ if ($emp && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_apply_
     $reason = sanitize($_POST['reason'] ?? '');
 
     if ($ltId <= 0 || empty($start) || empty($end) || empty($reason)) {
-        $err = "Please select leave type, start/end dates, and provide a reason.";
+        set_flash_msg("Please select leave type, start/end dates, and provide a reason.", 'danger');
     } else {
         $days = hr_count_leave_days($start, $end);
         if ($days <= 0) {
-            $err = "End date must be on or after start date.";
+            set_flash_msg("End date must be on or after start date.", 'danger');
         } else {
             try {
                 $db->prepare("INSERT INTO leave_requests (employee_pk, leave_type_id, start_date, end_date, total_days, reason, status, applied_by_user_id) VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)")
                    ->execute([$emp['id'], $ltId, $start, $end, $days, $reason, $uid]);
-                $msg = "Leave request for <strong>$days day(s)</strong> submitted for HR/Principal approval!";
+                set_flash_msg("Leave request for <strong>$days day(s)</strong> submitted for HR/Principal approval!", 'success');
             } catch (Exception $e) {
-                $err = "Failed to submit leave request: " . $e->getMessage();
+                set_flash_msg("Failed to submit leave request: " . $e->getMessage(), 'danger');
             }
         }
     }
+    redirect('my_hr.php');
 }
 
 $leaveTypes = $db->query("SELECT * FROM leave_types WHERE status = 'Active' ORDER BY is_paid DESC, id ASC")->fetchAll(PDO::FETCH_ASSOC);

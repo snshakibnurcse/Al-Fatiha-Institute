@@ -1,9 +1,14 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_hr();
 $db = get_db_connection();
 
 $msg = '';
 $err = '';
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
 $defs = hr_role_definitions();
 
 // 1. POST: Add New Employee (All Roles: Principal, Teacher, Assistant Teacher, HR, Accountant, Admin, Support Staff)
@@ -37,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_add_employee']
     $password = $_POST['password'] ?? 'staff123';
 
     if (empty($full_name) || empty($phone)) {
-        $err = "Full name and phone number are required.";
+        set_flash_msg("Full name and phone number are required.", 'danger');
     } elseif ($create_login && empty($username)) {
-        $err = "Login username is required when portal access is enabled.";
+        set_flash_msg("Login username is required when portal access is enabled.", 'danger');
     } else {
         try {
             $db->beginTransaction();
@@ -90,15 +95,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_add_employee']
             }
 
             $db->commit();
-            $msg = "Employee <strong>" . htmlspecialchars($full_name) . "</strong> added with ID <code>$empCode</code>!";
+            $successMsg = "Employee <strong>" . htmlspecialchars($full_name) . "</strong> added with ID <code>$empCode</code>!";
             if ($create_login) {
-                $msg .= " Portal Login: <code>$username</code>";
+                $successMsg .= " Portal Login: <code>$username</code>";
             }
+            set_flash_msg($successMsg, 'success');
         } catch (Exception $e) {
             if ($db->inTransaction()) $db->rollBack();
-            $err = "Failed to add employee: " . $e->getMessage();
+            set_flash_msg("Failed to add employee: " . $e->getMessage(), 'danger');
         }
     }
+    redirect('employees.php');
 }
 
 // 2. POST: Edit Employee & Compensation
@@ -130,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_edit_employee'
     $bank_account = sanitize($_POST['bank_account'] ?? '');
 
     if ($emp_pk <= 0 || empty($full_name) || empty($phone)) {
-        $err = "Employee full name and phone number are required.";
+        set_flash_msg("Employee full name and phone number are required.", 'danger');
     } else {
         try {
             $db->beginTransaction();
@@ -178,24 +185,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_edit_employee'
             }
 
             $db->commit();
-            $msg = "Employee <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$newCode</code>) updated successfully!";
+            set_flash_msg("Employee <strong>" . htmlspecialchars($full_name) . "</strong> (<code>$newCode</code>) updated successfully!", 'success');
         } catch (Exception $e) {
             if ($db->inTransaction()) $db->rollBack();
-            $err = "Failed to update employee: " . $e->getMessage();
+            set_flash_msg("Failed to update employee: " . $e->getMessage(), 'danger');
         }
     }
+    redirect('employees.php');
 }
 
 // 3. GET: Safe Delete Employee
 if (isset($_GET['delete'])) {
     $del_pk = intval($_GET['delete']);
     $res = safe_delete_employee($del_pk, false);
-    if ($res['success']) {
-        $msg = $res['message'];
-    } else {
-        $err = $res['message'];
-    }
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('employees.php');
 }
+
+require_once __DIR__ . '/layout.php';
 
 $roleFilter = sanitize($_GET['role_type'] ?? 'all');
 $statusFilter = sanitize($_GET['status'] ?? 'all');

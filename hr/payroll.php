@@ -1,9 +1,15 @@
 <?php
-require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_hr();
 $db = get_db_connection();
 
 $msg = '';
 $err = '';
+$flash = get_flash_msg();
+if ($flash) {
+    if ($flash['type'] === 'danger') $err = $flash['message']; else $msg = $flash['message'];
+}
+
 $selectedMonth = sanitize($_REQUEST['month'] ?? date('Y-m'));
 if (!preg_match('/^\d{4}-\d{2}$/', $selectedMonth)) {
     $selectedMonth = date('Y-m');
@@ -14,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_generate_payro
     $wDays = max(1, intval($_POST['working_days'] ?? 26));
     $lThresh = max(1, intval($_POST['late_threshold'] ?? 3));
     $res = hr_generate_monthly_payroll($selectedMonth, $wDays, $lThresh, get_current_user_id());
-    if ($res['success']) $msg = $res['message']; else $err = $res['message'];
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('payroll.php?month=' . urlencode($selectedMonth));
 }
 
 // 2. Manual HR Adjustment on Late Deduction / Bonus / Other Deduction
@@ -27,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_adjust_slip'])
     $note = sanitize($_POST['adjustment_note'] ?? '');
 
     $res = hr_update_payroll_slip_adjustments($slipId, $appliedLateDays, $lateDed, $bonus, $otherDed, $note);
-    if ($res['success']) $msg = $res['message']; else $err = $res['message'];
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('payroll.php?month=' . urlencode($selectedMonth));
 }
 
 // 3. Pay Individual Slip & Sync to Accounts Expense
@@ -36,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_pay_slip'])) {
     $pMethod = sanitize($_POST['payment_method'] ?? 'Cash');
     $pDate = sanitize($_POST['paid_date'] ?? date('Y-m-d'));
     $res = hr_mark_slip_paid($slipId, $pMethod, $pDate, get_current_user_id());
-    if ($res['success']) $msg = $res['message']; else $err = $res['message'];
+    set_flash_msg($res['message'], $res['success'] ? 'success' : 'danger');
+    redirect('payroll.php?month=' . urlencode($selectedMonth));
 }
 
 // 4. Bulk Pay All Remaining Unpaid Slips in Month
@@ -49,9 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_pay_all'])) {
         $r = hr_mark_slip_paid($uSlip['id'], $uSlip['payment_method'], $pDate, get_current_user_id());
         if ($r['success']) $paidCount++;
     }
-    $msg = "Marked <strong>$paidCount</strong> salary slip(s) as Paid and synced to Expense Ledger!";
+    set_flash_msg("Marked <strong>$paidCount</strong> salary slip(s) as Paid and synced to Expense Ledger!", 'success');
+    redirect('payroll.php?month=' . urlencode($selectedMonth));
 }
 
+require_once __DIR__ . '/layout.php';
 $runStmt = $db->prepare("SELECT * FROM payroll_runs WHERE payroll_month = ? LIMIT 1");
 $runStmt->execute([$selectedMonth]);
 $run = $runStmt->fetch(PDO::FETCH_ASSOC);
