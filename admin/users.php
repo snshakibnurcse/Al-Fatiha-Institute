@@ -397,6 +397,7 @@ $countsStmt = $db->query("
         COUNT(*) as total_users,
         SUM(CASE WHEN role='super_admin' THEN 1 ELSE 0 END) as total_super_admins,
         SUM(CASE WHEN role='principal' THEN 1 ELSE 0 END) as total_principals,
+        SUM(CASE WHEN role='hr' THEN 1 ELSE 0 END) as total_hr,
         SUM(CASE WHEN role='accountant' THEN 1 ELSE 0 END) as total_accountants,
         SUM(CASE WHEN role='teacher' THEN 1 ELSE 0 END) as total_teachers,
         SUM(CASE WHEN role='parent' THEN 1 ELSE 0 END) as total_guardians,
@@ -560,6 +561,18 @@ $allStudents = $db->query("
     </div>
   </a>
 
+  <!-- HR Officers -->
+  <a href="users.php?role=hr" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'hr' ? '#0f766e' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: #ccfbf1; color: #0f766e; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+      <i class="fas fa-id-badge"></i>
+    </div>
+    <div>
+      <span style="font-size: 0.75rem; font-weight: 700; color: #0f766e; text-transform: uppercase;">HR Officers</span>
+      <h3 style="margin: 2px 0 0 0; font-size: 1.55rem; color: #115e59; font-weight: 800;"><?= intval($stats['total_hr'] ?? 0) ?></h3>
+      <small style="color: #64748b; font-size: 0.72rem;">HR &amp; Payroll</small>
+    </div>
+  </a>
+
   <!-- Teachers -->
   <a href="users.php?role=teacher" style="background: #ffffff; border-radius: 14px; padding: 1.1rem 1.3rem; border: 1.5px solid <?= $roleFilter === 'teacher' ? '#0ea5e9' : '#e2e8f0' ?>; text-decoration: none; display: flex; align-items: center; gap: 14px;">
     <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
@@ -696,29 +709,38 @@ $allStudents = $db->query("
                 </div>
               </td>
               <td>
-                <?php if ($u['role'] === 'super_admin'): ?>
+                <?php $dispRole = ($u['id'] == 1 || strtolower($u['username'] ?? '') === 'admin') ? 'super_admin' : strtolower(trim($u['role'] ?? '')); ?>
+                <?php if ($dispRole === 'super_admin'): ?>
                   <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-crown text-gold"></i> Super Admin
                   </span>
-                <?php elseif ($u['role'] === 'principal'): ?>
+                <?php elseif ($dispRole === 'principal'): ?>
                   <span class="badge" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-user-shield"></i> Principal
                   </span>
-                <?php elseif ($u['role'] === 'admin'): ?>
+                <?php elseif ($dispRole === 'admin'): ?>
                   <span class="badge" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-shield-alt"></i> Admin
                   </span>
-                <?php elseif ($u['role'] === 'accountant'): ?>
+                <?php elseif ($dispRole === 'hr'): ?>
+                  <span class="badge" style="background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                    <i class="fas fa-id-badge"></i> HR Officer
+                  </span>
+                <?php elseif ($dispRole === 'accountant'): ?>
                   <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-wallet"></i> Accountant
                   </span>
-                <?php elseif ($u['role'] === 'teacher'): ?>
+                <?php elseif ($dispRole === 'teacher'): ?>
                   <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-chalkboard-teacher"></i> Teacher
                   </span>
-                <?php else: ?>
+                <?php elseif ($dispRole === 'parent'): ?>
                   <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
                     <i class="fas fa-user-friends"></i> Guardian
+                  </span>
+                <?php else: ?>
+                  <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 5px 10px; font-weight: 800; font-size: 0.78rem;">
+                    <?= htmlspecialchars(ucfirst($dispRole ?: 'Staff')) ?>
                   </span>
                 <?php endif; ?>
               </td>
@@ -1178,6 +1200,7 @@ $allStudents = $db->query("
 .user-avatar-badge.role-super_admin { background: #fef3c7; color: #b45309; border: 1.5px solid #fde68a; font-size: 1rem; }
 .user-avatar-badge.role-principal { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; font-size: 1rem; }
 .user-avatar-badge.role-admin { background: #ede9fe; color: #6d28d9; border: 1.5px solid #ddd6fe; }
+.user-avatar-badge.role-hr { background: #ccfbf1; color: #0f766e; border: 1.5px solid #99f6e4; }
 .user-avatar-badge.role-accountant { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
 .user-avatar-badge.role-teacher { background: #e0f2fe; color: #0369a1; border: 1.5px solid #bae6fd; }
 .user-avatar-badge.role-parent { background: #fff7ed; color: #ea580c; border: 1.5px solid #ffedd5; }

@@ -843,14 +843,25 @@ function ensure_latest_db_schema() {
             $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$migKey]);
         }
 
-        // 5. One-Time Repair: Fix any HR users whose role was coerced to '' or 'admin' by legacy ENUM
-        $hrFixKey = '2026_11_26_fix_hr_role_v1';
+        // 5. One-Time Repair: Fix root admin (#1) and any HR users coerced by legacy ENUM or prior role fallback
+        $hrFixKey = '2026_11_26_fix_hr_role_v2';
         $hrFixChk = $db->prepare("SELECT 1 FROM system_migrations WHERE migration_key = ? LIMIT 1");
         $hrFixChk->execute([$hrFixKey]);
         if (!$hrFixChk->fetchColumn()) {
             try {
+                $db->exec("UPDATE users SET role = 'super_admin' WHERE (id = 1 OR LOWER(username) = 'admin') AND role != 'super_admin';");
                 $db->exec("UPDATE users u JOIN employees e ON e.user_id = u.id SET u.role = 'hr' WHERE e.role_type = 'hr' AND u.id != 1 AND u.role != 'super_admin' AND u.role != 'hr';");
-                $db->exec("UPDATE users SET role = 'hr' WHERE (role = '' OR role IS NULL) AND LOWER(username) LIKE '%hr%' AND id != 1;");
+                $db->exec("UPDATE users SET role = 'hr' WHERE id != 1 AND (role = '' OR role IS NULL OR role = 'parent') AND (LOWER(username) LIKE '%hr%' OR LOWER(full_name) LIKE '%hr manager%' OR LOWER(full_name) LIKE '%hr officer%');");
+                // Ensure every hr user has a linked employees row
+                require_once __DIR__ . '/hr_helpers.php';
+                $hrUsers = $db->query("SELECT u.id, u.full_name, u.email, u.phone FROM users u LEFT JOIN employees e ON e.user_id = u.id WHERE u.role = 'hr' AND e.id IS NULL")->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($hrUsers as $hu) {
+                    $hCode = generate_employee_code('hr');
+                    $db->prepare("INSERT INTO employees (employee_code, user_id, full_name, role_type, designation, department, email, phone, joining_date, status) VALUES (?, ?, ?, 'hr', 'HR Manager / Officer', 'Human Resources', ?, ?, CURDATE(), 'Active')")
+                       ->execute([$hCode, $hu['id'], $hu['full_name'], $hu['email'], $hu['phone'] ?: '']);
+                    $hPk = intval($db->lastInsertId());
+                    record_employee_role_history($hPk, $hCode, 'hr', 'HR Manager / Officer', date('Y-m-d'), 'Auto-linked HR account');
+                }
             } catch (Exception $e) {}
             $db->prepare("INSERT INTO system_migrations (migration_key) VALUES (?)")->execute([$hrFixKey]);
         }
